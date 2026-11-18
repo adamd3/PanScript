@@ -1,19 +1,24 @@
 process UMAP_SAMPLES {
     tag "$norm_counts"
     label 'process_medium'
-    container 'adamd3/strainseq:latest'
     publishDir "${params.outdir}/umap_samples", mode: 'copy'
 
     input:
     path norm_counts
     path meta_merged
     val group
+    val seed
 
     output:
-    path '*.{rds,png}', emit: umap_out
+    path '*.{tsv,png}', emit: umap_out
 
     script:
     """
-    umap.R -n $norm_counts -m $meta_merged -g $group -o ./
+    umap_samples.py \\
+        --norm_counts $norm_counts \\
+        --metadata $meta_merged \\
+        --group '$group' \\
+        --seed $seed \\
+        --outdir ./
     """
 }

@@ -118,8 +118,10 @@ All output matrices are **linear** (not log-transformed). Users should apply the
 (such as log2(*x*+1) or DESeq2's VST) for analysis. (Before 2026-11-18, `norm_counts.tsv` and
 the old `rpkm_counts.tsv` were silently log2(*x*+1).)
 
-**UMAP:** `bin/umap.R` applies log2(*x*+1) to `norm_counts` itself, then drops NA rows (so only
-core genes are used). Its input is therefore identical to before the switch to linear outputs.
+**UMAP:** `bin/umap_samples.py` applies log2(*x*+1) to `norm_counts` itself, then drops NA rows (so only
+core genes are used). Its input is therefore identical to before the switch to linear outputs. Since
+2026-11 the UMAP uses umap-learn (Python, standard algorithm via `compatibility_layout=True`) with a
+fixed `--seed`, so it's reproducible. The earlier R `umap` version used a random seed on every run.
 
 ## Output summary
 

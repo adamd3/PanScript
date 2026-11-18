@@ -17,12 +17,12 @@
 
 The pipeline requires the output from a pan-genome analysis with [`Panaroo`](https://gtonkinhill.github.io/panaroo/) and will perform the following steps:
 
-1. Trim adaptors from reads ([`Trim Galore!`](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/))
-2. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
+1. Input checks: Panaroo loci missing from each isolate's FASTA, and library strandedness
+2. Adaptor trimming and read QC ([`fastp`](https://github.com/OpenGene/fastp))
 3. Pseudo-alignment to strain-specific gene sets ([`kallisto`](https://pachterlab.github.io/kallisto/))
 4. Merging and length-scaling of counts for orthologous genes
 5. Size-factor scaling of merged counts using the core genome ([`DESeq2`](https://bioconductor.org/packages/release/bioc/html/DESeq2.html)), and calculation of normalised TPM (nTPM)
-6. Visualisation of gene expression across strains ([`UMAP`](https://umap-learn.readthedocs.io/))
+6. Visualisation of gene expression across isolates ([`UMAP`](https://umap-learn.readthedocs.io/))
 
 ## Installation
 
@@ -50,7 +50,10 @@ Explanation of parameters:
 - `strandedness_check_reads`: the pipeline checks each library's strandedness by pseudo-aligning this many reads (the first N) in both orientations, and **warns** if the result disagrees with `--strandedness`. Results are in `pipeline_info/strandedness_check.tsv`. A wrong setting can discard most reads: with the test data, the reverse setting pseudo-aligns about 5% of reads versus about 50% with the correct forward setting. 0 skips the check. Default = 200000.
 - `max_missing_loci`: the pipeline checks that every locus Panaroo lists for an isolate is in that isolate's FASTA. Missing loci can't be quantified, so their gene groups are `NA` for that sample. They're always listed in `pipeline_info/missing_loci.tsv` (with a per-sample summary in `pipeline_info/fasta_loci_summary.tsv`), and the run **stops** if more than this fraction of an isolate's loci are missing, which usually means the wrong FASTA or a mismatched `dna_sample_id`. Default = 0.5.
 - `group`: group for plots - must be one of the columns in metadata file.
-- `skip_trimming`: do not trim adaptors from reads.
+- `skip_trimming`: do not trim reads (skip fastp).
+- `fastp_args`: extra options for fastp, which otherwise runs with its **default settings**. These include adapter trimming, discarding reads with more than 40% of bases below Q15 or with too many Ns, a 15 bp minimum length, and automatic polyG trimming for NovaSeq/NextSeq data. To approximate the Trim Galore defaults used before 2026 (3′ quality trimming at Q20, 20 bp minimum length), use `--fastp_args '--cut_tail --cut_tail_mean_quality 20 --length_required 20'`. Default = none.
+- `save_trimmed`: save the trimmed reads in `<outdir>/fastp/trimmed/`. Default = false.
+- `seed`: random seed for the UMAP, so the plot is reproducible. Default = 42.
 - `outdir`: the output directory where the results will be saved (Default: `./results`).
 
 ## Required input
@@ -92,7 +95,7 @@ Explanation of parameters:
 
 ## Output
 
-1. **trim_galore** directory containing adaptor-trimmed RNA-Seq files and FastQC results.
+1. **fastp** directory containing a fastp QC report per sample (`.html`, `.json`, `.log`), plus the trimmed reads if `--save_trimmed` is set.
 2. **gene_counts** directory containing three gene × sample matrices (one row per Panaroo gene group). All values are on a **linear scale** (not log-transformed), and genes absent from an isolate are `NA`:
    1. `raw_counts.tsv`: read counts adjusted **only** for ortholog length differences between isolates (scaled to the gene group's median length). Not normalised for library size.
    2. `norm_counts.tsv`: `raw_counts` divided by DESeq2 size factors estimated on the core genome. Use these to compare **the same gene across samples**.
@@ -100,4 +103,5 @@ Explanation of parameters:
 
    See [docs/normalisation.md](docs/normalisation.md) for formulas and rationale.
 3. **kallisto_quant** directory containing per-sample kallisto output and the merged count and effective-length matrices.
-4. **umap_samples** directory containing a UMAP of samples, computed on log2(`norm_counts` + 1) of core genes.
+4. **umap_samples** directory containing a UMAP of samples (`umap_<group>.png`) and its coordinates (`umap_coordinates.tsv`). It's computed on log2(`norm_counts` + 1) of the core genes, with `n_neighbors` = 15 (or 3 with fewer than 15 samples, and always fewer than the number of samples), and a fixed `--seed`, so it's reproducible.
+5. **pipeline_info** directory containing the processed metadata and the input-check reports: `missing_loci.tsv`, `fasta_loci_summary.tsv` and `strandedness_check.tsv`.

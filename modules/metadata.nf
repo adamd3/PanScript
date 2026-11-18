@@ -1,6 +1,5 @@
 process CHECK_META_FILE {
     tag "$metadata"
-    container 'adamd3/strainseq:latest'
     publishDir "${params.outdir}/pipeline_info", mode: 'copy'
 
     input:
@@ -27,7 +26,6 @@ process CHECK_META_FILE {
  */
 process CHECK_FASTA_LOCI {
     tag "$meta.sample_id"
-    container 'adamd3/strainseq:latest'
 
     input:
     path gpa
