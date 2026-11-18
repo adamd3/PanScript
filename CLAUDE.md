@@ -21,8 +21,8 @@ Current working name: **StrainQuant** (renaming is on the TODO list; the Docker 
 4. `KALLISTO_QUANT`: builds a per-isolate index from that isolate's `fasta` and quantifies
 5. `MERGE_COUNTS_AND_LENS`: maps kallisto targets to Panaroo gene groups, giving merged
    `est_counts` and `eff_length` matrices (`bin/merge_kallisto_{counts,lens}.py`)
-6. `DESEQ_NORMALISE_COUNTS` / `TMM_NORMALISE_COUNTS`: length-scaling, size factors, RPKM
-   (`bin/DESeq2_normalise_counts.R`, `bin/TMM_normalise_counts.R`)
+6. `DESEQ_NORMALISE_COUNTS`: length-scaling, size factors, RPKM
+   (`bin/DESeq2_normalise_counts.R`)
 7. `UMAP_SAMPLES`: UMAP of samples coloured by `--group` (`bin/umap.R`)
 
 Unused files kept in the repo: `modules/make_clone_fasta.nf`, `bin/make_single_clone_fasta.py`,
@@ -66,7 +66,7 @@ Unused files kept in the repo: `modules/make_clone_fasta.nf`, `bin/make_single_c
   are divided by each isolate's kallisto effective length and multiplied by the median length of
   that gene across isolates. This gives "reads per median gene length".
 - **Core-gene size factors.** Accessory genes are NA in the merged matrix. Size factors (DESeq2
-  median-of-ratios or edgeR TMM) are estimated only on genes with no NAs, which are the core genes
+  median-of-ratios) are estimated only on genes with no NAs, which are the core genes
   present in every sample. They're then applied to all non-NA values in each sample. This assumes
   the core genome (usually thousands of genes) is big enough to estimate library size accurately.
 - **NA means absent, not zero.** A gene missing from an isolate's genome is NA, not a zero count.
@@ -74,7 +74,7 @@ Unused files kept in the repo: `modules/make_clone_fasta.nf`, `bin/make_single_c
   genes in some isolates but not others), their counts and effective lengths are both averaged.
   The rate (counts/length) is therefore pooled correctly, because mean/mean = sum/sum.
 - **Per-sample kallisto index.** Each sample is indexed against its own isolate's gene FASTA.
-- **DESeq2 only** (decided 2026-11-18; TMM is being removed). The `--perc` gene filter is also
+- **DESeq2 only** (decided 2026-11-18; TMM removed). The `--perc` gene filter is also
   being removed: the pipeline outputs every gene, with NA for genes absent from an isolate.
 
 ### Meaning of the output matrices (agreed with user 2026-11-18)

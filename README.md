@@ -22,7 +22,7 @@ The pipeline requires the output from a pan-genome analysis with [`Panaroo`](htt
 3. Subset to genes of interest (e.g. the core gene set; or by majority sequence type)
 4. Pseudo-alignment to strain-specific gene sets ([`kallisto`](https://pachterlab.github.io/kallisto/))
 5. Merging and length-scaling of counts for orthologous genes
-6. Size-factor scaling of merged counts ([`DESeq2`](https://bioconductor.org/packages/release/bioc/html/DESeq2.html) or [`edgeR`](http://bioconductor.org/packages/release/bioc/html/edgeR.html))
+6. Size-factor scaling of merged counts ([`DESeq2`](https://bioconductor.org/packages/release/bioc/html/DESeq2.html))
 7. Visualisation of gene expression across strains ([`UMAP`](https://umap-learn.readthedocs.io/))
 
 ## Installation
@@ -34,7 +34,7 @@ You can run the pipeline as follows:
     nextflow run /path/to/StrainQuant \
         --meta_file /path/to/metadata.txt \
         --gpa_file /path/to/gene_presence_absence.csv \
-        --perc 99 --norm_method DESeq --group majority_ST \
+        --perc 99 --group majority_ST \
         -profile conda -resume
 
 You can run with [`Docker`](https://www.docker.com/) or [`Singularity`](https://sylabs.io/guides/3.5/user-guide/introduction.html) by specifying ` -profile docker` or ` -profile singularity`, respectively.
@@ -49,7 +49,6 @@ Explanation of parameters:
 - `strandedness`: Strandedness of the reads. 0 = unstranded, 1 = forward-stranded, 2 = reverse-stranded. Default = 2.
 - `fragment_len`: Estimated average fragment length for kallisto transcript quantification (only required for single-end reads). Default = 150.
 - `fragment_sd`: Estimated standard deviation of fragment length for kallisto transcript quantification (only required for single-end reads). Default = 20.
-- `norm_method`: how to perform size-factor scaling of counts (default method = `DESeq2`). Other options: `TMM` (edgeR).
 - `group`: group for plots - must be one of the columns in metadata file.
 - `skip_trimming`: do not trim adaptors from reads.
 - `outdir`: the output directory where the results will be saved (Default: `./results`).
