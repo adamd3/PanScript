@@ -44,7 +44,7 @@ Explanation of parameters:
 
 - `meta_file`: metadata file (see below).
 - `gpa_file`: gene presence/absence file from Panaroo (see below).
-- `strandedness`: Strandedness of the reads. 0 = unstranded, 1 = forward-stranded, 2 = reverse-stranded, `auto` = inferred separately for each sample by the strandedness check (see `strandedness_check_reads`; the run stops if a sample cannot be classified). Default = 2.
+- `strandedness`: Strandedness of the reads. 0 = unstranded, 1 = forward-stranded, 2 = reverse-stranded, `auto` = inferred separately for each sample by the strandedness check (see `strandedness_check_reads`; the run stops if a sample cannot be classified). Default = `auto`.
 - `fragment_len`: Estimated average fragment length for kallisto transcript quantification (only required for single-end reads). Default = 150.
 - `fragment_sd`: Estimated standard deviation of fragment length for kallisto transcript quantification (only required for single-end reads). Default = 20.
 - `strandedness_check_reads`: the pipeline checks each library's strandedness by pseudo-aligning this many reads (the first N) in both orientations, and **warns** if the result disagrees with `--strandedness`. Results are in `pipeline_info/strandedness_check.tsv`. A wrong setting can discard most reads: with the test data, the reverse setting pseudo-aligns about 5% of reads versus about 50% with the correct forward setting. 0 skips the check. Default = 200000.

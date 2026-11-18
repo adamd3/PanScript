@@ -34,6 +34,7 @@ MATRICES = {
     "ntpm": "gene_counts/ntpm.tsv",
     "kallisto_merged_counts": "kallisto_quant/kallisto_merged_counts_*.tsv",
     "kallisto_merged_lens": "kallisto_quant/kallisto_merged_lens_*.tsv",
+    "umap_coordinates": "umap_samples/umap_coordinates.tsv",  # deterministic since P9 (fixed seed)
 }
 
 TRANSFORMS = {

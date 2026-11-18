@@ -1,14 +1,14 @@
 {
 	"n_targets": 7326,
 	"n_bootstraps": 0,
-	"n_processed": 98989,
-	"n_pseudoaligned": 50508,
-	"n_unique": 49875,
-	"p_pseudoaligned": 51.0,
+	"n_processed": 99413,
+	"n_pseudoaligned": 50785,
+	"n_unique": 50153,
+	"p_pseudoaligned": 51.1,
 	"p_unique": 50.4,
 	"kallisto_version": "0.51.1",
 	"index_version": 13,
 	"k-mer length": 31,
-	"start_time": "Wed Nov 18 15:06:18 2026",
-	"call": "kallisto quant -t 2 -i ZG205864.kidx --fr-stranded --single -l 150 -s 20 -o kallisto_ZG205864 ZG205864_trimmed.fq.gz"
+	"start_time": "Wed Nov 18 18:22:53 2026",
+	"call": "kallisto quant -t 2 -i ZG205864.kidx --fr-stranded --single -l 150 -s 20 -o kallisto_ZG205864 ZG205864.fastp.fq.gz"
 }

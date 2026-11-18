@@ -263,7 +263,7 @@ def helpMessage() {
                                       Available: conda, docker
 
     Other options:
-      --strandedness [str]            Strandedness of the reads. 0 = unstranded, 1 = forward-stranded, 2 = reverse-stranded, auto = inferred per sample from a subsample of reads. Default = 2.
+      --strandedness [str]            Strandedness of the reads. 0 = unstranded, 1 = forward-stranded, 2 = reverse-stranded, auto = inferred per sample from a subsample of reads. Default = auto.
       --fragment_len [str]            Estimated average fragment length for kallisto transcript quantification (only required for single-end reads). Default = 150.
       --fragment_sd [str]             Estimated standard deviation of fragment length for kallisto transcript quantification (only required for single-end reads). Default = 20.
       --strandedness_check_reads [int] Reads per sample used to check that --strandedness matches the library (warns on mismatch; results in pipeline_info/strandedness_check.tsv). 0 = skip. Default = 200000.
