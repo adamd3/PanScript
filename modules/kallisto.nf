@@ -1,53 +1,32 @@
 process KALLISTO_QUANT {
     tag "$meta.sample_id"
     label 'process_high'
-    container 'adamd3/strainseq:latest'
     publishDir "${params.outdir}/kallisto_quant", mode: 'symlink'
 
     input:
-    path gpa
     tuple val(meta), path(reads), path(fasta), val(strandedness)
 
     output:
     path "kallisto_${meta.sample_id}", emit: kallisto_out_dirs
 
     script:
-    def name = task.ext.prefix ?: "${meta.sample_id}"
-
-    if (strandedness == 0){
-        strand_arg = ""
-    } else if (strandedness == 1){
-        strand_arg = "--fr-stranded"
-    } else if (strandedness==2){
-        strand_arg = "--rf-stranded"
-    }
-
-    if (meta.paired_end) {
-        // if trimming has not been performed, must symlink to match expected file names
-        // kallisto params -l, -s are estimated from paired end data, but are required when using --single
-        """
-        [ ! -f  ${name}_1_val_1.fq.gz ] && ln -s ${reads[0]} ${name}_1_val_1.fq.gz
-        [ ! -f  ${name}_2_val_2.fq.gz ] && ln -s ${reads[1]} ${name}_2_val_2.fq.gz
-        kallisto index -i ${name}.kidx $fasta
-        kallisto quant -t $task.cpus -i ${name}.kidx \
-            ${strand_arg} -o kallisto_${name} ${name}_1_val_1.fq.gz ${name}_2_val_2.fq.gz
-        """
-    } else {
-        """
-        [ ! -f  ${name}_trimmed.fq.gz ] && ln -s $reads ${name}_trimmed.fq.gz
-        kallisto index -i ${name}.kidx $fasta
-        kallisto quant -t $task.cpus -i ${name}.kidx \
-            ${strand_arg} --single -l ${params.fragment_len} -s ${params.fragment_sd} \
-            -o kallisto_${name} ${name}_trimmed.fq.gz
-        """
-    }
+    def name       = task.ext.prefix ?: "${meta.sample_id}"
+    def strand_arg = ['', '--fr-stranded', '--rf-stranded'][strandedness as int]
+    // fragment length mean/sd are estimated from paired-end data, but must be
+    // given for single-end reads
+    def single_arg = meta.paired_end ? '' : "--single -l ${params.fragment_len} -s ${params.fragment_sd}"
+    """
+    kallisto index -i ${name}.kidx $fasta
+    kallisto quant -t $task.cpus -i ${name}.kidx \\
+        $strand_arg $single_arg \\
+        -o kallisto_${name} $reads
+    """
 }
 
 
 process MERGE_COUNTS_AND_LENS {
     tag "merge_counts_and_lens"
     label 'process_high'
-    container 'adamd3/strainseq:latest'
     publishDir "${params.outdir}/kallisto_quant", mode: 'symlink'
 
     input:
@@ -83,7 +62,6 @@ process MERGE_COUNTS_AND_LENS {
 process CHECK_STRANDEDNESS {
     tag "$meta.sample_id"
     label 'process_low'
-    container 'adamd3/strainseq:latest'
 
     input:
     tuple val(meta), path(reads), path(fasta)

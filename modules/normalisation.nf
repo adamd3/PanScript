@@ -1,7 +1,6 @@
 process DESEQ_NORMALISE_COUNTS {
     tag "$merged_counts"
     label 'process_medium'
-    container 'adamd3/strainseq:latest'
     publishDir "${params.outdir}/gene_counts", mode: 'symlink'
 
     input:

@@ -4,6 +4,8 @@
 
 ```bash
 python3 -m unittest discover -s tests/unit -v
+# or, with exactly the pipeline's software versions (needed for the UMAP tests):
+docker run --rm -v $PWD:/repo -w /repo <image> python -m unittest discover -s tests/unit
 ```
 
 `tests/unit/test_normalisation.py` builds a tiny hand-made dataset (core genes with known

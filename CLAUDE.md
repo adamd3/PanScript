@@ -18,13 +18,13 @@ Current working name: **StrainQuant** (renaming is on the TODO list; the Docker 
 1. `CHECK_META_FILE`: validates metadata and adds a `paired` column (`bin/check_metadata.py`); then
    `CHECK_FASTA_LOCI` reports Panaroo loci missing from each isolate FASTA (`bin/check_fasta_loci.py`)
    and `CHECK_STRANDEDNESS` warns if `--strandedness` disagrees with the reads (`bin/strandedness_check.py`)
-2. `TRIMGALORE` (skipped with `--skip_trimming`): adaptor trimming plus FastQC
+2. `FASTP` (skipped with `--skip_trimming`): adaptor trimming and read QC, fastp defaults plus `--fastp_args`
 3. `KALLISTO_QUANT`: builds a per-isolate index from that isolate's `fasta` and quantifies
 4. `MERGE_COUNTS_AND_LENS`: maps kallisto targets to Panaroo gene groups, giving merged
    `est_counts` and `eff_length` matrices (`bin/merge_kallisto_{counts,lens}.py`)
 5. `DESEQ_NORMALISE_COUNTS`: length-scaling, size factors, nTPM
    (`bin/DESeq2_normalise_counts.R`)
-6. `UMAP_SAMPLES`: UMAP of samples coloured by `--group` (`bin/umap.R`)
+6. `UMAP_SAMPLES`: UMAP of samples coloured by `--group`, fixed `--seed` (`bin/umap_samples.py`)
 
 Unused files kept in the repo: `modules/make_clone_fasta.nf`, `bin/make_single_clone_fasta.py`,
 `bin/merge_metadata.py`, `bin/length_scale_counts.R`, `configs/container.config`.
@@ -92,7 +92,7 @@ file in sync with any change to normalisation code.
   size factor, times one global constant to put it on a TPM-like scale. Comparable both between
   genes and across samples.
 - All matrices are **linear** (no log transform).
-- **UMAP log-transforms its input itself** (log2(x+1) in `bin/umap.R`). Don't feed it already
+- **UMAP log-transforms its input itself** (log2(x+1) in `bin/umap_samples.py`). Don't feed it already
   logged values, and don't remove that line.
 
 ## Repo practicalities
@@ -106,16 +106,19 @@ file in sync with any change to normalisation code.
   names `OrthoQuant` and `StrainSeq` redirect to it, and the local `origin` URL still uses
   `OrthoQuant`, which works through the redirect.
 - In a run, **`bin/` scripts come from your local checkout** (Nextflow puts `bin/` on PATH inside
-  the container), but **tools (kallisto, R and its packages, Trim Galore) come from the Docker
+  the container), but **tools (kallisto, fastp, R and its packages, umap-learn) come from the Docker
   image**. So script changes are tested straight away, but a new tool (for example fastp) needs a
   rebuilt image or a per-process container.
 - Most `publishDir`s use `mode: 'symlink'`, so `results/` files point into `work/`. Use `cp -L`
   when saving outputs, and don't delete `work/` before copying.
 - CI (`.github/workflows/ci.yml`) builds **and pushes** `adamd3/strainseq:latest` to Docker Hub
   on every run, then runs the test profile on Nextflow 21.10.3 and the latest release.
-- Containers: every process uses `adamd3/strainseq:latest`, built from `environment.yml` (which
-  has unpinned `>=` versions).
+- Containers: every process uses the single `process.container` set in `nextflow.config` (no
+  per-module containers), built from `environment.yml` with **exact pinned versions** and the
+  micromamba-based `Dockerfile`. Run the unit tests inside the image (`docker run --rm -v
+  $PWD:/repo -w /repo <image> python -m unittest discover -s tests/unit`), because some tests
+  need umap-learn.
 - Despite its `.tsv` extension, `test_data/gene_presence_absence.tsv` is a comma-separated Panaroo
   CSV. The scripts read it with `pd.read_csv` (comma-delimited).
-- Read-filename conventions in `KALLISTO_QUANT` (`*_1_val_1.fq.gz`, `*_trimmed.fq.gz`) come from
-  Trim Galore's output names. Symlinks fake them when trimming is skipped.
+- `KALLISTO_QUANT` takes reads as given (trimmed by fastp, or raw with `--skip_trimming`) and
+  strandedness per sample in its input tuple (fixed value, or inferred with `--strandedness auto`).

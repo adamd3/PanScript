@@ -1,0 +1,3 @@
+# Keep the Docker build context small: the image needs only environment.yml
+*
+!environment.yml

@@ -41,6 +41,9 @@ if (!params.group) {
 }
 
 // Validate parameter values
+if (!(params.seed instanceof Integer)) {
+    exit 1, 'ERROR: --seed must be a whole number.'
+}
 if (params.strandedness !in [0, 1, 2, 'auto']) {
     exit 1, 'ERROR: --strandedness must be 0 (unstranded), 1 (forward-stranded), 2 (reverse-stranded) or auto (inferred per sample).'
 }
@@ -73,7 +76,7 @@ ch_gpa_file = file(params.gpa_file, checkIfExists: true)
 ================================================================================
 */
 include {CHECK_META_FILE; CHECK_FASTA_LOCI} from './modules/metadata'
-include {TRIMGALORE} from './modules/trim_reads'
+include {FASTP} from './modules/trim_reads'
 include {KALLISTO_QUANT; MERGE_COUNTS_AND_LENS; CHECK_STRANDEDNESS} from './modules/kallisto'
 include {DESEQ_NORMALISE_COUNTS} from './modules/normalisation'
 include {UMAP_SAMPLES} from './modules/plots'
@@ -129,14 +132,14 @@ workflow {
     ch_metadata
         .splitCsv(header: true, sep:'\t')
         .map { create_fastq_channel(it) }
-        .set { ch_raw_reads_trimgalore }
+        .set { ch_raw_reads }
 
     /*
      *  Check that each isolate's Panaroo loci are present in its FASTA
      */
     CHECK_FASTA_LOCI (
         ch_gpa_file,
-        ch_raw_reads_trimgalore.map { meta, reads, fasta -> [ meta, fasta ] }
+        ch_raw_reads.map { meta, reads, fasta -> [ meta, fasta ] }
     )
     CHECK_FASTA_LOCI.out.missing
         .collectFile(name: 'missing_loci.tsv', keepHeader: true, skip: 1, sort: true,
@@ -153,7 +156,7 @@ workflow {
      */
     if (params.strandedness_check_reads > 0) {
         CHECK_STRANDEDNESS (
-            ch_raw_reads_trimgalore
+            ch_raw_reads
         )
         CHECK_STRANDEDNESS.out.result
             .collectFile(name: 'strandedness_check.tsv', keepHeader: true, skip: 1, sort: true,
@@ -167,14 +170,12 @@ workflow {
      *  Trim + pseudo-align reads
      */
     if (params.skip_trimming) {
-        ch_reads_for_quant = ch_raw_reads_trimgalore
+        ch_reads_for_quant = ch_raw_reads
     } else {
-        TRIMGALORE (
-            ch_raw_reads_trimgalore
+        FASTP (
+            ch_raw_reads
         )
-        ch_reads_for_quant = TRIMGALORE.out.trimmed_reads
-        ch_trimgalore_results_mqc = TRIMGALORE.out.trimgalore_results_mqc
-        ch_trimgalore_fastqc_reports_mqc = TRIMGALORE.out.trimgalore_fastqc_reports_mqc
+        ch_reads_for_quant = FASTP.out.trimmed_reads
     }
 
     // Strandedness for each sample's quantification: the --strandedness value,
@@ -195,7 +196,6 @@ workflow {
     }
 
     KALLISTO_QUANT (
-        ch_gpa_file,
         ch_quant_input
     )
     ch_kallisto_out_dirs = KALLISTO_QUANT.out.kallisto_out_dirs
@@ -226,7 +226,8 @@ workflow {
     UMAP_SAMPLES (
         ch_norm_counts,
         ch_metadata,
-        params.group
+        params.group,
+        params.seed
     )
     ch_umap_out = UMAP_SAMPLES.out.umap_out
 
@@ -262,12 +263,15 @@ def helpMessage() {
                                       Available: conda, docker
 
     Other options:
-      --strandedness [str]            Strandedness of the reads. 0 = unstranded, 1 = forward-stranded, 2 = reverse-stranded, auto = inferred per sample from a subsample of reads. Default = 2.
+      --strandedness [str]            Strandedness of the reads. 0 = unstranded, 1 = forward-stranded, 2 = reverse-stranded, auto = inferred per sample from a subsample of reads. Default = auto.
       --fragment_len [str]            Estimated average fragment length for kallisto transcript quantification (only required for single-end reads). Default = 150.
       --fragment_sd [str]             Estimated standard deviation of fragment length for kallisto transcript quantification (only required for single-end reads). Default = 20.
       --strandedness_check_reads [int] Reads per sample used to check that --strandedness matches the library (warns on mismatch; results in pipeline_info/strandedness_check.tsv). 0 = skip. Default = 200000.
       --max_missing_loci [float]      Stop if more than this fraction of an isolate's Panaroo loci are missing from its FASTA. Missing loci are always reported in pipeline_info/missing_loci.tsv. Default = 0.5.
-      --skip_trimming [bool]          Do not trim adaptors from FastQ files.
+      --skip_trimming [bool]          Do not trim reads (skip fastp).
+      --fastp_args [str]              Extra options passed to fastp, which otherwise runs with its default settings (e.g. '--cut_tail --cut_tail_mean_quality 20 --length_required 20').
+      --save_trimmed [bool]           Save the fastp-trimmed reads in <outdir>/fastp/trimmed.
+      --seed [int]                    Random seed for the UMAP, so plots are reproducible. Default = 42.
       --outdir [file]                 The output directory where the results will be saved (default: './results').
       --cachedir [str]                Defines the path where Singularity images are cached [default: $params.cachedir]
       -name [str]                     Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic.
