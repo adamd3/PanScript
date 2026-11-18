@@ -34,6 +34,12 @@ BIN = REPO / "bin"
 #   acc1          : accessory, absent from isolate C
 #   acc2          : accessory, present only in isolate B
 #   split1        : split into 2 loci in isolate A, single locus in B and C
+#   split2        : split in isolate A, but NEITHER locus was quantified (both
+#                   missing from A's FASTA) -> must be NA in A, not 0
+#   split3        : split in isolate A, only one of its two loci quantified
+#                   (partial; flagged by the missing-loci report, PROGRESS P7)
+# A locus whose est_counts is None is listed by Panaroo but absent from the
+# kallisto output (i.e. missing from the isolate FASTA).
 SAMPLES = ["sA", "sB", "sC"]
 DNA = {"sA": "dA", "sB": "dB", "sC": "dC"}
 N_CORE = 12
@@ -58,6 +64,12 @@ def build_dataset():
     genes["split1"] = {"sA": [("dA_split1a", 120.0, 700.0), ("dA_split1b", 80.0, 500.0)],
                        "sB": [("dB_split1", 410.0, 1190.0)],
                        "sC": [("dC_split1", 95.0, 1210.0)]}
+    genes["split2"] = {"sA": [("dA_split2a", None, None), ("dA_split2b", None, None)],
+                       "sB": [("dB_split2", 260.0, 830.0)],
+                       "sC": [("dC_split2", 70.0, 845.0)]}
+    genes["split3"] = {"sA": [("dA_split3a", 55.0, 400.0), ("dA_split3b", None, None)],
+                       "sB": [("dB_split3", 330.0, 1020.0)],
+                       "sC": [("dC_split3", 81.0, 1000.0)]}
     return genes
 
 
@@ -82,7 +94,8 @@ def write_inputs(d: Path, genes):
         kd = d / f"kallisto_{s}"
         kd.mkdir()
         recs = [(l[0], l[2] + 150, l[2], l[1], 0.0)
-                for per in genes.values() if per[s] for l in per[s]]
+                for per in genes.values() if per[s] for l in per[s]
+                if l[1] is not None]
         pd.DataFrame(recs, columns=["target_id", "length", "eff_length",
                                     "est_counts", "tpm"]).to_csv(
             kd / "abundance.tsv", sep="\t", index=False)
@@ -92,12 +105,17 @@ def write_inputs(d: Path, genes):
 # Independent reference implementation (current pipeline behaviour)
 # --------------------------------------------------------------------------
 def ref_merged(genes, field):
-    """Merged est_counts (field=1) or eff_length (field=2); split loci averaged."""
+    """Merged est_counts (field=1) or eff_length (field=2).
+
+    Split loci are SUMMED over the loci that were quantified (P5); NA if the
+    gene is absent or none of its loci were quantified.
+    """
     out = pd.DataFrame(index=list(genes), columns=SAMPLES, dtype=float)
     for g, per in genes.items():
         for s in SAMPLES:
-            if per[s]:
-                out.loc[g, s] = np.mean([l[field] for l in per[s]])
+            vals = [l[field] for l in (per[s] or []) if l[field] is not None]
+            if vals:
+                out.loc[g, s] = np.sum(vals)
     return out
 
 
@@ -172,6 +190,24 @@ class NormalisationTest(unittest.TestCase):
 
     def test_merged_lengths(self):
         self.assertFrameClose(read_matrix(self.tmp / "lens.tsv"), self.expected["lens"])
+
+    def test_split_gene_summed(self):
+        counts = read_matrix(self.tmp / "counts.tsv")
+        lens = read_matrix(self.tmp / "lens.tsv")
+        self.assertEqual(counts.loc["split1", "sA"], 120.0 + 80.0)
+        self.assertEqual(lens.loc["split1", "sA"], 700.0 + 500.0)
+        # per-isolate rate equals the pooled rate over its loci
+        raw = read_matrix(self.tmp / "out" / "raw_counts.tsv")
+        med = np.median([1200.0, 1190.0, 1210.0])
+        self.assertAlmostEqual(raw.loc["split1", "sA"], 200.0 / 1200.0 * med)
+
+    def test_unquantified_split_gene_is_na_not_zero(self):
+        for f in ["counts.tsv", "lens.tsv"]:
+            self.assertTrue(np.isnan(read_matrix(self.tmp / f).loc["split2", "sA"]), f)
+
+    def test_partially_quantified_split_gene_uses_present_loci(self):
+        self.assertEqual(read_matrix(self.tmp / "counts.tsv").loc["split3", "sA"], 55.0)
+        self.assertEqual(read_matrix(self.tmp / "lens.tsv").loc["split3", "sA"], 400.0)
 
     def test_accessory_genes_are_na_not_zero(self):
         raw = read_matrix(self.tmp / "out" / "raw_counts.tsv")
