@@ -41,8 +41,11 @@ if (!params.group) {
 }
 
 // Validate parameter values
-if (params.strandedness !in [0, 1, 2]) {
-    exit 1, 'ERROR: --strandedness must be 0 (unstranded), 1 (forward-stranded), or 2 (reverse-stranded).'
+if (params.strandedness !in [0, 1, 2, 'auto']) {
+    exit 1, 'ERROR: --strandedness must be 0 (unstranded), 1 (forward-stranded), 2 (reverse-stranded) or auto (inferred per sample).'
+}
+if (params.strandedness == 'auto' && params.strandedness_check_reads == 0) {
+    exit 1, 'ERROR: --strandedness auto needs the strandedness check; set --strandedness_check_reads > 0.'
 }
 if (params.fragment_len <= 0) {
     exit 1, 'ERROR: --fragment_len must be greater than 0.'
@@ -164,30 +167,38 @@ workflow {
      *  Trim + pseudo-align reads
      */
     if (params.skip_trimming) {
-
-        KALLISTO_QUANT (
-            ch_gpa_file,
-            ch_raw_reads_trimgalore,
-            params.strandedness
-        )
-        ch_kallisto_out_dirs = KALLISTO_QUANT.out.kallisto_out_dirs
-
+        ch_reads_for_quant = ch_raw_reads_trimgalore
     } else {
-
         TRIMGALORE (
             ch_raw_reads_trimgalore
         )
-        ch_trimmed_reads = TRIMGALORE.out.trimmed_reads
+        ch_reads_for_quant = TRIMGALORE.out.trimmed_reads
         ch_trimgalore_results_mqc = TRIMGALORE.out.trimgalore_results_mqc
         ch_trimgalore_fastqc_reports_mqc = TRIMGALORE.out.trimgalore_fastqc_reports_mqc
-
-        KALLISTO_QUANT (
-            ch_gpa_file,
-            ch_trimmed_reads,
-            params.strandedness
-        )
-        ch_kallisto_out_dirs = KALLISTO_QUANT.out.kallisto_out_dirs
     }
+
+    // Strandedness for each sample's quantification: the --strandedness value,
+    // or (--strandedness auto) the value inferred by CHECK_STRANDEDNESS
+    if (params.strandedness == 'auto') {
+        ch_inferred_strandedness = CHECK_STRANDEDNESS.out.result
+            .map { tsv ->
+                def row = tsv.splitCsv(header: true, sep: '\t')[0]
+                [ row.sample, row.used_strandedness as int ]
+            }
+        ch_quant_input = ch_reads_for_quant
+            .map { meta, reads, fasta -> [ meta.sample_id, meta, reads, fasta ] }
+            .join(ch_inferred_strandedness)
+            .map { id, meta, reads, fasta, strandedness -> [ meta, reads, fasta, strandedness ] }
+    } else {
+        ch_quant_input = ch_reads_for_quant
+            .map { meta, reads, fasta -> [ meta, reads, fasta, params.strandedness as int ] }
+    }
+
+    KALLISTO_QUANT (
+        ch_gpa_file,
+        ch_quant_input
+    )
+    ch_kallisto_out_dirs = KALLISTO_QUANT.out.kallisto_out_dirs
 
     /*
      *  Merge counts
@@ -251,7 +262,7 @@ def helpMessage() {
                                       Available: conda, docker
 
     Other options:
-      --strandedness [str]            Strandedness of the reads. 0 = unstranded, 1 = forward-stranded, 2 = reverse-stranded. Default = 2.
+      --strandedness [str]            Strandedness of the reads. 0 = unstranded, 1 = forward-stranded, 2 = reverse-stranded, auto = inferred per sample from a subsample of reads. Default = 2.
       --fragment_len [str]            Estimated average fragment length for kallisto transcript quantification (only required for single-end reads). Default = 150.
       --fragment_sd [str]             Estimated standard deviation of fragment length for kallisto transcript quantification (only required for single-end reads). Default = 20.
       --strandedness_check_reads [int] Reads per sample used to check that --strandedness matches the library (warns on mismatch; results in pipeline_info/strandedness_check.tsv). 0 = skip. Default = 200000.

@@ -6,7 +6,9 @@ Two subcommands, used by the CHECK_STRANDEDNESS process:
   subsample  write the first N reads of one or two FASTQ files (gzip or plain)
   infer      compare kallisto pseudoalignment of the subsample run with
              --fr-stranded and with --rf-stranded, infer the library type and
-             report whether it agrees with the --strandedness parameter
+             report whether it agrees with the --strandedness parameter. With
+             --specified auto, the inferred value is used (column
+             used_strandedness) and an undetermined library is an error.
 
 Inference (thresholds follow nf-core/rnaseq): with f = fr / (fr + rf),
   f >= 0.8         -> forward-stranded  (--strandedness 1)
@@ -57,8 +59,14 @@ def infer(args):
     fr = json.load(open(args.fr))
     rf = json.load(open(args.rf))
     inferred, f = classify(fr["n_pseudoaligned"], rf["n_pseudoaligned"])
-    specified = args.specified
-    agrees = inferred == specified if inferred is not None else None
+    auto = args.specified == "auto"
+    specified = "auto" if auto else int(args.specified)
+    if auto:
+        agrees = None
+        used = inferred          # None if undetermined -> error below
+    else:
+        agrees = inferred == specified if inferred is not None else None
+        used = specified
     row = {
         "sample": args.sample,
         "reads_tested": fr["n_processed"],
@@ -68,13 +76,20 @@ def infer(args):
         "inferred": LABELS.get(inferred, "undetermined"),
         "inferred_strandedness": "" if inferred is None else inferred,
         "specified_strandedness": specified,
-        "agrees": {True: "yes", False: "NO", None: "unknown"}[agrees],
+        "agrees": "n/a (auto)" if auto else {True: "yes", False: "NO", None: "unknown"}[agrees],
+        "used_strandedness": "" if used is None else used,
     }
     with open(args.out, "w") as fh:
         fh.write("\t".join(row) + "\n")
         fh.write("\t".join(str(v) for v in row.values()) + "\n")
 
     pct = f"{f:.0%} of stranded pseudoalignments are forward"
+    if auto:
+        if used is None:
+            sys.exit(f"ERROR: sample {args.sample}: --strandedness auto could not determine library "
+                     f"strandedness ({pct}; forward needs >= 80%, reverse <= 20%, unstranded "
+                     f"40-60%). Set --strandedness explicitly (0, 1 or 2).")
+        return
     if agrees is False:
         print(f"Sample {args.sample}: library looks {LABELS[inferred]}-stranded ({pct}), but "
               f"--strandedness {specified} ({LABELS[specified]}) was used. Consider "
@@ -97,7 +112,8 @@ def main():
     i.add_argument("--fr", required=True, help="run_info.json from --fr-stranded run")
     i.add_argument("--rf", required=True, help="run_info.json from --rf-stranded run")
     i.add_argument("--sample", required=True)
-    i.add_argument("--specified", type=int, choices=[0, 1, 2], required=True)
+    i.add_argument("--specified", choices=["0", "1", "2", "auto"], required=True,
+                   help="the --strandedness parameter (auto: use the inferred value)")
     i.add_argument("--out", required=True)
     a = p.parse_args()
     {"subsample": subsample, "infer": infer}[a.cmd](a)
