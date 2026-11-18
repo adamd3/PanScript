@@ -52,7 +52,9 @@ Unused files kept in the repo: `modules/make_clone_fasta.nf`, `bin/make_single_c
 - `main` is the stable, released pipeline. It's what `nextflow run adamd3/<repo>` pulls by
   default. Don't commit to it directly.
 - `dev` is the integration branch. Branch each task off `dev` as `feat/<short-name>`,
-  `fix/<short-name>` or `docs/<short-name>`, then open a PR back into `dev`. Give each task its own
+  `fix/<short-name>` or `docs/<short-name>`, then merge back into `dev`. **Until CI is fixed
+  (PROGRESS.md H3), merge locally rather than through a GitHub PR.** Every PR currently triggers
+  a rebuild and push of `adamd3/strainseq:latest`, which changes the tools used by every run. Give each task its own
   branch, so parallel agents don't collide. Note the branch in PROGRESS.md.
 - To release, merge `dev` into `main` and tag it `vX.Y.Z` (semantic versioning). Tag the Docker
   image the same way.
@@ -71,6 +73,7 @@ Unused files kept in the repo: `modules/make_clone_fasta.nf`, `bin/make_single_c
 - **Split genes.** When a Panaroo cell holds several `;`-separated loci (a gene split into 2+
   genes in some isolates but not others), their counts and effective lengths are both averaged.
   The rate (counts/length) is therefore pooled correctly, because mean/mean = sum/sum.
+- **Per-sample kallisto index.** Each sample is indexed against its own isolate's gene FASTA.
 - **DESeq2 only** (decided 2026-11-18; TMM is being removed). The `--perc` gene filter is also
   being removed: the pipeline outputs every gene, with NA for genes absent from an isolate.
 
@@ -90,7 +93,6 @@ file in sync with any change to normalisation code.
   `rpkm_counts` are log2(x+1).
 - **UMAP must log-transform its input itself** (log2(x+1)) once outputs are linear, so the plot is
   unchanged. Don't feed linear counts to UMAP.
-- **Per-sample kallisto index.** Each sample is indexed against its own isolate's gene FASTA.
 
 ## Repo practicalities
 
