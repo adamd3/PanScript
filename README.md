@@ -58,6 +58,23 @@ Explanation of parameters:
 
 ## Required input
 
+### Preparing inputs from a Panaroo run
+
+The pipeline needs one gene FASTA per isolate, with locus IDs matching Panaroo's
+`gene_presence_absence.csv`. `scripts/prepare_inputs_from_panaroo.py` builds these from a standard
+Panaroo output directory. It uses `gene_data.csv`, which holds the DNA sequence of every annotated
+and refound gene, so refound pseudogenes are included. It also writes a metadata template:
+
+    python scripts/prepare_inputs_from_panaroo.py \
+        --panaroo_dir /path/to/panaroo_output --outdir pipeline_inputs
+
+This creates `pipeline_inputs/fasta/<isolate>.fna` and `pipeline_inputs/metadata_template.tsv`
+(with `dna_sample_id` and `fasta` filled in). Complete the template with `rna_sample_id`,
+`sample_name`, `fastq1` and `fastq2` (one row per RNA-seq sample), and pass Panaroo's
+`gene_presence_absence.csv` as `--gpa_file`.
+
+### Input files
+
 - **Metadata file**: tab-delimited (TSV) file, which must contain at least the following named columns:
 
   - `rna_sample_id`: name of the RNA-Seq data file

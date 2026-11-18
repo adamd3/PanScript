@@ -26,8 +26,9 @@ Current working name: **StrainQuant** (renaming is on the TODO list; the Docker 
    (`bin/DESeq2_normalise_counts.R`)
 6. `UMAP_SAMPLES`: UMAP of samples coloured by `--group`, fixed `--seed` (`bin/umap_samples.py`)
 
-Unused files kept in the repo: `modules/make_clone_fasta.nf`, `bin/make_single_clone_fasta.py`,
-`bin/merge_metadata.py`, `bin/length_scale_counts.R`, `configs/container.config`.
+User-run helper scripts (not part of the workflow) live in `scripts/`:
+`prepare_inputs_from_panaroo.py` (per-isolate FASTA + metadata template from a Panaroo run) and
+`build_and_push_image.sh` (versioned image release).
 
 ## Ground rules
 
@@ -117,9 +118,9 @@ file in sync with any change to normalisation code.
   images.** `container.yml` only checks that the image still builds when `environment.yml` or the
   `Dockerfile` changes. A PR that changes outputs on purpose must re-capture the baseline in the
   same PR.
-- **Changing the software environment:** edit `environment.yml`; build the image locally; run
-  the unit tests inside it and the test profile against the baseline; **ask the user** before
-  `docker push` with a new version tag; then set that tag in `nextflow.config`
+- **Changing the software environment:** edit `environment.yml`; run
+  `scripts/build_and_push_image.sh <version>`, which builds, smoke-tests and runs the unit tests in
+  the image, then asks before pushing; **ask the user** before confirming the push; then set that tag in `nextflow.config`
   (`process.container`) and re-capture the baseline.
 - **Nextflow versions:** 23.10.0 and later (`manifest.nextflowVersion`). Code must parse under
   Nextflow's strict syntax (default from 25.x): no statements outside workflows or functions; use
@@ -132,5 +133,8 @@ file in sync with any change to normalisation code.
   need umap-learn.
 - Despite its `.tsv` extension, `test_data/gene_presence_absence.tsv` is a comma-separated Panaroo
   CSV. The scripts read it with `pd.read_csv` (comma-delimited).
+- **Panaroo locus IDs:** in `gene_presence_absence.csv`, Panaroo appends status suffixes (`_len`,
+  `_pseudo`, or `_stop` in older versions) to locus IDs. These are not part of the sequence IDs in
+  `gene_data.csv` or the isolate FASTA, so strip them when matching (see PROGRESS.md R12).
 - `KALLISTO_QUANT` takes reads as given (trimmed by fastp, or raw with `--skip_trimming`) and
   strandedness per sample in its input tuple (fixed value, or inferred with `--strandedness auto`).
