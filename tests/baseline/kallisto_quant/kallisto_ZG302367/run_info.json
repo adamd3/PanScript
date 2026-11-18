@@ -1,0 +1,14 @@
+{
+	"n_targets": 6445,
+	"n_bootstraps": 0,
+	"n_processed": 99877,
+	"n_pseudoaligned": 2597,
+	"n_unique": 2579,
+	"p_pseudoaligned": 2.6,
+	"p_unique": 2.6,
+	"kallisto_version": "0.51.1",
+	"index_version": 13,
+	"k-mer length": 31,
+	"start_time": "Wed Nov 18 13:48:30 2026",
+	"call": "kallisto quant -t 2 -i ZG302367.kidx --rf-stranded --single -l 150 -s 20 -o kallisto_ZG302367 ZG302367_trimmed.fq.gz"
+}

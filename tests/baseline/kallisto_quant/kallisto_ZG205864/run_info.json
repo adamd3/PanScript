@@ -1,0 +1,14 @@
+{
+	"n_targets": 7326,
+	"n_bootstraps": 0,
+	"n_processed": 98989,
+	"n_pseudoaligned": 6059,
+	"n_unique": 5974,
+	"p_pseudoaligned": 6.1,
+	"p_unique": 6.0,
+	"kallisto_version": "0.51.1",
+	"index_version": 13,
+	"k-mer length": 31,
+	"start_time": "Wed Nov 18 13:48:32 2026",
+	"call": "kallisto quant -t 2 -i ZG205864.kidx --rf-stranded --single -l 150 -s 20 -o kallisto_ZG205864 ZG205864_trimmed.fq.gz"
+}
