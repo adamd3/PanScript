@@ -122,7 +122,7 @@ def ref_outputs(genes):
     lib = raw.sum(axis=0, skipna=True) / 1e6
     rpkm = raw.div(lib, axis=1).div(med / 1e3, axis=0)
     return {"counts": counts, "lens": lens, "raw": raw, "sf": sf,
-            "norm": np.log2(norm + 1), "rpkm": np.log2(rpkm + 1)}
+            "norm": norm, "rpkm": rpkm}  # linear scale (P6)
 
 
 # --------------------------------------------------------------------------
@@ -153,7 +153,7 @@ class NormalisationTest(unittest.TestCase):
                  "--metadata_merged=meta.tsv", f"--outf={out}"])
         (cls.tmp / "out").mkdir()
         run(["Rscript", str(BIN / "DESeq2_normalise_counts.R"), "-c", "counts.tsv",
-             "-l", "lens.tsv", "-t", "TRUE", "-o", "out"])
+             "-l", "lens.tsv", "-o", "out"])
         cls.expected = ref_outputs(cls.genes)
 
     @classmethod

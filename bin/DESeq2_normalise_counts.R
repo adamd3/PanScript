@@ -21,10 +21,6 @@ option_list <- list(
         type = "character", default = NULL,
         help = "table of effective lengths per gene", metavar = "character"
     ),
-    make_option(c("-t", "--log_transform"),
-        type = "character", default = NULL,
-        help = "log transform the counts? default = FALSE", metavar = "character"
-    ),
     make_option(c("-o", "--outdir"),
         type = "character", default = NULL,
         help = "output directory for results", metavar = "character"
@@ -36,7 +32,6 @@ opt <- parse_args(opt_parser)
 
 counts_f <- opt$counts
 lengths_f <- opt$lengths
-log <- if (opt$log_transform == "TRUE") TRUE else FALSE
 outdir <- opt$outdir
 
 
@@ -86,10 +81,8 @@ gene_sf <- as.data.frame(t(gene_sf))
 rpkm_df <- counts_tab_scaled / gene_sf
 
 
-if (isTRUE(log)) {
-    res_df <- log2(res_df + 1)
-    rpkm_df <- log2(rpkm_df + 1)
-}
+## NB: all outputs are on a linear scale (no log transform); downstream steps
+## (e.g. umap.R) apply their own transform where needed.
 
 ## convert rownames to column
 res_df <- tibble::rownames_to_column(as.data.frame(res_df), "feature_id")

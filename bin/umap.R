@@ -39,7 +39,8 @@ norm_counts <- read.table(
 )
 rownames(norm_counts) <- norm_counts[["feature_id"]]
 norm_counts[["feature_id"]] <- NULL
-# norm_counts <- log2(norm_counts+1)
+## input is linear size-factor-normalised counts; UMAP is run on log2(x + 1)
+norm_counts <- log2(norm_counts + 1)
 
 norm_counts <- na.omit(norm_counts)  ## removes accessory genes 
 

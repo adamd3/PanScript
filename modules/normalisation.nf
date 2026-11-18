@@ -17,7 +17,6 @@ process DESEQ_NORMALISE_COUNTS {
     DESeq2_normalise_counts.R \
         -c $merged_counts \
         -l $merged_lens \
-        -t TRUE \
         -o ./
     """
 }
