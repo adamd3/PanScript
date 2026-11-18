@@ -74,3 +74,38 @@ process MERGE_COUNTS_AND_LENS {
         --outf=${lens_file}
     """
 }
+
+
+/*
+ * Infer library strandedness from a subsample of reads (first N reads,
+ * pseudoaligned with --fr-stranded and with --rf-stranded) and warn if it
+ * disagrees with params.strandedness. Does not change any quantification.
+ */
+process CHECK_STRANDEDNESS {
+    tag "$meta.sample_id"
+    label 'process_low'
+    container 'adamd3/strainseq:latest'
+
+    input:
+    tuple val(meta), path(reads), path(fasta)
+
+    output:
+    path "${meta.sample_id}.strandedness.tsv", emit: result
+    stdout emit: message
+
+    script:
+    def name   = meta.sample_id
+    def single = meta.paired_end ? "" : "--single -l ${params.fragment_len} -s ${params.fragment_sd}"
+    """
+    strandedness_check.py subsample --n ${params.strandedness_check_reads} --out sub $reads
+    kallisto index -i ${name}.kidx $fasta > kallisto_index.log 2>&1
+    for mode in fr rf; do
+        kallisto quant -t $task.cpus -i ${name}.kidx --\${mode}-stranded $single \\
+            -o q_\${mode} sub_*.fq.gz > kallisto_\${mode}.log 2>&1
+    done
+    strandedness_check.py infer \\
+        --fr q_fr/run_info.json --rf q_rf/run_info.json \\
+        --sample '${name}' --specified ${params.strandedness} \\
+        --out ${name}.strandedness.tsv
+    """
+}

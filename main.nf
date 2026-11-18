@@ -50,6 +50,9 @@ if (params.fragment_len <= 0) {
 if (params.fragment_sd <= 0) {
     exit 1, 'ERROR: --fragment_sd must be greater than 0.'
 }
+if (!(params.strandedness_check_reads instanceof Integer) || params.strandedness_check_reads < 0) {
+    exit 1, 'ERROR: --strandedness_check_reads must be a whole number >= 0 (0 skips the check).'
+}
 if (params.max_missing_loci < 0 || params.max_missing_loci > 1) {
     exit 1, 'ERROR: --max_missing_loci must be a fraction between 0 and 1.'
 }
@@ -68,7 +71,7 @@ ch_gpa_file = file(params.gpa_file, checkIfExists: true)
 */
 include {CHECK_META_FILE; CHECK_FASTA_LOCI} from './modules/metadata'
 include {TRIMGALORE} from './modules/trim_reads'
-include {KALLISTO_QUANT; MERGE_COUNTS_AND_LENS} from './modules/kallisto'
+include {KALLISTO_QUANT; MERGE_COUNTS_AND_LENS; CHECK_STRANDEDNESS} from './modules/kallisto'
 include {DESEQ_NORMALISE_COUNTS} from './modules/normalisation'
 include {UMAP_SAMPLES} from './modules/plots'
 
@@ -141,6 +144,21 @@ workflow {
     CHECK_FASTA_LOCI.out.message
         .filter { it.trim() }
         .subscribe { log.warn it.trim() }
+
+    /*
+     *  Check library strandedness on a subsample of reads (warns on mismatch)
+     */
+    if (params.strandedness_check_reads > 0) {
+        CHECK_STRANDEDNESS (
+            ch_raw_reads_trimgalore
+        )
+        CHECK_STRANDEDNESS.out.result
+            .collectFile(name: 'strandedness_check.tsv', keepHeader: true, skip: 1, sort: true,
+                         storeDir: "${params.outdir}/pipeline_info")
+        CHECK_STRANDEDNESS.out.message
+            .filter { it.trim() }
+            .subscribe { log.warn it.trim() }
+    }
 
     /*
      *  Trim + pseudo-align reads
@@ -236,6 +254,7 @@ def helpMessage() {
       --strandedness [str]            Strandedness of the reads. 0 = unstranded, 1 = forward-stranded, 2 = reverse-stranded. Default = 2.
       --fragment_len [str]            Estimated average fragment length for kallisto transcript quantification (only required for single-end reads). Default = 150.
       --fragment_sd [str]             Estimated standard deviation of fragment length for kallisto transcript quantification (only required for single-end reads). Default = 20.
+      --strandedness_check_reads [int] Reads per sample used to check that --strandedness matches the library (warns on mismatch; results in pipeline_info/strandedness_check.tsv). 0 = skip. Default = 200000.
       --max_missing_loci [float]      Stop if more than this fraction of an isolate's Panaroo loci are missing from its FASTA. Missing loci are always reported in pipeline_info/missing_loci.tsv. Default = 0.5.
       --skip_trimming [bool]          Do not trim adaptors from FastQ files.
       --outdir [file]                 The output directory where the results will be saved (default: './results').

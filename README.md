@@ -47,6 +47,7 @@ Explanation of parameters:
 - `strandedness`: Strandedness of the reads. 0 = unstranded, 1 = forward-stranded, 2 = reverse-stranded. Default = 2.
 - `fragment_len`: Estimated average fragment length for kallisto transcript quantification (only required for single-end reads). Default = 150.
 - `fragment_sd`: Estimated standard deviation of fragment length for kallisto transcript quantification (only required for single-end reads). Default = 20.
+- `strandedness_check_reads`: the pipeline checks each library's strandedness by pseudo-aligning this many reads (the first N) in both orientations, and **warns** if the result disagrees with `--strandedness`. Results are in `pipeline_info/strandedness_check.tsv`. A wrong setting can discard most reads: with the test data, the reverse setting pseudo-aligns about 5% of reads versus about 50% with the correct forward setting. 0 skips the check. Default = 200000.
 - `max_missing_loci`: the pipeline checks that every locus Panaroo lists for an isolate is in that isolate's FASTA. Missing loci can't be quantified, so their gene groups are `NA` for that sample. They're always listed in `pipeline_info/missing_loci.tsv` (with a per-sample summary in `pipeline_info/fasta_loci_summary.tsv`), and the run **stops** if more than this fraction of an isolate's loci are missing, which usually means the wrong FASTA or a mismatched `dna_sample_id`. Default = 0.5.
 - `group`: group for plots - must be one of the columns in metadata file.
 - `skip_trimming`: do not trim adaptors from reads.
