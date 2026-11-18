@@ -44,9 +44,6 @@ if (!params.group) {
 if (params.strandedness !in [0, 1, 2]) {
     exit 1, 'ERROR: --strandedness must be 0 (unstranded), 1 (forward-stranded), or 2 (reverse-stranded).'
 }
-if (params.perc < 0 || params.perc > 100) {
-    exit 1, 'ERROR: --perc must be between 0 and 100.'
-}
 if (params.fragment_len <= 0) {
     exit 1, 'ERROR: --fragment_len must be greater than 0.'
 }
@@ -69,7 +66,7 @@ ch_gpa_file = file(params.gpa_file, checkIfExists: true)
 include {CHECK_META_FILE} from './modules/metadata'
 include {TRIMGALORE} from './modules/trim_reads'
 include {KALLISTO_QUANT; MERGE_COUNTS_AND_LENS} from './modules/kallisto'
-include {SUBSET_GENES; DESEQ_NORMALISE_COUNTS} from './modules/normalisation'
+include {DESEQ_NORMALISE_COUNTS} from './modules/normalisation'
 include {UMAP_SAMPLES} from './modules/plots'
 
 
@@ -126,16 +123,6 @@ workflow {
 
 
     /*
-     *  Get the subset of core genes
-     */
-    SUBSET_GENES (
-        ch_gpa_file,
-        ch_metadata,
-        params.perc
-    )
-    ch_gene_subset = SUBSET_GENES.out.gene_subset
-
-    /*
      *  Trim + pseudo-align reads
      */
     if (params.skip_trimming) {
@@ -179,8 +166,7 @@ workflow {
      *  Get size-factor-scaled counts
      */
     DESEQ_NORMALISE_COUNTS (
-        ch_kallisto_merged_out,
-        ch_gene_subset
+        ch_kallisto_merged_out
     )
     ch_norm_counts = DESEQ_NORMALISE_COUNTS.out.norm_counts
     ch_scaled_counts = DESEQ_NORMALISE_COUNTS.out.scaled_counts
@@ -217,7 +203,7 @@ def helpMessage() {
     log.info"""
     Usage:
     The typical command for running the pipeline is as follows:
-      nextflow run StrainQuant --meta_file [file] --gpa_file [gene_presence_absence.csv] --group [str] --perc [str] -profile conda
+      nextflow run StrainQuant --meta_file [file] --gpa_file [gene_presence_absence.csv] --group [str] -profile conda
 
     Mandatory arguments:
       --meta_file [file]              Path to file containing sample metadata.
@@ -230,7 +216,6 @@ def helpMessage() {
       --strandedness [str]            Strandedness of the reads. 0 = unstranded, 1 = forward-stranded, 2 = reverse-stranded. Default = 2.
       --fragment_len [str]            Estimated average fragment length for kallisto transcript quantification (only required for single-end reads). Default = 150.
       --fragment_sd [str]             Estimated standard deviation of fragment length for kallisto transcript quantification (only required for single-end reads). Default = 20.
-      --perc [str]                    Minimum percent of strains containing a gene for defining the core gene set. Default = 99.
       --skip_trimming [bool]          Do not trim adaptors from FastQ files.
       --outdir [file]                 The output directory where the results will be saved (default: './results').
       --cachedir [str]                Defines the path where Singularity images are cached [default: $params.cachedir]

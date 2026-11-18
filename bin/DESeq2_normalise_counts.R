@@ -21,14 +21,6 @@ option_list <- list(
         type = "character", default = NULL,
         help = "table of effective lengths per gene", metavar = "character"
     ),
-    make_option(c("-g", "--genes"),
-        type = "character", default = NULL,
-        help = "core gene subset to be used", metavar = "character"
-    ),
-    make_option(c("-p", "--perc"),
-        type = "character", default = NULL,
-        help = "filter to core genes?", metavar = "character"
-    ),
     make_option(c("-t", "--log_transform"),
         type = "character", default = NULL,
         help = "log transform the counts? default = FALSE", metavar = "character"
@@ -44,8 +36,6 @@ opt <- parse_args(opt_parser)
 
 counts_f <- opt$counts
 lengths_f <- opt$lengths
-gene_f <- opt$genes
-perc <- if (opt$perc == "TRUE") TRUE else FALSE
 log <- if (opt$log_transform == "TRUE") TRUE else FALSE
 outdir <- opt$outdir
 
@@ -53,11 +43,6 @@ outdir <- opt$outdir
 ## Read data
 counts_tab <- suppressMessages(read_tsv(counts_f))
 lengths_tab <- suppressMessages(read_tsv(lengths_f))
-core_genome <- if (!is.null(gene_f)) {
-    suppressMessages(read_tsv(gene_f))
-} else {
-    NULL
-}
 
 lengths_tab <- lengths_tab[match(counts_tab$Gene, lengths_tab$Gene), ]
 
@@ -89,37 +74,16 @@ size_factors <- sizeFactors(dds)
 
 
 
-if (isTRUE(perc)) {
-    ## subset to `perc` gene set
-    counts_tab_perc <- subset(counts_tab_scaled, rownames(
-        counts_tab_scaled
-    ) %in% core_genome$gene)
-    counts_tab_perc[is.na(counts_tab_perc)] <- 0
+## get size factor-scaled counts (all genes; accessory genes stay NA)
+res_df <- sweep(counts_tab_scaled, 2, size_factors, `/`)
 
-    median_sub <- median_lens[rownames(counts_tab_perc)]
-
-    ## get size factor-scaled counts
-    res_df <- sweep(counts_tab_perc, 2, size_factors, `/`)
-
-    ## get RPKM values
-    lib_sf <- (colSums(counts_tab_perc, na.rm = TRUE) / 1e6)
-    gene_sf <- sapply(median_sub, function(l) {
-        l / 1e3 * lib_sf
-    })
-    gene_sf <- as.data.frame(t(gene_sf))
-    rpkm_df <- counts_tab_perc / gene_sf
-} else {
-    ## get size factor-scaled counts
-    res_df <- sweep(counts_tab_scaled, 2, size_factors, `/`)
-
-    ## get RPKM values
-    lib_sf <- (colSums(counts_tab_scaled, na.rm = TRUE) / 1e6)
-    gene_sf <- sapply(median_lens, function(l) {
-        l / 1e3 * lib_sf
-    })
-    gene_sf <- as.data.frame(t(gene_sf))
-    rpkm_df <- counts_tab_scaled / gene_sf
-}
+## get RPKM values
+lib_sf <- (colSums(counts_tab_scaled, na.rm = TRUE) / 1e6)
+gene_sf <- sapply(median_lens, function(l) {
+    l / 1e3 * lib_sf
+})
+gene_sf <- as.data.frame(t(gene_sf))
+rpkm_df <- counts_tab_scaled / gene_sf
 
 
 if (isTRUE(log)) {

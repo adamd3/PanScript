@@ -19,11 +19,10 @@ The pipeline requires the output from a pan-genome analysis with [`Panaroo`](htt
 
 1. Trim adaptors from reads ([`Trim Galore!`](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/))
 2. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
-3. Subset to genes of interest (e.g. the core gene set; or by majority sequence type)
-4. Pseudo-alignment to strain-specific gene sets ([`kallisto`](https://pachterlab.github.io/kallisto/))
-5. Merging and length-scaling of counts for orthologous genes
-6. Size-factor scaling of merged counts ([`DESeq2`](https://bioconductor.org/packages/release/bioc/html/DESeq2.html))
-7. Visualisation of gene expression across strains ([`UMAP`](https://umap-learn.readthedocs.io/))
+3. Pseudo-alignment to strain-specific gene sets ([`kallisto`](https://pachterlab.github.io/kallisto/))
+4. Merging and length-scaling of counts for orthologous genes
+5. Size-factor scaling of merged counts ([`DESeq2`](https://bioconductor.org/packages/release/bioc/html/DESeq2.html))
+6. Visualisation of gene expression across strains ([`UMAP`](https://umap-learn.readthedocs.io/))
 
 ## Installation
 
@@ -34,7 +33,7 @@ You can run the pipeline as follows:
     nextflow run /path/to/StrainQuant \
         --meta_file /path/to/metadata.txt \
         --gpa_file /path/to/gene_presence_absence.csv \
-        --perc 99 --group majority_ST \
+        --group majority_ST \
         -profile conda -resume
 
 You can run with [`Docker`](https://www.docker.com/) or [`Singularity`](https://sylabs.io/guides/3.5/user-guide/introduction.html) by specifying ` -profile docker` or ` -profile singularity`, respectively.
@@ -45,7 +44,6 @@ Explanation of parameters:
 
 - `meta_file`: metadata file (see below).
 - `gpa_file`: gene presence/absence file from Panaroo (see below).
-- `perc`: defines the minimum percent of strains containing a gene for inclusion in the analysis (for example, --perc 99 means that a gene must be present in 99% of strains for it to be included).
 - `strandedness`: Strandedness of the reads. 0 = unstranded, 1 = forward-stranded, 2 = reverse-stranded. Default = 2.
 - `fragment_len`: Estimated average fragment length for kallisto transcript quantification (only required for single-end reads). Default = 150.
 - `fragment_sd`: Estimated standard deviation of fragment length for kallisto transcript quantification (only required for single-end reads). Default = 20.
@@ -94,8 +92,7 @@ Explanation of parameters:
 
 1. **trim_galore** directory containing adaptor-trimmed RNA-Seq files and FastQC results.
 2. **gene_counts** directory containing:
-   1. `gene_set_ST.tsv`: the subset of genes included in analysis.
-   2. `raw_counts.tsv`: merged read counts per gene, scaled to the median gene length across strains.
-   3. `norm_counts.tsv`: size factor scaled counts (normalised for library size).
-   4. `rpkm_counts.tsv`: size factor scaled and gene length-scaled counts, expressed as reads per kilobase per million mapped reads (RPKM) (normalised for library size and gene length).
+   1. `raw_counts.tsv`: merged read counts per gene, scaled to the median gene length across strains.
+   2. `norm_counts.tsv`: size factor scaled counts (normalised for library size).
+   3. `rpkm_counts.tsv`: size factor scaled and gene length-scaled counts, expressed as reads per kilobase per million mapped reads (RPKM) (normalised for library size and gene length).
 3. **umap_samples** directory containing UMAP visualisation of gene expression across strains.

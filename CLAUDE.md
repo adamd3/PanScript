@@ -16,14 +16,13 @@ Current working name: **StrainQuant** (renaming is on the TODO list; the Docker 
 
 ### Pipeline flow (main.nf)
 1. `CHECK_META_FILE`: validates metadata and adds a `paired` column (`bin/check_metadata.py`)
-2. `SUBSET_GENES`: picks genes present in ≥ `--perc`% of isolates (`bin/subset_genes.py`)
-3. `TRIMGALORE` (skipped with `--skip_trimming`): adaptor trimming plus FastQC
-4. `KALLISTO_QUANT`: builds a per-isolate index from that isolate's `fasta` and quantifies
-5. `MERGE_COUNTS_AND_LENS`: maps kallisto targets to Panaroo gene groups, giving merged
+2. `TRIMGALORE` (skipped with `--skip_trimming`): adaptor trimming plus FastQC
+3. `KALLISTO_QUANT`: builds a per-isolate index from that isolate's `fasta` and quantifies
+4. `MERGE_COUNTS_AND_LENS`: maps kallisto targets to Panaroo gene groups, giving merged
    `est_counts` and `eff_length` matrices (`bin/merge_kallisto_{counts,lens}.py`)
-6. `DESEQ_NORMALISE_COUNTS`: length-scaling, size factors, RPKM
+5. `DESEQ_NORMALISE_COUNTS`: length-scaling, size factors, RPKM
    (`bin/DESeq2_normalise_counts.R`)
-7. `UMAP_SAMPLES`: UMAP of samples coloured by `--group` (`bin/umap.R`)
+6. `UMAP_SAMPLES`: UMAP of samples coloured by `--group` (`bin/umap.R`)
 
 Unused files kept in the repo: `modules/make_clone_fasta.nf`, `bin/make_single_clone_fasta.py`,
 `bin/merge_metadata.py`, `bin/length_scale_counts.R`, `configs/container.config`.
@@ -74,8 +73,8 @@ Unused files kept in the repo: `modules/make_clone_fasta.nf`, `bin/make_single_c
   genes in some isolates but not others), their counts and effective lengths are both averaged.
   The rate (counts/length) is therefore pooled correctly, because mean/mean = sum/sum.
 - **Per-sample kallisto index.** Each sample is indexed against its own isolate's gene FASTA.
-- **DESeq2 only** (decided 2026-11-18; TMM removed). The `--perc` gene filter is also
-  being removed: the pipeline outputs every gene, with NA for genes absent from an isolate.
+- **DESeq2 only** (decided 2026-11-18; TMM removed). The `--perc` gene filter was also
+  removed: the pipeline outputs every gene, with NA for genes absent from an isolate.
 
 ### Meaning of the output matrices (agreed with user 2026-11-18)
 The full rationale and formulas are in [docs/normalisation.md](docs/normalisation.md). Keep that

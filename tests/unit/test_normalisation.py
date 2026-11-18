@@ -151,13 +151,9 @@ class NormalisationTest(unittest.TestCase):
                             ("merge_kallisto_lens.py", "lens.tsv")]:
             run([sys.executable, str(BIN / script), "--gene_presence_absence=gpa.csv",
                  "--metadata_merged=meta.tsv", f"--outf={out}"])
-        # gene-subset file is required by the current CLI but unused with -p FALSE
-        pd.DataFrame({"gene": list(cls.genes)}).to_csv(cls.tmp / "subset.tsv",
-                                                       sep="\t", index=False)
         (cls.tmp / "out").mkdir()
         run(["Rscript", str(BIN / "DESeq2_normalise_counts.R"), "-c", "counts.tsv",
-             "-l", "lens.tsv", "-g", "subset.tsv", "-p", "FALSE", "-t", "TRUE",
-             "-o", "out"])
+             "-l", "lens.tsv", "-t", "TRUE", "-o", "out"])
         cls.expected = ref_outputs(cls.genes)
 
     @classmethod
