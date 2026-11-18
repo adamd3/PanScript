@@ -1,6 +1,6 @@
-# StrainQuant
+# PanScript
 
-[![CI](https://github.com/adamd3/StrainQuant/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/adamd3/StrainQuant/actions/workflows/ci.yml)
+[![CI](https://github.com/adamd3/PanScript/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/adamd3/PanScript/actions/workflows/ci.yml)
 
 [![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A523.10.0-23aa62.svg?labelColor=000000)](https://www.nextflow.io/)
 [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
@@ -9,9 +9,9 @@
 
 ## Introduction
 
-**StrainQuant** is a Nextflow pipeline for performing strain-specific bacterial RNA-Seq analysis without a reference genome.
+**PanScript** is a Nextflow pipeline for bacterial RNA-Seq analysis across genomically diverse isolates, without a single reference genome. Reads from each isolate are pseudo-aligned to that isolate's own gene set, and expression is merged across isolates through the orthologous gene groups of a [Panaroo](https://gthlab.au/panaroo/) pangenome.
 
-![StrainQuant](docs/images/StrainQuant_pipeline_lowres.png)
+![PanScript](docs/images/panscript_pipeline_lowres.png)
 
 ## Pipeline summary
 
@@ -30,7 +30,7 @@ You will need to install [`Nextflow`](https://www.nextflow.io/) (version 23.10.0
 
 You can run the pipeline as follows:
 
-    nextflow run /path/to/StrainQuant \
+    nextflow run adamd3/PanScript \
         --meta_file /path/to/metadata.txt \
         --gpa_file /path/to/gene_presence_absence.csv \
         --group majority_ST \
@@ -89,9 +89,9 @@ This creates `pipeline_inputs/fasta/<isolate>.fna` and `pipeline_inputs/metadata
 
   ```console
   rna_sample_id	dna_sample_id	sample_name	majority_ST	level7000	acsA	aroE	guaA	mutL	nuoD	ppsA	trpE	patient	collection_date	cohort	infection_type	fastq1	fastq2	fasta
-  SRX5123742	SRR8737281	ZG301975	313	2	47	8	7	6	8	11	40	ZG301975		hzi_amr		https://raw.githubusercontent.com/adamd3/StrainQuant/main/test_data/SRX5123742_T1_sub.fq.gz		https://raw.githubusercontent.com/adamd3/StrainQuant/main/test_data/SRR8737281.fna
-  SRX5123741	SRR8737282	ZG205864	111	3	17	5	5	4	4	4	3	ZG205864		hzi_amr		https://raw.githubusercontent.com/adamd3/StrainQuant/main/test_data/SRX5123741_T1_sub.fq.gz		https://raw.githubusercontent.com/adamd3/StrainQuant/main/test_data/SRR8737282.fna
-  SRX5123744	SRR8737283	ZG302367	274	4	23	5	11	7	1	12	7	ZG302367		hzi_amr	ear infection	https://raw.githubusercontent.com/adamd3/StrainQuant/main/test_data/SRX5123744_T1_sub.fq.gz		https://raw.githubusercontent.com/adamd3/StrainQuant/main/test_data/SRR8737283.fna
+  SRX5123742	SRR8737281	ZG301975	313	2	47	8	7	6	8	11	40	ZG301975		hzi_amr		https://raw.githubusercontent.com/adamd3/PanScript/main/test_data/SRX5123742_T1_sub.fq.gz		https://raw.githubusercontent.com/adamd3/PanScript/main/test_data/SRR8737281.fna
+  SRX5123741	SRR8737282	ZG205864	111	3	17	5	5	4	4	4	3	ZG205864		hzi_amr		https://raw.githubusercontent.com/adamd3/PanScript/main/test_data/SRX5123741_T1_sub.fq.gz		https://raw.githubusercontent.com/adamd3/PanScript/main/test_data/SRR8737282.fna
+  SRX5123744	SRR8737283	ZG302367	274	4	23	5	11	7	1	12	7	ZG302367		hzi_amr	ear infection	https://raw.githubusercontent.com/adamd3/PanScript/main/test_data/SRX5123744_T1_sub.fq.gz		https://raw.githubusercontent.com/adamd3/PanScript/main/test_data/SRR8737283.fna
   ```
 
 - **Gene presence-absence file**: CSV-format output produced by [`Panaroo`](https://gtonkinhill.github.io/panaroo/).

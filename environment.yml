@@ -7,7 +7,7 @@
 # tests/compare_to_baseline.py and record the change in PROGRESS.md.
 #
 # Only conda-forge and bioconda are used (no Anaconda `defaults` channel).
-name: strainquant
+name: panscript
 channels:
   - conda-forge
   - bioconda
