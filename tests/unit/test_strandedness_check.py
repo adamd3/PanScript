@@ -84,6 +84,28 @@ class ScriptTest(unittest.TestCase):
         self.assertEqual(row["agrees"], "NO")
         self.assertIn("--strandedness 1", r.stdout)
 
+    def test_used_strandedness_is_specified_value(self):
+        _, row = self.infer(500, 50, specified=2)       # mismatch still uses 2
+        self.assertEqual(row["used_strandedness"], 2)
+
+    def test_auto_uses_inferred_value(self):
+        r, row = self.infer(50, 500, specified="auto")
+        self.assertEqual(row["inferred"], "reverse")
+        self.assertEqual(row["used_strandedness"], 2)
+        self.assertEqual(row["agrees"], "n/a (auto)")
+        self.assertEqual(r.stdout.strip(), "")
+
+    def test_auto_undetermined_is_an_error(self):
+        for mode, n in [("fr", 700), ("rf", 300)]:
+            (self.d / f"{mode}.json").write_text(json.dumps(
+                {"n_processed": 1000, "n_pseudoaligned": n}))
+        r = self.run_script("infer", "--fr", "fr.json", "--rf", "rf.json", "--sample", "S1",
+                            "--specified", "auto", "--out", "out.tsv")
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("could not determine", r.stderr)
+        # the table is still written for inspection
+        self.assertTrue((self.d / "out.tsv").exists())
+
     def test_undetermined_warns(self):
         r, row = self.infer(700, 300, specified=1)
         self.assertEqual(row["inferred"], "undetermined")

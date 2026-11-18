@@ -6,8 +6,7 @@ process KALLISTO_QUANT {
 
     input:
     path gpa
-    tuple val(meta), path(reads), path(fasta)
-    val strandedness
+    tuple val(meta), path(reads), path(fasta), val(strandedness)
 
     output:
     path "kallisto_${meta.sample_id}", emit: kallisto_out_dirs
