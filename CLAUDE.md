@@ -101,8 +101,9 @@ file in sync with any change to normalisation code.
 
 - Test run: `nextflow run . -profile test,docker --outdir ./results`. Test inputs are fetched from
   GitHub `main` via raw URLs (`configs/test.config`, `test_data/meta_merged.txt`), so CI tests the
-  data on `main`, not the data on your branch. The URLs still say `StrainQuant`, and GitHub
-  redirects them to `OrthoQuant`.
+  data on `main`, not the data on your branch. The GitHub repo is `adamd3/StrainQuant`. The old
+  names `OrthoQuant` and `StrainSeq` redirect to it, and the local `origin` URL still uses
+  `OrthoQuant`, which works through the redirect.
 - In a run, **`bin/` scripts come from your local checkout** (Nextflow puts `bin/` on PATH inside
   the container), but **tools (kallisto, R and its packages, Trim Galore) come from the Docker
   image**. So script changes are tested straight away, but a new tool (for example fastp) needs a
