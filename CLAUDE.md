@@ -17,6 +17,7 @@ Current working name: **StrainQuant** (renaming is on the TODO list; the Docker 
 ### Pipeline flow (main.nf)
 1. `CHECK_META_FILE`: validates metadata and adds a `paired` column (`bin/check_metadata.py`); then
    `CHECK_FASTA_LOCI` reports Panaroo loci missing from each isolate FASTA (`bin/check_fasta_loci.py`)
+   and `CHECK_STRANDEDNESS` warns if `--strandedness` disagrees with the reads (`bin/strandedness_check.py`)
 2. `TRIMGALORE` (skipped with `--skip_trimming`): adaptor trimming plus FastQC
 3. `KALLISTO_QUANT`: builds a per-isolate index from that isolate's `fasta` and quantifies
 4. `MERGE_COUNTS_AND_LENS`: maps kallisto targets to Panaroo gene groups, giving merged
