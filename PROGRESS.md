@@ -67,7 +67,7 @@ results need the Phase 1–2 pipeline.
 |---|------|--------|-------|
 | P1 | Replace Trim Galore with fastp for adaptor trimming; drop FastQC (fastp does QC). | TODO | Approved. Also update the `KALLISTO_QUANT` filename symlinks (they rely on Trim Galore's names), `environment.yml`, README and `save_trimmed` publishing. Consider publishing the fastp JSON/HTML reports, and optionally MultiQC (already in env). Agree fastp parameters with the user. |
 | T0 | Capture baseline outputs and add a regression check. | DONE (2026-11-18, `feat/regression-baseline`, merged into `dev`) | The baseline is in `tests/baseline/` (provenance in `PROVENANCE.md`), and `tests/compare_to_baseline.py` checks new runs against it (it matches the baseline itself exactly). Confirmed R1, R2, R4 and the log2 outputs on real data. Found **R9** and **R10**. Still to do: synthetic-data unit tests (T1). |
-| T1 | Unit tests on synthetic data for the merge and normalisation scripts. | TODO | The test dataset is too sparse to check normalisation maths (see R10). Build tiny hand-computable inputs (split genes, accessory NA, known size factors) and check each output formula, especially nTPM. Write it before or during Phase 1. |
+| T1 | Unit tests on synthetic data for the merge and normalisation scripts. | IN PROGRESS (claude, 2026-11-18) | `tests/unit/test_normalisation.py`: 7 tests, all passing against *current* behaviour, using an independent numpy reference. Update the expected values with each Phase 1 step. | The test dataset is too sparse to check normalisation maths (see R10). Build tiny hand-computable inputs (split genes, accessory NA, known size factors) and check each output formula, especially nTPM. Write it before or during Phase 1. |
 | P2 | Replace RPKM with nTPM, computed from DESeq2 core-gene size factors. | TODO | Approved 2026-11-18 (option b). Definition: x_gs = (c_gs / L_gs) / sf_s, where L is the isolate's own effective length, then multiplied by one global constant K so that the mean over samples of the per-sample total (all non-NA genes) is 1e6. K is identical for every gene and sample, so it doesn't affect comparisons. Proposed name: **nTPM** ("normalised TPM", a precedent from the Human Protein Atlas), file `ntpm.tsv`; check the name with the user. The README and methods must state that per-sample totals are only *approximately* 1e6. Median length cancels out, so P5 doesn't affect this output. |
 | P3 | Remove `--perc`, `SUBSET_GENES` and `gene_set_ST_*.tsv`; output every gene. | TODO | Approved 2026-11-18. Also remove the `-p` branch in the R scripts, `bin/subset_genes.py`, and the param from config, help, README and validation. Accessory genes stay NA. |
 | P4 | Remove TMM: DESeq2 only. | TODO | Approved 2026-11-18. Remove `TMM_NORMALISE_COUNTS`, `bin/TMM_normalise_counts.R` and `--norm_method` (help, config, README, validation). edgeR can then come out of `environment.yml`. |
@@ -182,8 +182,10 @@ data on a branch get tested, and runs need no network.
 - **Q7a (R10):** Set `strandedness = 1` in the test profile? That changes the baseline, so it
   would be re-captured. (Q7b resolved → P8. Q7c: the user should check any real analyses of this
   cohort for the setting they used.)
-- **Q8 (P7):** Fail the run when most of a sample's loci are missing from its FASTA (proposed
-  threshold 50%), or only warn?
+- Q8: resolved 2026-11-18. Fail when more than 50% of a sample's loci are missing from its
+  FASTA; warn otherwise.
+- Q7a: resolved 2026-11-18. The test profile now uses `strandedness = 1`, and the baseline was
+  re-captured.
 
 ## Decision log
 

@@ -2,13 +2,13 @@
 	"n_targets": 6770,
 	"n_bootstraps": 0,
 	"n_processed": 99835,
-	"n_pseudoaligned": 2817,
-	"n_unique": 2783,
-	"p_pseudoaligned": 2.8,
-	"p_unique": 2.8,
+	"n_pseudoaligned": 50003,
+	"n_unique": 48901,
+	"p_pseudoaligned": 50.1,
+	"p_unique": 49.0,
 	"kallisto_version": "0.51.1",
 	"index_version": 13,
 	"k-mer length": 31,
-	"start_time": "Wed Nov 18 13:48:30 2026",
-	"call": "kallisto quant -t 2 -i ZG301975.kidx --rf-stranded --single -l 150 -s 20 -o kallisto_ZG301975 ZG301975_trimmed.fq.gz"
+	"start_time": "Wed Nov 18 14:53:28 2026",
+	"call": "kallisto quant -t 2 -i ZG301975.kidx --fr-stranded --single -l 150 -s 20 -o kallisto_ZG301975 ZG301975_trimmed.fq.gz"
 }

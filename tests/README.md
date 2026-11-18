@@ -1,3 +1,19 @@
+# Tests
+
+## Unit tests (synthetic data)
+
+```bash
+python3 -m unittest discover -s tests/unit -v
+```
+
+`tests/unit/test_normalisation.py` builds a tiny hand-made dataset (core genes with known
+library-depth differences, accessory genes, a split gene). It runs the `bin/` merge and
+normalisation scripts on it and compares every output with an independent numpy implementation of
+the formulas in `docs/normalisation.md`. It needs python3 with pandas, and Rscript with DESeq2,
+optparse, matrixStats and tidyverse (all present in the pipeline container). **When a
+normalisation formula changes, update the reference implementation in the test as part of the same
+change.**
+
 # Regression tests
 
 `baseline/` holds the outputs of the `-profile test` run on unchanged code, as a fixed record of
