@@ -27,7 +27,6 @@ dependencies:
   - bioconda::fastqc>=0.12
   - bioconda::trim-galore>=0.6
   - bioconda::kallisto>=0.48
-  - bioconda::bioconductor-edger>=3.42
   - bioconda::bioconductor-deseq2>=1.40
   - bioconda::pyfaidx>=0.7
   - bioconda::multiqc>=1.15

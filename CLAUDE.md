@@ -16,14 +16,13 @@ Current working name: **StrainQuant** (renaming is on the TODO list; the Docker 
 
 ### Pipeline flow (main.nf)
 1. `CHECK_META_FILE`: validates metadata and adds a `paired` column (`bin/check_metadata.py`)
-2. `SUBSET_GENES`: picks genes present in ≥ `--perc`% of isolates (`bin/subset_genes.py`)
-3. `TRIMGALORE` (skipped with `--skip_trimming`): adaptor trimming plus FastQC
-4. `KALLISTO_QUANT`: builds a per-isolate index from that isolate's `fasta` and quantifies
-5. `MERGE_COUNTS_AND_LENS`: maps kallisto targets to Panaroo gene groups, giving merged
+2. `TRIMGALORE` (skipped with `--skip_trimming`): adaptor trimming plus FastQC
+3. `KALLISTO_QUANT`: builds a per-isolate index from that isolate's `fasta` and quantifies
+4. `MERGE_COUNTS_AND_LENS`: maps kallisto targets to Panaroo gene groups, giving merged
    `est_counts` and `eff_length` matrices (`bin/merge_kallisto_{counts,lens}.py`)
-6. `DESEQ_NORMALISE_COUNTS` / `TMM_NORMALISE_COUNTS`: length-scaling, size factors, RPKM
-   (`bin/DESeq2_normalise_counts.R`, `bin/TMM_normalise_counts.R`)
-7. `UMAP_SAMPLES`: UMAP of samples coloured by `--group` (`bin/umap.R`)
+5. `DESEQ_NORMALISE_COUNTS`: length-scaling, size factors, nTPM
+   (`bin/DESeq2_normalise_counts.R`)
+6. `UMAP_SAMPLES`: UMAP of samples coloured by `--group` (`bin/umap.R`)
 
 Unused files kept in the repo: `modules/make_clone_fasta.nf`, `bin/make_single_clone_fasta.py`,
 `bin/merge_metadata.py`, `bin/length_scale_counts.R`, `configs/container.config`.
@@ -66,16 +65,17 @@ Unused files kept in the repo: `modules/make_clone_fasta.nf`, `bin/make_single_c
   are divided by each isolate's kallisto effective length and multiplied by the median length of
   that gene across isolates. This gives "reads per median gene length".
 - **Core-gene size factors.** Accessory genes are NA in the merged matrix. Size factors (DESeq2
-  median-of-ratios or edgeR TMM) are estimated only on genes with no NAs, which are the core genes
+  median-of-ratios) are estimated only on genes with no NAs, which are the core genes
   present in every sample. They're then applied to all non-NA values in each sample. This assumes
   the core genome (usually thousands of genes) is big enough to estimate library size accurately.
 - **NA means absent, not zero.** A gene missing from an isolate's genome is NA, not a zero count.
 - **Split genes.** When a Panaroo cell holds several `;`-separated loci (a gene split into 2+
-  genes in some isolates but not others), their counts and effective lengths are both averaged.
-  The rate (counts/length) is therefore pooled correctly, because mean/mean = sum/sum.
+  genes in some isolates but not others), their counts and effective lengths are both **summed**
+  over the quantified loci (since 2026-11-18; previously averaged). The value is NA if none of
+  the loci were quantified.
 - **Per-sample kallisto index.** Each sample is indexed against its own isolate's gene FASTA.
-- **DESeq2 only** (decided 2026-11-18; TMM is being removed). The `--perc` gene filter is also
-  being removed: the pipeline outputs every gene, with NA for genes absent from an isolate.
+- **DESeq2 only** (decided 2026-11-18; TMM removed). The `--perc` gene filter was also
+  removed: the pipeline outputs every gene, with NA for genes absent from an isolate.
 
 ### Meaning of the output matrices (agreed with user 2026-11-18)
 The full rationale and formulas are in [docs/normalisation.md](docs/normalisation.md). Keep that
@@ -86,13 +86,12 @@ file in sync with any change to normalisation code.
 - `norm_counts.tsv`: `raw_counts` divided by DESeq2 size factors from core genes. Adjusted for
   ortholog length variation and library size. Comparable across samples within a gene, but not
   between different genes.
-- `rpkm_counts.tsv` → to become nTPM (PROGRESS.md P2): (count / the isolate's own effective
-  length) / size factor, times one global constant to put it on a TPM-like scale. Comparable both
-  between genes and across samples.
-- All matrices will be **linear** (no log transform) once P6 lands. Currently `norm_counts` and
-  `rpkm_counts` are log2(x+1).
-- **UMAP must log-transform its input itself** (log2(x+1)) once outputs are linear, so the plot is
-  unchanged. Don't feed linear counts to UMAP.
+- `ntpm.tsv` (nTPM; replaced `rpkm_counts.tsv`): (count / the isolate's own effective length) /
+  size factor, times one global constant to put it on a TPM-like scale. Comparable both between
+  genes and across samples.
+- All matrices are **linear** (no log transform).
+- **UMAP log-transforms its input itself** (log2(x+1) in `bin/umap.R`). Don't feed it already
+  logged values, and don't remove that line.
 
 ## Repo practicalities
 

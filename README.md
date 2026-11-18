@@ -19,11 +19,10 @@ The pipeline requires the output from a pan-genome analysis with [`Panaroo`](htt
 
 1. Trim adaptors from reads ([`Trim Galore!`](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/))
 2. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
-3. Subset to genes of interest (e.g. the core gene set; or by majority sequence type)
-4. Pseudo-alignment to strain-specific gene sets ([`kallisto`](https://pachterlab.github.io/kallisto/))
-5. Merging and length-scaling of counts for orthologous genes
-6. Size-factor scaling of merged counts ([`DESeq2`](https://bioconductor.org/packages/release/bioc/html/DESeq2.html) or [`edgeR`](http://bioconductor.org/packages/release/bioc/html/edgeR.html))
-7. Visualisation of gene expression across strains ([`UMAP`](https://umap-learn.readthedocs.io/))
+3. Pseudo-alignment to strain-specific gene sets ([`kallisto`](https://pachterlab.github.io/kallisto/))
+4. Merging and length-scaling of counts for orthologous genes
+5. Size-factor scaling of merged counts using the core genome ([`DESeq2`](https://bioconductor.org/packages/release/bioc/html/DESeq2.html)), and calculation of normalised TPM (nTPM)
+6. Visualisation of gene expression across strains ([`UMAP`](https://umap-learn.readthedocs.io/))
 
 ## Installation
 
@@ -34,7 +33,7 @@ You can run the pipeline as follows:
     nextflow run /path/to/StrainQuant \
         --meta_file /path/to/metadata.txt \
         --gpa_file /path/to/gene_presence_absence.csv \
-        --perc 99 --norm_method DESeq --group majority_ST \
+        --group majority_ST \
         -profile conda -resume
 
 You can run with [`Docker`](https://www.docker.com/) or [`Singularity`](https://sylabs.io/guides/3.5/user-guide/introduction.html) by specifying ` -profile docker` or ` -profile singularity`, respectively.
@@ -45,11 +44,9 @@ Explanation of parameters:
 
 - `meta_file`: metadata file (see below).
 - `gpa_file`: gene presence/absence file from Panaroo (see below).
-- `perc`: defines the minimum percent of strains containing a gene for inclusion in the analysis (for example, --perc 99 means that a gene must be present in 99% of strains for it to be included).
 - `strandedness`: Strandedness of the reads. 0 = unstranded, 1 = forward-stranded, 2 = reverse-stranded. Default = 2.
 - `fragment_len`: Estimated average fragment length for kallisto transcript quantification (only required for single-end reads). Default = 150.
 - `fragment_sd`: Estimated standard deviation of fragment length for kallisto transcript quantification (only required for single-end reads). Default = 20.
-- `norm_method`: how to perform size-factor scaling of counts (default method = `DESeq2`). Other options: `TMM` (edgeR).
 - `group`: group for plots - must be one of the columns in metadata file.
 - `skip_trimming`: do not trim adaptors from reads.
 - `outdir`: the output directory where the results will be saved (Default: `./results`).
@@ -94,9 +91,11 @@ Explanation of parameters:
 ## Output
 
 1. **trim_galore** directory containing adaptor-trimmed RNA-Seq files and FastQC results.
-2. **gene_counts** directory containing:
-   1. `gene_set_ST.tsv`: the subset of genes included in analysis.
-   2. `raw_counts.tsv`: merged read counts per gene, scaled to the median gene length across strains.
-   3. `norm_counts.tsv`: size factor scaled counts (normalised for library size).
-   4. `rpkm_counts.tsv`: size factor scaled and gene length-scaled counts, expressed as reads per kilobase per million mapped reads (RPKM) (normalised for library size and gene length).
-3. **umap_samples** directory containing UMAP visualisation of gene expression across strains.
+2. **gene_counts** directory containing three gene × sample matrices (one row per Panaroo gene group). All values are on a **linear scale** (not log-transformed), and genes absent from an isolate are `NA`:
+   1. `raw_counts.tsv`: read counts adjusted **only** for ortholog length differences between isolates (scaled to the gene group's median length). Not normalised for library size.
+   2. `norm_counts.tsv`: `raw_counts` divided by DESeq2 size factors estimated on the core genome. Use these to compare **the same gene across samples**.
+   3. `ntpm.tsv`: normalised transcripts per million (nTPM). Counts per unit of each isolate's own gene length, divided by the core-genome size factors and scaled so per-sample totals average 10<sup>6</sup>. Comparable **between genes and across samples**. Unlike standard TPM, it's not distorted by differences in accessory gene content between isolates.
+
+   See [docs/normalisation.md](docs/normalisation.md) for formulas and rationale.
+3. **kallisto_quant** directory containing per-sample kallisto output and the merged count and effective-length matrices.
+4. **umap_samples** directory containing a UMAP of samples, computed on log2(`norm_counts` + 1) of core genes.

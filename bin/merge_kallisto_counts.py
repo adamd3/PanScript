@@ -48,8 +48,9 @@ def merge_counts(gene_presence_absence, metadata_merged, kallisto_dir, outf):
         for split_set in split_genes:
             ind_genes = split_set.split(";")
             expr_vals = quant_dat[quant_dat[sample_name].isin(ind_genes)]
-            mean_est_counts = expr_vals["est_counts"].mean()
-            split_dict[split_set] = mean_est_counts
+            # gene split into several loci in this isolate: total counts over
+            # its loci (NaN, not 0, if none of the loci were quantified)
+            split_dict[split_set] = expr_vals["est_counts"].sum(min_count=1)
         quant_split = pd.DataFrame([split_dict]).transpose()
         quant_split.rename(columns={0:'est_counts'}, inplace=True)
         quant_split[sample_name] = quant_split.index

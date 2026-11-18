@@ -9,6 +9,6 @@
 	"kallisto_version": "0.51.1",
 	"index_version": 13,
 	"k-mer length": 31,
-	"start_time": "Wed Nov 18 14:53:28 2026",
+	"start_time": "Wed Nov 18 15:06:16 2026",
 	"call": "kallisto quant -t 2 -i ZG302367.kidx --fr-stranded --single -l 150 -s 20 -o kallisto_ZG302367 ZG302367_trimmed.fq.gz"
 }
