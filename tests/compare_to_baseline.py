@@ -30,7 +30,8 @@ import pandas as pd
 MATRICES = {
     "raw_counts": "gene_counts/raw_counts.tsv",
     "norm_counts": "gene_counts/norm_counts.tsv",
-    "rpkm_counts": "gene_counts/rpkm_counts.tsv",
+    "rpkm_counts": "gene_counts/rpkm_counts.tsv",  # baseline only; replaced by ntpm (P2)
+    "ntpm": "gene_counts/ntpm.tsv",
     "kallisto_merged_counts": "kallisto_quant/kallisto_merged_counts_*.tsv",
     "kallisto_merged_lens": "kallisto_quant/kallisto_merged_lens_*.tsv",
 }

@@ -21,7 +21,7 @@ The pipeline requires the output from a pan-genome analysis with [`Panaroo`](htt
 2. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
 3. Pseudo-alignment to strain-specific gene sets ([`kallisto`](https://pachterlab.github.io/kallisto/))
 4. Merging and length-scaling of counts for orthologous genes
-5. Size-factor scaling of merged counts ([`DESeq2`](https://bioconductor.org/packages/release/bioc/html/DESeq2.html))
+5. Size-factor scaling of merged counts using the core genome ([`DESeq2`](https://bioconductor.org/packages/release/bioc/html/DESeq2.html)), and calculation of normalised TPM (nTPM)
 6. Visualisation of gene expression across strains ([`UMAP`](https://umap-learn.readthedocs.io/))
 
 ## Installation
@@ -91,8 +91,11 @@ Explanation of parameters:
 ## Output
 
 1. **trim_galore** directory containing adaptor-trimmed RNA-Seq files and FastQC results.
-2. **gene_counts** directory containing:
-   1. `raw_counts.tsv`: merged read counts per gene, scaled to the median gene length across strains.
-   2. `norm_counts.tsv`: size factor scaled counts (normalised for library size).
-   3. `rpkm_counts.tsv`: size factor scaled and gene length-scaled counts, expressed as reads per kilobase per million mapped reads (RPKM) (normalised for library size and gene length).
-3. **umap_samples** directory containing UMAP visualisation of gene expression across strains.
+2. **gene_counts** directory containing three gene × sample matrices (one row per Panaroo gene group). All values are on a **linear scale** (not log-transformed), and genes absent from an isolate are `NA`:
+   1. `raw_counts.tsv`: read counts adjusted **only** for ortholog length differences between isolates (scaled to the gene group's median length). Not normalised for library size.
+   2. `norm_counts.tsv`: `raw_counts` divided by DESeq2 size factors estimated on the core genome. Use these to compare **the same gene across samples**.
+   3. `ntpm.tsv`: normalised transcripts per million (nTPM). Counts per unit of each isolate's own gene length, divided by the core-genome size factors and scaled so per-sample totals average 10<sup>6</sup>. Comparable **between genes and across samples**. Unlike standard TPM, it's not distorted by differences in accessory gene content between isolates.
+
+   See [docs/normalisation.md](docs/normalisation.md) for formulas and rationale.
+3. **kallisto_quant** directory containing per-sample kallisto output and the merged count and effective-length matrices.
+4. **umap_samples** directory containing a UMAP of samples, computed on log2(`norm_counts` + 1) of core genes.

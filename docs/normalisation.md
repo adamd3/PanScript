@@ -2,10 +2,10 @@
 
 This document explains how the pipeline turns kallisto output into the expression matrices it
 reports, and why. It's the reference for the README's Output section and for the manuscript
-Methods.
+Methods. **Keep it in sync with `bin/merge_kallisto_*.py` and `bin/DESeq2_normalise_counts.R`**;
+`tests/unit/test_normalisation.py` checks the code against these formulas.
 
-> **Status (2026-11-18).** Sections marked *[planned]* describe agreed changes that are not
-> implemented yet (see PROGRESS.md: P2–P6). Everything else describes current behaviour.
+> **Status (2026-11-18):** describes the pipeline as of `feat/normalisation` (PROGRESS.md P2–P6).
 
 ## The problem
 
@@ -32,13 +32,15 @@ For gene group *g* in sample *s* (from isolate *i(s)*):
 
 ## Steps
 
-### 1. Split genes
-When a gene group maps to several loci in an isolate, their counts and effective lengths are
-combined. Currently both are **averaged**. The per-isolate rate *c/L* is correct either way, because
-mean/mean = sum/sum. But averaging makes *L<sub>gs</sub>* (and so the median *M<sub>g</sub>*) the
-length of a *fragment* rather than of the whole gene.
-*[planned, P5]* Both will be **summed**, so *L<sub>gs</sub>* is the total length of the gene in that
-isolate.
+### 1. Split genes (`bin/merge_kallisto_{counts,lens}.py`)
+When a gene group maps to several loci in an isolate, their counts and effective lengths are both
+**summed** over the loci that kallisto quantified. *L<sub>gs</sub>* is then the total length of the
+gene in that isolate, and the rate *c/L* is the pooled rate over its loci. If none of the loci were
+quantified (all missing from the isolate FASTA), the value is NA, not 0.
+
+(Before 2026-11-18 both were averaged. That gave the same rate, but it made *M<sub>g</sub>* the
+length of a fragment: in the test data, the median length of affected genes was typically half the
+true length.)
 
 ### 2. Ortholog length scaling → `raw_counts.tsv`
 *r<sub>gs</sub>* = *c<sub>gs</sub>* / *L<sub>gs</sub>* × *M<sub>g</sub>*
@@ -49,11 +51,15 @@ normalised for library size, and **not** comparable between different genes.
 
 ### 3. Size factors from the core genome
 DESeq2 median-of-ratios size factors *sf<sub>s</sub>* are estimated from the matrix of rounded
-*r<sub>gs</sub>*, restricted to genes with **no NA in any sample** (the core genome). The size factors are then applied to every non-NA value in that sample, accessory genes included.
+*r<sub>gs</sub>*, restricted to genes with **no NA in any sample** (the core genome). The size
+factors are then applied to every non-NA value in that sample, accessory genes included.
 
 The reasoning: median-of-ratios needs the same genes in every sample. The core genome usually has
 thousands of genes, which is plenty for a robust estimate. And median-of-ratios isn't thrown off
 by a few highly expressed or strongly changing genes.
+
+Note: very shallow libraries (for example the ~100k-read test dataset) give degenerate size
+factors. Most core genes then have counts of 0–2, and the median ratio sits on exact ties.
 
 ### 4. Library-size normalisation → `norm_counts.tsv`
 *n<sub>gs</sub>* = *r<sub>gs</sub>* / *sf<sub>s</sub>*
@@ -63,9 +69,7 @@ These values are corrected for ortholog length variation and library size, so th
 genes get more reads. This is the recommended matrix for between-sample analyses of a given gene
 (clustering, ordination, plotting one gene across isolates).
 
-### 5. Between-gene comparable expression → nTPM *[planned, P2]*
-This replaces the current `rpkm_counts.tsv`.
-
+### 5. Between-gene comparable expression → `ntpm.tsv` (nTPM)
 *x<sub>gs</sub>* = *c<sub>gs</sub>* / *L<sub>gs</sub>* / *sf<sub>s</sub>* (the same as
 *n<sub>gs</sub>* / *M<sub>g</sub>*, because the median length cancels)
 
@@ -79,13 +83,18 @@ dataset. It only puts values on a familiar TPM-like scale: per-sample totals ave
 different accessory genes, so that total depends on gene content. An isolate carrying many (or
 highly expressed) accessory genes would get smaller TPMs for *every* core gene, even with
 identical core expression. Using the core-genome size factors avoids this.
+(`tests/unit`, `AccessoryGeneRobustnessTest`: adding one highly expressed accessory gene to one
+isolate shifts its core-gene TPMs by more than 20%, but leaves every between-sample nTPM
+comparison unchanged.)
 
 **What nTPM can be compared across:**
 - *Between genes within a sample*: yes. Within a sample, the value is proportional to reads per
   unit of the isolate's own transcript length, exactly as TPM is.
 - *Across samples*: yes. Library size is handled by the core-genome size factors, so it doesn't
   depend on gene content.
-- *Difference from strict TPM*: per-sample totals are **approximately**, not exactly, 10<sup>6</sup>.
+- *Difference from strict TPM*: per-sample totals are **approximately**, not exactly,
+  10<sup>6</sup>. In the test data, totals were 0.94–1.06 × 10<sup>6</sup>. Within each sample,
+  nTPM ÷ kallisto's own TPM was constant (0.94–1.07) across all non-split genes.
 
 **Caveats** (the same as for any TPM, plus one specific to pangenomes): reads that map to several
 similar genes (paralogs); how accurately effective lengths are estimated (kallisto subtracts about
@@ -95,23 +104,22 @@ ortholog group.
 
 **Name:** "nTPM" (normalised TPM), following the Human Protein Atlas's use of the term for
 TPM normalised across samples. Our size-factor method should be stated explicitly wherever the
-term is used.
+term is used. (Name pending user confirmation, PROGRESS.md Q1b.)
 
-### 6. Output scale *[planned, P6]*
-All output matrices will be **linear** (not log-transformed). Currently `norm_counts.tsv` and
-`rpkm_counts.tsv` are log2(*x*+1). Users should apply their own transform (such as log2(*x*+1) or
-DESeq2's VST) for analysis.
+### 6. Output scale
+All output matrices are **linear** (not log-transformed). Users should apply their own transform
+(such as log2(*x*+1) or DESeq2's VST) for analysis. (Before 2026-11-18, `norm_counts.tsv` and
+the old `rpkm_counts.tsv` were silently log2(*x*+1).)
 
-**UMAP requirement:** `bin/umap.R` currently runs on the log2 `norm_counts` (core genes only, since
-NA rows are dropped). Once outputs are linear, `umap.R` **must apply log2(*x*+1) itself** so the
-plot is unchanged.
+**UMAP:** `bin/umap.R` applies log2(*x*+1) to `norm_counts` itself, then drops NA rows (so only
+core genes are used). Its input is therefore identical to before the switch to linear outputs.
 
 ## Output summary
 
 | File | Ortholog length | Library size | Between-gene comparable | Scale |
 |------|-----------------|--------------|-------------------------|-------|
-| `raw_counts.tsv` | ✓ (scaled to median length) | ✗ | ✗ | counts (non-integer) |
-| `norm_counts.tsv` | ✓ | ✓ (core-genome DESeq2) | ✗ | counts; currently log2, *[planned]* linear |
-| nTPM *[planned, replaces `rpkm_counts.tsv`]* | ✓ (own effective length) | ✓ (core-genome DESeq2) | ✓ | TPM-like, linear |
+| `raw_counts.tsv` | ✓ (scaled to median length) | ✗ | ✗ | counts (non-integer), linear |
+| `norm_counts.tsv` | ✓ | ✓ (core-genome DESeq2) | ✗ | counts, linear |
+| `ntpm.tsv` | ✓ (own effective length) | ✓ (core-genome DESeq2) | ✓ | TPM-like, linear |
 
 Absent genes are NA in all matrices.

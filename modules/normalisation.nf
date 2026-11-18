@@ -9,7 +9,7 @@ process DESEQ_NORMALISE_COUNTS {
 
     output:
     path 'norm_counts.tsv', emit: norm_counts
-    path 'rpkm_counts.tsv', emit: rpkm_counts
+    path 'ntpm.tsv', emit: ntpm
     path 'raw_counts.tsv', emit: scaled_counts
 
     script:

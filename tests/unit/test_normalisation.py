@@ -137,10 +137,11 @@ def ref_outputs(genes):
     raw = counts.div(lens).mul(med, axis=0)
     sf = ref_size_factors(raw)
     norm = raw.div(sf, axis=1)
-    lib = raw.sum(axis=0, skipna=True) / 1e6
-    rpkm = raw.div(lib, axis=1).div(med / 1e3, axis=0)
+    # nTPM (P2): own-length rate / size factor, scaled by one global constant
+    rate = counts.div(lens).div(sf, axis=1)
+    K = 1e6 / rate.sum(axis=0, skipna=True).mean()
     return {"counts": counts, "lens": lens, "raw": raw, "sf": sf,
-            "norm": norm, "rpkm": rpkm}  # linear scale (P6)
+            "norm": norm, "ntpm": rate * K}  # all linear scale (P6)
 
 
 # --------------------------------------------------------------------------
@@ -150,28 +151,34 @@ def read_matrix(p):
     return pd.read_csv(p, sep="\t", index_col=0).astype(float)
 
 
+def run_scripts(genes):
+    """Write inputs for `genes` to a temp dir and run the bin/ scripts on them."""
+    if shutil.which("Rscript") is None:
+        raise unittest.SkipTest("Rscript not available")
+    tmp = Path(tempfile.mkdtemp(prefix="sq_unit_"))
+    write_inputs(tmp, genes)
+    env = dict(os.environ, PATH=f"{BIN}{os.pathsep}{os.environ['PATH']}")
+
+    def run(cmd):
+        r = subprocess.run(cmd, cwd=tmp, env=env, capture_output=True, text=True)
+        if r.returncode != 0:
+            raise RuntimeError(f"{cmd[0]} failed:\n{r.stdout}\n{r.stderr}")
+
+    for script, out in [("merge_kallisto_counts.py", "counts.tsv"),
+                        ("merge_kallisto_lens.py", "lens.tsv")]:
+        run([sys.executable, str(BIN / script), "--gene_presence_absence=gpa.csv",
+             "--metadata_merged=meta.tsv", f"--outf={out}"])
+    (tmp / "out").mkdir()
+    run(["Rscript", str(BIN / "DESeq2_normalise_counts.R"), "-c", "counts.tsv",
+         "-l", "lens.tsv", "-o", "out"])
+    return tmp
+
+
 class NormalisationTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        if shutil.which("Rscript") is None:
-            raise unittest.SkipTest("Rscript not available")
-        cls.tmp = Path(tempfile.mkdtemp(prefix="sq_unit_"))
         cls.genes = build_dataset()
-        write_inputs(cls.tmp, cls.genes)
-        env = dict(os.environ, PATH=f"{BIN}{os.pathsep}{os.environ['PATH']}")
-
-        def run(cmd):
-            r = subprocess.run(cmd, cwd=cls.tmp, env=env, capture_output=True, text=True)
-            if r.returncode != 0:
-                raise RuntimeError(f"{cmd[0]} failed:\n{r.stdout}\n{r.stderr}")
-
-        for script, out in [("merge_kallisto_counts.py", "counts.tsv"),
-                            ("merge_kallisto_lens.py", "lens.tsv")]:
-            run([sys.executable, str(BIN / script), "--gene_presence_absence=gpa.csv",
-                 "--metadata_merged=meta.tsv", f"--outf={out}"])
-        (cls.tmp / "out").mkdir()
-        run(["Rscript", str(BIN / "DESeq2_normalise_counts.R"), "-c", "counts.tsv",
-             "-l", "lens.tsv", "-o", "out"])
+        cls.tmp = run_scripts(cls.genes)
         cls.expected = ref_outputs(cls.genes)
 
     @classmethod
@@ -222,15 +229,87 @@ class NormalisationTest(unittest.TestCase):
         self.assertFrameClose(read_matrix(self.tmp / "out" / "norm_counts.tsv"),
                               self.expected["norm"], rtol=1e-7)
 
-    def test_rpkm_counts(self):
-        self.assertFrameClose(read_matrix(self.tmp / "out" / "rpkm_counts.tsv"),
-                              self.expected["rpkm"], rtol=1e-7)
+    def test_ntpm(self):
+        self.assertFrameClose(read_matrix(self.tmp / "out" / "ntpm.tsv"),
+                              self.expected["ntpm"], rtol=1e-7)
+
+    def test_ntpm_properties(self):
+        ntpm = read_matrix(self.tmp / "out" / "ntpm.tsv")
+        counts = read_matrix(self.tmp / "counts.tsv")
+        lens = read_matrix(self.tmp / "lens.tsv")
+        sf = self.expected["sf"]
+        # per-sample totals average exactly 1e6 (but are not each 1e6)
+        self.assertAlmostEqual(ntpm.sum(axis=0).mean(), 1e6, delta=1e-3)
+        # within a sample, nTPM is proportional to counts / own length
+        # (i.e. comparable between genes, like TPM)
+        for s in SAMPLES:
+            r = (ntpm[s] / (counts[s] / lens[s])).dropna()
+            self.assertLess(r.std() / r.mean(), 1e-9, s)
+        # median length cancels: nTPM == norm_counts / median length * const
+        norm = read_matrix(self.tmp / "out" / "norm_counts.tsv")
+        med = lens.median(axis=1, skipna=True)
+        r = (ntpm / norm.div(med, axis=0)).stack()
+        self.assertLess(r.std() / r.mean(), 1e-9)
+        # across samples, a core gene's nTPM ratio is its rate ratio divided by
+        # the size-factor ratio (library size from size factors, not totals)
+        g = "core1"
+        rate = counts.loc[g] / lens.loc[g]
+        np.testing.assert_allclose((ntpm.loc[g] / ntpm.loc[g, "sA"]).to_numpy(),
+                                   ((rate / sf) / (rate["sA"] / sf["sA"])).to_numpy(),
+                                   rtol=1e-6)
+
+    def test_no_rpkm_output(self):
+        self.assertFalse((self.tmp / "out" / "rpkm_counts.tsv").exists())
 
     def test_size_factors_track_depth(self):
         # depth multipliers 1 : 2 : 0.5 should be recovered approximately
         sf = self.expected["sf"]
         ratio = (sf / sf["sA"]).to_numpy()
         np.testing.assert_allclose(ratio, [1.0, 2.0, 0.5], rtol=0.15)
+
+
+class AccessoryGeneRobustnessTest(unittest.TestCase):
+    """Why nTPM rather than TPM (docs/normalisation.md, step 5).
+
+    Give isolate B one extra, very highly expressed accessory gene, with
+    everything else identical. Per-sample-total TPM then deflates every core
+    gene in B. nTPM comparisons between samples must not change.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        base = build_dataset()
+        big = build_dataset()
+        total_b = sum(l[1] for per in big.values() if per["sB"]
+                      for l in per["sB"] if l[1] is not None)
+        big["accBig"] = {"sA": None, "sB": [("dB_accBig", total_b, 800.0)], "sC": None}
+        cls.dirs = {"base": run_scripts(base), "big": run_scripts(big)}
+
+    @classmethod
+    def tearDownClass(cls):
+        for d in cls.dirs.values():
+            shutil.rmtree(d, ignore_errors=True)
+
+    def core(self, which, name):
+        m = read_matrix(self.dirs[which] / name)
+        return m.loc[[f"core{i}" for i in range(1, N_CORE + 1)]]
+
+    def test_ntpm_between_sample_comparisons_unchanged(self):
+        base, big = self.core("base", "out/ntpm.tsv"), self.core("big", "out/ntpm.tsv")
+        # ratios between samples for every core gene are identical
+        np.testing.assert_allclose(big.div(big["sA"], axis=0).to_numpy(),
+                                   base.div(base["sA"], axis=0).to_numpy(), rtol=1e-9)
+
+    def test_naive_tpm_would_be_distorted(self):
+        # demonstrates the problem nTPM avoids: per-sample-total TPM of core
+        # genes in B roughly halves when B carries the big accessory gene
+        def tpm(which):
+            c = read_matrix(self.dirs[which] / "counts.tsv")
+            l = read_matrix(self.dirs[which] / "lens.tsv")
+            rate = c / l
+            return (rate / rate.sum(axis=0) * 1e6).loc[[f"core{i}" for i in range(1, N_CORE + 1)]]
+        shift = (tpm("big")["sB"] / tpm("base")["sB"]).median()
+        self.assertLess(shift, 0.8)
 
 
 if __name__ == "__main__":

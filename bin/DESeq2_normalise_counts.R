@@ -72,13 +72,16 @@ size_factors <- sizeFactors(dds)
 ## get size factor-scaled counts (all genes; accessory genes stay NA)
 res_df <- sweep(counts_tab_scaled, 2, size_factors, `/`)
 
-## get RPKM values
-lib_sf <- (colSums(counts_tab_scaled, na.rm = TRUE) / 1e6)
-gene_sf <- sapply(median_lens, function(l) {
-    l / 1e3 * lib_sf
-})
-gene_sf <- as.data.frame(t(gene_sf))
-rpkm_df <- counts_tab_scaled / gene_sf
+## get nTPM values (see docs/normalisation.md):
+##   x[g, s] = (counts / isolate's own effective length) / size factor
+## i.e. reads per unit length, normalised for library size with the core-gene
+## size factors (not per-sample totals, which depend on accessory gene content).
+## A single global constant K puts values on a TPM-like scale: per-sample
+## totals average 1e6 across samples. K is identical for every gene and sample,
+## so it does not affect any comparison.
+rate_df <- sweep(counts_tab / lengths_tab, 2, size_factors, `/`)
+K <- 1e6 / mean(colSums(rate_df, na.rm = TRUE))
+ntpm_df <- rate_df * K
 
 
 ## NB: all outputs are on a linear scale (no log transform); downstream steps
@@ -86,7 +89,7 @@ rpkm_df <- counts_tab_scaled / gene_sf
 
 ## convert rownames to column
 res_df <- tibble::rownames_to_column(as.data.frame(res_df), "feature_id")
-rpkm_df <- tibble::rownames_to_column(as.data.frame(rpkm_df), "feature_id")
+ntpm_df <- tibble::rownames_to_column(as.data.frame(ntpm_df), "feature_id")
 counts_tab_scaled <- tibble::rownames_to_column(as.data.frame(
     counts_tab_scaled
 ), "feature_id")
@@ -104,7 +107,7 @@ write.table(
 )
 
 write.table(
-    rpkm_df, file.path(outdir, "rpkm_counts.tsv"),
+    ntpm_df, file.path(outdir, "ntpm.tsv"),
     col.names = TRUE, row.names = FALSE,
     sep = "\t", quote = FALSE
 )
