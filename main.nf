@@ -234,16 +234,16 @@ def helpMessage() {
     log.info"""
     Usage:
     The typical command for running the pipeline is as follows:
-      nextflow run StrainQuant --meta_file [file] --gpa_file [gene_presence_absence.csv] --group [str] -profile conda
+      nextflow run StrainQuant --meta_file [file] --gpa_file [gene_presence_absence.csv] -profile docker
 
     Mandatory arguments:
       --meta_file [file]              Path to file containing sample metadata.
       --gpa_file [file]               Path to file containing gene presence/absence per strain (from Panaroo output).
-      --group [str]                   Metadata column to use for grouping strains. Default = majority_ST.
       -profile [str]                  Configuration profile to use. Can use multiple (comma separated).
-                                      Available: conda, docker
+                                      Available: docker, singularity, conda, test, slurm, cambridge
 
     Other options:
+      --group [str]                   Metadata column used to colour samples in the UMAP. Default = majority_ST.
       --strandedness [str]            Strandedness of the reads. 0 = unstranded, 1 = forward-stranded, 2 = reverse-stranded, auto = inferred per sample from a subsample of reads. Default = auto.
       --fragment_len [str]            Estimated average fragment length for kallisto transcript quantification (only required for single-end reads). Default = 150.
       --fragment_sd [str]             Estimated standard deviation of fragment length for kallisto transcript quantification (only required for single-end reads). Default = 20.
