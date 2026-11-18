@@ -8,9 +8,6 @@ process CHECK_META_FILE {
     output:
     path 'metadata_final_*.tsv', emit: sample_metadata
 
-    when:
-    metadata.exists()
-
     script:
     def output_file = "metadata_final_${metadata.baseName}.tsv"
     """

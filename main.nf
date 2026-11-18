@@ -1,74 +1,14 @@
 #!/usr/bin/env nextflow
 
-nextflow.enable.dsl=2
-
 /*
 ================================================================================
     StrainQuant: strain-specific analysis of bacterial RNA-Seq data
 ================================================================================
     Github : [github.com/adamd3/StrainQuant]
+
+    Written to parse under both Nextflow 23.10 and the strict syntax of
+    Nextflow >= 25 (no top-level statements; errors via error()).
 */
-
-// Show help message
-if (params.help) {
-    helpMessage()
-    exit 0
-}
-
-// Has the run name been specified by the user?
-//  this has the bonus effect of catching both -name and --name
-custom_runName = params.name
-if (!(workflow.runName ==~ /[a-z]+_[a-z]+/)) {
-    custom_runName = workflow.runName
-}
-
-
-/*
-================================================================================
-    Validate inputs and create channels for files
-================================================================================
-*/
-
-// Validate required parameters
-if (!params.meta_file) {
-    exit 1, 'ERROR: --meta_file parameter is required. Please provide a path to the metadata file.'
-}
-if (!params.gpa_file) {
-    exit 1, 'ERROR: --gpa_file parameter is required. Please provide a path to the gene presence/absence file.'
-}
-if (!params.group) {
-    exit 1, 'ERROR: --group parameter is required. Please specify the metadata column for grouping strains.'
-}
-
-// Validate parameter values
-if (!(params.seed instanceof Integer)) {
-    exit 1, 'ERROR: --seed must be a whole number.'
-}
-if (params.strandedness !in [0, 1, 2, 'auto']) {
-    exit 1, 'ERROR: --strandedness must be 0 (unstranded), 1 (forward-stranded), 2 (reverse-stranded) or auto (inferred per sample).'
-}
-if (params.strandedness == 'auto' && params.strandedness_check_reads == 0) {
-    exit 1, 'ERROR: --strandedness auto needs the strandedness check; set --strandedness_check_reads > 0.'
-}
-if (params.fragment_len <= 0) {
-    exit 1, 'ERROR: --fragment_len must be greater than 0.'
-}
-if (params.fragment_sd <= 0) {
-    exit 1, 'ERROR: --fragment_sd must be greater than 0.'
-}
-if (!(params.strandedness_check_reads instanceof Integer) || params.strandedness_check_reads < 0) {
-    exit 1, 'ERROR: --strandedness_check_reads must be a whole number >= 0 (0 skips the check).'
-}
-if (params.max_missing_loci < 0 || params.max_missing_loci > 1) {
-    exit 1, 'ERROR: --max_missing_loci must be a fraction between 0 and 1.'
-}
-
-// Create file channels with validation
-ch_samples = file(params.meta_file, checkIfExists: true)
-ch_gpa_file = file(params.gpa_file, checkIfExists: true)
-
-
-
 
 /*
 ================================================================================
@@ -99,11 +39,11 @@ def create_fastq_channel(LinkedHashMap row) {
     // add path(s) of the fastq file(s) to the metadata
     def seq_meta = []
     if (!file(row.fastq1).exists()) {
-        exit 1, "ERROR: Please check input samplesheet -> Read 1 FastQ file does not exist!\n${row.fastq1}"
+        error("ERROR: Please check input samplesheet -> Read 1 FastQ file does not exist!\n${row.fastq1}")
     }
     if (meta.paired_end) {
         if (!file(row.fastq2).exists()) {
-            exit 1, "ERROR: Please check input samplesheet -> Read 2 FastQ file does not exist!\n${row.fastq2}"
+            error("ERROR: Please check input samplesheet -> Read 2 FastQ file does not exist!\n${row.fastq2}")
         }
         seq_meta = [ meta, [ file(row.fastq1), file(row.fastq2) ], file(row.fasta) ]
     } else {
@@ -113,12 +53,53 @@ def create_fastq_channel(LinkedHashMap row) {
 }
 
 
+
+// Check parameters before anything runs
+def validateParams() {
+    if (!params.meta_file) {
+        error('ERROR: --meta_file parameter is required. Please provide a path to the metadata file.')
+    }
+    if (!params.gpa_file) {
+        error('ERROR: --gpa_file parameter is required. Please provide a path to the gene presence/absence file.')
+    }
+    if (!params.group) {
+        error('ERROR: --group parameter is required. Please specify the metadata column for grouping strains.')
+    }
+    if (!(params.seed instanceof Integer)) {
+        error('ERROR: --seed must be a whole number.')
+    }
+    if (params.strandedness !in [0, 1, 2, 'auto']) {
+        error('ERROR: --strandedness must be 0 (unstranded), 1 (forward-stranded), 2 (reverse-stranded) or auto (inferred per sample).')
+    }
+    if (!(params.strandedness_check_reads instanceof Integer) || params.strandedness_check_reads < 0) {
+        error('ERROR: --strandedness_check_reads must be a whole number >= 0 (0 skips the check).')
+    }
+    if (params.strandedness == 'auto' && params.strandedness_check_reads == 0) {
+        error('ERROR: --strandedness auto needs the strandedness check; set --strandedness_check_reads > 0.')
+    }
+    if (params.fragment_len <= 0) {
+        error('ERROR: --fragment_len must be greater than 0.')
+    }
+    if (params.fragment_sd <= 0) {
+        error('ERROR: --fragment_sd must be greater than 0.')
+    }
+    if (params.max_missing_loci < 0 || params.max_missing_loci > 1) {
+        error('ERROR: --max_missing_loci must be a fraction between 0 and 1.')
+    }
+}
+
+
 /*
 ================================================================================
     Main workflow
 ================================================================================
 */
-workflow {
+workflow MAIN {
+
+    main:
+    ch_samples  = file(params.meta_file, checkIfExists: true)
+    ch_gpa_file = file(params.gpa_file, checkIfExists: true)
+
 
     /*
      *  Create channels for input files
@@ -233,21 +214,21 @@ workflow {
 
 }
 
+
 /*
 ================================================================================
-    Completion summary
+    Entry point
 ================================================================================
 */
-
-c_green = "\033[0;32m";
-c_reset = "\033[0m"
-
-workflow.onComplete {
-    log.info"""
-    Execution status: ${ workflow.success ? 'OK' : 'failed' }
-    ${c_green}Results are reported here: $params.outdir${c_reset}
-    ￼""".stripIndent()
+workflow {
+    if (params.help) {
+        helpMessage()
+    } else {
+        validateParams()
+        MAIN()
+    }
 }
+
 
 def helpMessage() {
     log.info"""

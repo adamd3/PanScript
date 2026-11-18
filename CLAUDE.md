@@ -111,8 +111,20 @@ file in sync with any change to normalisation code.
   rebuilt image or a per-process container.
 - Most `publishDir`s use `mode: 'symlink'`, so `results/` files point into `work/`. Use `cp -L`
   when saving outputs, and don't delete `work/` before copying.
-- CI (`.github/workflows/ci.yml`) builds **and pushes** `adamd3/strainseq:latest` to Docker Hub
-  on every run, then runs the test profile on Nextflow 21.10.3 and the latest release.
+- CI (`.github/workflows/ci.yml`, on pushes to `main`/`dev` and on PRs) runs the unit tests inside
+  the pinned image, then the test profile on Nextflow 23.10.1 and latest-stable, and checks the
+  outputs against `tests/baseline` with `tests/compare_to_baseline.py`. **CI never pushes
+  images.** `container.yml` only checks that the image still builds when `environment.yml` or the
+  `Dockerfile` changes. A PR that changes outputs on purpose must re-capture the baseline in the
+  same PR.
+- **Changing the software environment:** edit `environment.yml`; build the image locally; run
+  the unit tests inside it and the test profile against the baseline; **ask the user** before
+  `docker push` with a new version tag; then set that tag in `nextflow.config`
+  (`process.container`) and re-capture the baseline.
+- **Nextflow versions:** 23.10.0 and later (`manifest.nextflowVersion`). Code must parse under
+  Nextflow's strict syntax (default from 25.x): no statements outside workflows or functions; use
+  `error()`, not `exit`; no helper functions in config files; no `$VAR` environment variables in
+  config strings.
 - Containers: every process uses the single `process.container` set in `nextflow.config` (no
   per-module containers), built from `environment.yml` with **exact pinned versions** and the
   micromamba-based `Dockerfile`. Run the unit tests inside the image (`docker run --rm -v
