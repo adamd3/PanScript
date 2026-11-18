@@ -50,6 +50,9 @@ if (params.fragment_len <= 0) {
 if (params.fragment_sd <= 0) {
     exit 1, 'ERROR: --fragment_sd must be greater than 0.'
 }
+if (params.max_missing_loci < 0 || params.max_missing_loci > 1) {
+    exit 1, 'ERROR: --max_missing_loci must be a fraction between 0 and 1.'
+}
 
 // Create file channels with validation
 ch_samples = file(params.meta_file, checkIfExists: true)
@@ -63,7 +66,7 @@ ch_gpa_file = file(params.gpa_file, checkIfExists: true)
     Modules
 ================================================================================
 */
-include {CHECK_META_FILE} from './modules/metadata'
+include {CHECK_META_FILE; CHECK_FASTA_LOCI} from './modules/metadata'
 include {TRIMGALORE} from './modules/trim_reads'
 include {KALLISTO_QUANT; MERGE_COUNTS_AND_LENS} from './modules/kallisto'
 include {DESEQ_NORMALISE_COUNTS} from './modules/normalisation'
@@ -80,8 +83,9 @@ include {UMAP_SAMPLES} from './modules/plots'
 def create_fastq_channel(LinkedHashMap row) {
     // create sample metadata
     def meta = [:]
-    meta.sample_id    = row.sample_name
-    meta.paired_end   = row.paired.toBoolean()
+    meta.sample_id     = row.sample_name
+    meta.dna_sample_id = row.dna_sample_id
+    meta.paired_end    = row.paired.toBoolean()
 
     // add path(s) of the fastq file(s) to the metadata
     def seq_meta = []
@@ -121,6 +125,22 @@ workflow {
         .map { create_fastq_channel(it) }
         .set { ch_raw_reads_trimgalore }
 
+    /*
+     *  Check that each isolate's Panaroo loci are present in its FASTA
+     */
+    CHECK_FASTA_LOCI (
+        ch_gpa_file,
+        ch_raw_reads_trimgalore.map { meta, reads, fasta -> [ meta, fasta ] }
+    )
+    CHECK_FASTA_LOCI.out.missing
+        .collectFile(name: 'missing_loci.tsv', keepHeader: true, skip: 1, sort: true,
+                     storeDir: "${params.outdir}/pipeline_info")
+    CHECK_FASTA_LOCI.out.summary
+        .collectFile(name: 'fasta_loci_summary.tsv', keepHeader: true, skip: 1, sort: true,
+                     storeDir: "${params.outdir}/pipeline_info")
+    CHECK_FASTA_LOCI.out.message
+        .filter { it.trim() }
+        .subscribe { log.warn it.trim() }
 
     /*
      *  Trim + pseudo-align reads
@@ -216,6 +236,7 @@ def helpMessage() {
       --strandedness [str]            Strandedness of the reads. 0 = unstranded, 1 = forward-stranded, 2 = reverse-stranded. Default = 2.
       --fragment_len [str]            Estimated average fragment length for kallisto transcript quantification (only required for single-end reads). Default = 150.
       --fragment_sd [str]             Estimated standard deviation of fragment length for kallisto transcript quantification (only required for single-end reads). Default = 20.
+      --max_missing_loci [float]      Stop if more than this fraction of an isolate's Panaroo loci are missing from its FASTA. Missing loci are always reported in pipeline_info/missing_loci.tsv. Default = 0.5.
       --skip_trimming [bool]          Do not trim adaptors from FastQ files.
       --outdir [file]                 The output directory where the results will be saved (default: './results').
       --cachedir [str]                Defines the path where Singularity images are cached [default: $params.cachedir]

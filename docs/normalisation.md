@@ -38,6 +38,12 @@ When a gene group maps to several loci in an isolate, their counts and effective
 gene in that isolate, and the rate *c/L* is the pooled rate over its loci. If none of the loci were
 quantified (all missing from the isolate FASTA), the value is NA, not 0.
 
+Loci that Panaroo lists but that are missing from the isolate's FASTA can't be quantified. They're
+reported in `pipeline_info/missing_loci.tsv` (`CHECK_FASTA_LOCI`), with a `split_partial` flag when
+only some loci of a split gene are missing, because that gene is then undercounted. In the test
+data, every missing locus is a Panaroo "refound" gene flagged `_stop` or `_len`, which Bakta and
+Prokka don't output as CDS.
+
 (Before 2026-11-18 both were averaged. That gave the same rate, but it made *M<sub>g</sub>* the
 length of a fragment: in the test data, the median length of affected genes was typically half the
 true length.)
