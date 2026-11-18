@@ -11,8 +11,8 @@ clone or isolate; we don't assume they're strains) has its own gene set. Reads a
 with kallisto to that isolate's own genes. Counts are then merged across isolates through
 orthologous gene groups from a Panaroo pangenome (`gene_presence_absence` file) and normalised.
 
-Current working name: **StrainQuant** (renaming is on the TODO list; the Docker image is
-`adamd3/strainseq`). Target: publication in **Genome Biology**.
+Name: **PanScript** (decided 2026-11-18; previously StrainQuant, originally OrthoQuant). Docker
+image: `adamd3/panscript` (lowercase, as Docker requires). Target: publication in **Genome Biology**.
 
 ### Pipeline flow (main.nf)
 1. `CHECK_META_FILE`: validates metadata and adds a `paired` column (`bin/check_metadata.py`); then
@@ -56,7 +56,7 @@ User-run helper scripts (not part of the workflow) live in `scripts/`:
 - `dev` is the integration branch. Branch each task off `dev` as `feat/<short-name>`,
   `fix/<short-name>` or `docs/<short-name>`, then merge back into `dev`. **Until CI is fixed
   (PROGRESS.md H3), merge locally rather than through a GitHub PR.** Every PR currently triggers
-  a rebuild and push of `adamd3/strainseq:latest`, which changes the tools used by every run. Give each task its own
+  a rebuild and push of the image, which changes the tools used by every run. (No longer true since H3: CI never pushes images, so PRs are safe.) Give each task its own
   branch, so parallel agents don't collide. Note the branch in PROGRESS.md.
 - To release, merge `dev` into `main` and tag it `vX.Y.Z` (semantic versioning). Tag the Docker
   image the same way.
@@ -103,9 +103,9 @@ file in sync with any change to normalisation code.
 
 - Test run: `nextflow run . -profile test,docker --outdir ./results`. Test inputs are fetched from
   GitHub `main` via raw URLs (`configs/test.config`, `test_data/meta_merged.txt`), so CI tests the
-  data on `main`, not the data on your branch. The GitHub repo is `adamd3/StrainQuant`. The old
-  names `OrthoQuant` and `StrainSeq` redirect to it, and the local `origin` URL still uses
-  `OrthoQuant`, which works through the redirect.
+  data on `main`, not the data on your branch. The GitHub repo is `adamd3/PanScript`
+  (renamed from `adamd3/StrainQuant`; the old names `StrainQuant`, `OrthoQuant` and `StrainSeq`
+  redirect to it).
 - In a run, **`bin/` scripts come from your local checkout** (Nextflow puts `bin/` on PATH inside
   the container), but **tools (kallisto, fastp, R and its packages, umap-learn) come from the Docker
   image**. So script changes are tested straight away, but a new tool (for example fastp) needs a

@@ -2,9 +2,9 @@
 
 /*
 ================================================================================
-    StrainQuant: strain-specific analysis of bacterial RNA-Seq data
+    PanScript: isolate-specific bacterial RNA-Seq quantification across a pangenome
 ================================================================================
-    Github : [github.com/adamd3/StrainQuant]
+    Github : [github.com/adamd3/PanScript]
 
     Written to parse under both Nextflow 23.10 and the strict syntax of
     Nextflow >= 25 (no top-level statements; errors via error()).
@@ -234,7 +234,7 @@ def helpMessage() {
     log.info"""
     Usage:
     The typical command for running the pipeline is as follows:
-      nextflow run StrainQuant --meta_file [file] --gpa_file [gene_presence_absence.csv] -profile docker
+      nextflow run adamd3/PanScript --meta_file [file] --gpa_file [gene_presence_absence.csv] -profile docker
 
     Mandatory arguments:
       --meta_file [file]              Path to file containing sample metadata.
