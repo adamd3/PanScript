@@ -42,7 +42,7 @@ they edit the same scripts. Do them in this order, checking against the baseline
 reports and warnings but don't change existing values, so they can go on their own branches in
 parallel with Phase 1.
 
-**Phase 2: Trimming (P1, fastp), on `feat/fastp`.** This can start in parallel with Phase 1. It
+**Phase 2: Container rebuild bundle, P1 (fastp) + P9 (Python UMAP) + H2 (pinned versions).** One rebuild, one baseline re-capture. Originally: trimming (P1, fastp), on `feat/fastp`. This can start in parallel with Phase 1. It
 needs fastp in the container: rebuild the image or use a biocontainer per process. Expected:
 counts change slightly (different trimmer), so compare correlations with the baseline rather than
 requiring identical values.
@@ -75,6 +75,7 @@ results need the Phase 1–2 pipeline.
 | P6 | Output linear (non-log) matrices. | DONE (2026-11-18, `feat/normalisation`) | **Result:** new = 2^baseline − 1 for norm/rpkm; UMAP input identical (max |diff| 1e-14). UMAP itself is not deterministic between runs (see R11). Approved 2026-11-18. Drop the hard-coded `-t TRUE`, and say clearly in the README (and in file names or headers if useful) that values are untransformed. **`UMAP_SAMPLES` currently relies on log2 `norm_counts`, so `umap.R` must apply log2(x+1) itself** to keep the plot unchanged. |
 | P7 | Report loci that Panaroo lists but that are missing from the isolate FASTA. | TODO | Approved 2026-11-18 (R9/Q6): use whatever sequences the user provides, and **report** what's missing. Don't change values (missing loci stay NA, as now). Proposed design: a per-sample check before kallisto compares the Panaroo loci for that `dna_sample_id` with the FASTA headers and writes `pipeline_info/missing_loci.tsv` (sample, gene group, locus, flags such as `refound_stop` and `partial_split`, meaning only some loci of a split cell are present), plus a warning with counts per sample. Proposal (needs user OK, since it can stop runs): **fail** if most loci are missing (for example > 50%), which almost certainly means the wrong FASTA or a mismatched `dna_sample_id`. Note that with P5 (summing), a `partial_split` gene undercounts, so it must be flagged. |
 | P8 | Automatic strandedness check. | TODO | Approved 2026-11-18 (Q7b). Quantify a subsample of reads (for example 200k) per sample in both orientations (kallisto `--fr-stranded` / `--rf-stranded`). Infer forward/reverse/unstranded from the ratio, and **warn** when it disagrees with `--strandedness` (and possibly offer `--strandedness auto` to use the inferred value, as nf-core/rnaseq does). Report the result per sample in `pipeline_info/`. Thresholds and the auto mode need user sign-off. |
+| P9 | UMAP: fixed random seed, rewritten in Python. | TODO (Phase 2, with the container rebuild) | Approved 2026-11-18 (Q9). Replace `bin/umap.R` with a Python script using `umap-learn` with a fixed `random_state` (new `--seed` param, default 42), plus matplotlib or seaborn for the plot. Keep the same input (log2(`norm_counts` + 1), core genes only, NA rows dropped), the same `n_neighbors` rule (3 if fewer than 15 samples, else 15), and the same outputs (a saved embedding, which can no longer be `.rds`, so use a TSV of coordinates, plus `umap_<group>.png`). Needs `umap-learn` and a plotting library in the container. The plot will differ from the R version (different implementation and seed), which is expected. Check: two runs give identical coordinates. |
 | — | Suggested order: T0 → one branch `feat/normalisation` for P3 + P4 + P5 + P6 + P2 (they all touch the same R and Python scripts) → P1 (fastp; independent, can run in parallel on its own branch) → H-tasks. | | |
 
 ### Publication / repo hygiene (no change to outputs)
@@ -174,8 +175,8 @@ data on a branch get tested, and runs need no network.
 ## Open questions for the user
 
 - Q1–Q3: resolved 2026-11-18 (see Decision log).
-- **Q1b (P2):** Is the name "nTPM" / `ntpm.tsv` OK? (Implemented under that name on `feat/normalisation`; renaming is a one-line change.)
-- **Q9 (R11):** Fix the UMAP random seed (for example `--seed`, default 42) so plots are reproducible?
+- Q1b: resolved 2026-11-18. Keep `ntpm.tsv`; the "n" (normalised) is explained in the README and docs.
+- Q9: resolved 2026-11-18 → P9 (fixed seed; rewrite the UMAP in Python).
 - **Q4 (R5):** Mixed single-end and paired-end input: support it or reject it?
 - **Q5 (H1):** Name ideas: should the name stress pangenome, isolate-specific or reference-free?
 - Q6: resolved 2026-11-18 → P7. The FASTA files are per-isolate CDS from Bakta or Prokka, the same
@@ -204,4 +205,7 @@ data on a branch get tested, and runs need no network.
 | 2026-11-18 | Loci missing from user FASTA: quantify what's provided, keep missing ones NA, and report them in a log (P7). | Don't silently discard genes, but sequences are the user's responsibility. |
 | 2026-11-18 | Add an automatic strandedness check (P8). | The test data runs with the wrong strandedness (R10); this protects users from the same mistake. |
 | 2026-11-18 | Phase 1 implemented on `feat/normalisation`: P4, P3, P6, P5, P2, each checked against the baseline and unit tests. | See task rows for the observed differences. |
+| 2026-11-18 | Keep the name `ntpm.tsv` (nTPM). | Confirmed by user; explain the "n" in the README and docs. |
+| 2026-11-18 | UMAP: fixed seed, rewritten in Python (P9). | Reproducible figures; the other scripts are mostly Python. |
+| 2026-11-18 | Order: Phase 1b (P7, P8) next on the current container, then Phase 2 bundles P1 (fastp) + P9 (Python UMAP) + H2 (pinned rebuild) into one container rebuild. | P7/P8 need no new tools, so they can be checked cleanly against baseline v2. Every tool-version change is then confined to one rebuild and one baseline re-capture. |
 | 2026-11-18 | Git workflow: `main` (releases) / `dev` (integration) / feature branches; no AI attribution in commits. | User delegated branching; user request on attribution. |

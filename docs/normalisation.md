@@ -102,9 +102,10 @@ one fragment length per locus, so for split genes the summed effective length is
 shorter than the intact gene); sequence and position bias; and sequence divergence within an
 ortholog group.
 
-**Name:** "nTPM" (normalised TPM), following the Human Protein Atlas's use of the term for
-TPM normalised across samples. Our size-factor method should be stated explicitly wherever the
-term is used. (Name pending user confirmation, PROGRESS.md Q1b.)
+**Name:** "nTPM", file `ntpm.tsv`. The "n" stands for *normalised*: library size comes from
+core-genome size factors rather than each sample's own total. The name follows the Human
+Protein Atlas's use of "nTPM" for TPM normalised across samples, although their method (TMM on
+TPM) differs from ours, so state our size-factor method wherever the term is used.
 
 ### 6. Output scale
 All output matrices are **linear** (not log-transformed). Users should apply their own transform
