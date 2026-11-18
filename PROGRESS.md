@@ -19,7 +19,43 @@ Read [CLAUDE.md](CLAUDE.md) first.
 
 ---
 
+## ▶ Start here (status as of 2026-11-18, end of day)
+
+**Where things stand.** Phases 0, 1, 1b and 2 are done, and most of Phase 3 too. All of it is on
+`dev` and pushed. The pipeline is **PanScript** (GitHub repo `adamd3/PanScript`, image
+`adamd3/panscript:2.0.0-dev`). CI is green on Nextflow 23.10.1 and latest-stable, and outputs match
+`tests/baseline` (v3) exactly. Note that `main` still has the old pre-2026 code; nothing has been
+released yet.
+
+**Next steps, in order:**
+1. **Q12: waiting on the user** (recommended: yes). Strip Panaroo status suffixes (`_len`, `_pseudo`,
+   `_stop`) when matching locus IDs (R12). Where: `bin/merge_kallisto_counts.py`,
+   `bin/merge_kallisto_lens.py`, `bin/check_fasta_loci.py` (try the raw ID first, then the stripped
+   one). Expected on the test data: missing loci 130 → 0, 41–47 more genes quantified per isolate,
+   core set +39. This changes outputs, so add unit tests, check the differences are confined to
+   those genes, **re-capture baseline v4**, and update `docs/normalisation.md` and the README
+   `max_missing_loci` text.
+2. **H6: nf-core cost/benefit write-up** (not started). What nf-core listing would require
+   (template, nf-schema/`nextflow_schema.json`, nf-core modules, MultiQC, nf-test, linting) versus
+   cheap wins worth taking anyway. A short doc for the user to decide.
+3. **Test `scripts/prepare_inputs_from_panaroo.py` on a real Panaroo run.** It's only tested on a
+   synthetic directory. Ask the user for a real Panaroo output (`gene_data.csv` +
+   `gene_presence_absence.csv`).
+4. **Release v2.0.0** (needs user OK): build and push `adamd3/panscript:2.0.0` with
+   `scripts/build_and_push_image.sh 2.0.0`; set it in `nextflow.config`; manifest `version = '2.0.0'`;
+   CHANGELOG; CITATION.cff; merge `dev` into `main`; tag `v2.0.0`; Zenodo DOI (H7 remaining).
+5. **Manuscript** M1 (outline), M2 (benchmark design, including PanXpress and microberna
+   comparisons), M3 (showcase dataset), M4 (redraw the pipeline diagram).
+6. **Smaller open items:** Q4/R5 (mixed single-end and paired-end input), R7 (document the
+   recommended downstream DE workflow), H3 remainder (a test option using local `test_data/`
+   instead of GitHub URLs).
+
+---
+
 ## Plan (overview)
+
+Status: Phase 0 ✓ · Phase 1 ✓ · Phase 1b ✓ · Phase 2 ✓ · Phase 3 mostly ✓ (H6 and parts of H7 left) ·
+Phase 4: renamed ✓, release pending · Phase 5 not started.
 
 Phases run in order. Within a phase, tasks on separate branches can run in parallel.
 
@@ -51,10 +87,11 @@ requiring identical values.
 (fix CI, plus a test option that reads local files), H4/H7/H8 (cleanup), H5 (README), then
 H6 (nf-core cost/benefit write-up).
 
-**Phase 4: Name and release (H1).** Rename everything. Merge `dev` into `main` and tag `v1.0.0`.
-Get a Zenodo DOI.
+**Phase 4: Name and release (H1).** Rename everything (done: PanScript). Merge `dev` into
+`main` and tag `v2.0.0` (the manifest is at 2.0.0dev; the pre-2026 code counts as 1.x). Get a Zenodo
+DOI.
 
-**Phase 5: Manuscript (M1–M3).** Outline and benchmarking design can start any time, but the
+**Phase 5: Manuscript (M1–M4).** Outline and benchmarking design can start any time, but the
 results need the Phase 1–2 pipeline.
 
 ---
@@ -83,7 +120,7 @@ results need the Phase 1–2 pipeline.
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| H1 | Choose a new pipeline name. | DONE in repo (2026-11-18, `chore/rename-panscript`); GitHub repo rename pending user OK | **Decided 2026-11-18: PanScript.** Renamed everywhere describing the current pipeline (README, main.nf, manifest, environment name, test config and test-data URLs, CLAUDE.md, diagram filename); historical records keep old names. Image re-tagged and pushed as `adamd3/panscript:2.0.0-dev` (same digest `b97d5bec…`). URLs now point to `github.com/adamd3/PanScript`, which only works once the GitHub repo is renamed, so the branch is held until then. Docs diagram `panscript_pipeline_lowres.png` still shows the old name and Trim Galore steps → redraw (M4). History: OrthoQuant (original) → StrainQuant. The GitHub repo is currently `adamd3/StrainQuant`, and the old names `OrthoQuant` and `StrainSeq` redirect to it. Renaming the repo back to OrthoQuant would work smoothly with GitHub's redirects. Candidates proposed 2026-11-18: **OrthoQuant** (recommended), **PanQuant**. A quick web search found no tool with either exact name; the nearest are *OrthoQuantum* (eukaryotic phylogenetic profiling, NAR 2022) and *PanXpress* (bacterial pan-transcriptomics). Before deciding, check bioconda, PyPI and GitHub for clashes. It should describe what the pipeline does: per-isolate pseudo-alignment and pangenome-aware merging of expression. It shouldn't imply "strains". Then rename everything: repo, README, `main.nf` header and help, Docker image `adamd3/strainseq`, conda env name, CI, test URLs. |
+| H1 | Choose a new pipeline name. | DONE (2026-11-18, `chore/rename-panscript`, merged into `dev`); GitHub repo renamed to `adamd3/PanScript` by the user, local remote updated | **Decided 2026-11-18: PanScript.** Renamed everywhere describing the current pipeline (README, main.nf, manifest, environment name, test config and test-data URLs, CLAUDE.md, diagram filename); historical records keep old names. Image re-tagged and pushed as `adamd3/panscript:2.0.0-dev` (same digest `b97d5bec…`). URLs point to `github.com/adamd3/PanScript` (verified 200; old names redirect). Docs diagram `panscript_pipeline_lowres.png` still shows the old name and Trim Galore steps → redraw (M4). History: OrthoQuant (original) → StrainQuant. The GitHub repo is currently `adamd3/StrainQuant`, and the old names `OrthoQuant` and `StrainSeq` redirect to it. Renaming the repo back to OrthoQuant would work smoothly with GitHub's redirects. Candidates proposed 2026-11-18: **OrthoQuant** (recommended), **PanQuant**. A quick web search found no tool with either exact name; the nearest are *OrthoQuantum* (eukaryotic phylogenetic profiling, NAR 2022) and *PanXpress* (bacterial pan-transcriptomics). Before deciding, check bioconda, PyPI and GitHub for clashes. It should describe what the pipeline does: per-isolate pseudo-alignment and pangenome-aware merging of expression. It shouldn't imply "strains". Then rename everything: repo, README, `main.nf` header and help, Docker image `adamd3/strainseq`, conda env name, CI, test URLs. |
 | H2 | Pin software versions and rebuild the container. | MOSTLY DONE (2026-11-18) | **Published** `adamd3/strainseq:2.0.0-dev`, now `adamd3/panscript:2.0.0-dev` (`sha256:b97d5bec…`) with the user's approval; it's set once in `nextflow.config` and `--pull=always` was removed. Baseline v3 was captured with it. **Remaining:** a final release tag (with the final name, H1), an optional multi-arch build, and CI still builds and pushes `:latest` (H3). **Done:** `environment.yml` fully pinned (kallisto, DESeq2, R and pandas unchanged from the baseline image; adds fastp 1.4.0, umap-learn 0.6.0, matplotlib 3.10.9, procps-ng; drops `defaults`, Trim Galore, FastQC, edgeR, R umap, multiqc and pyfaidx); micromamba 1.5.10 Dockerfile without `COPY . /app`; `.dockerignore`; per-module containers removed (one `process.container` in nextflow.config). Built locally as `strainquant-local:phase2` (amd64); all 32 unit tests pass inside it. **Remaining:** publish the image with a version tag (needs the user's OK and the final name), set that tag in config, drop `--pull=always`, re-capture baseline v3 with the published digest, multi-arch build (optional). **Not before T0; combine the rebuild with P1** (fastp has to go in the image anyway). Dockerfile/env issues: (1) base `continuumio/miniconda3` is unpinned; pin it or switch to a pinned `mambaorg/micromamba`. (2) `environment.yml` uses `>=`; pin exact versions. (3) Drop the Anaconda `defaults` channel (licensing terms for large organisations); use conda-forge + bioconda with strict priority. (4) `COPY . /app` bakes the whole repo (test data, stray files) into the image; it isn't needed, since Nextflow supplies `bin/`. Remove it or add a `.dockerignore`. (5) Update dependencies: add fastp; remove trim-galore, fastqc and (after P4) edgeR; keep multiqc only if used. (6) Replace `:latest` and `--pull=always` (always-pull also makes every task contact Docker Hub: on 2026-11-18 a test run failed on a registry timeout and needed `-resume`) with a version tag `adamd3/<name>:vX.Y.Z`, set once in config (modules also hard-code the image). (7) Build for amd64 **and** arm64 with `docker buildx` *if* all bioconda dependencies have linux-aarch64 builds; check each one, otherwise stay amd64-only. After rebuilding, compare outputs with the T0 baseline: a new kallisto or DESeq2 version could shift values slightly. |
 | H3 | Fix CI. | DONE (2026-11-18, `fix/ci`); **first CI run on `dev` green**: unit tests, plus 23.10.1 and latest-stable both matching baseline v3 exactly on Linux, UMAP included | **Result:** new `ci.yml`: unit tests inside the pinned image; test profile on Nextflow 23.10.1 and latest-stable; outputs compared against `tests/baseline`. Triggers: push to main/dev, PRs. No secrets, **no image pushes**. New `container.yml`: build-only check when environment.yml/Dockerfile change. **Nextflow 26 compatibility (found while testing locally):** the strict syntax rejected `check_max()` in config (replaced with inline closures), `$PWD` in config (`System.getenv('PWD')`), top-level statements in main.nf (moved into `validateParams()` + `workflow MAIN`), `exit` (`error()`), and `workflow.onComplete` in the body (removed; Nextflow prints its own summary). `when: metadata.exists()` made Nextflow 26 silently skip **every** task (URL input), so it was removed. `docker.userEmulation` is gone in 26, so `docker.runOptions = '-u $(id -u):$(id -g)'` keeps tasks running as the calling user (the new image's default user is `mambauser`, which would break on Linux). Removed `nextflow.enable.dsl=2` (minimum is now 23.10, where DSL2 is the default). Added a `manifest` (nextflowVersion >= 23.10.0, version 2.0.0dev). Verified locally: 23.10.1 and 26.10.6 both give outputs identical to baseline v3; `--help` and parameter errors work on both. Still open: test data comes from GitHub `main` URLs; optional local test option. No run history shows on GitHub. That's expected: Actions is enabled and the secrets exist, but the last push was in July 2025, so old runs have passed the retention limit. The push job's `if:` checks `github.repository == 'adamd3/StrainQuant'`. That's correct today, but it must be updated if the repo is renamed (H1). **Side effect to fix before using PRs:** every PR run rebuilds the image from unpinned `environment.yml` and **pushes it as `adamd3/strainseq:latest`**. That silently changes the tools that every `-profile docker` run (and the T0 baseline digest) uses. Until H3 is fixed, merge branches into `dev` locally instead of through GitHub PRs. It pushes `:latest` on every PR, and fork PRs have no secrets. It only triggers on pushes to `main` (add `dev`). It uses old actions (`checkout@v2`, `login-action@v1`). Test data comes from `main`, not the branch under test. The minimum Nextflow version is 21.10.3, which is old. Consider adding small unit tests (pytest/testthat) for the merging and normalisation scripts. |
 | H4 | Clean up unused code. | DONE (2026-11-18, `chore/cleanup`) | **Result:** removed `modules/make_clone_fasta.nf`, `bin/make_single_clone_fasta.py`, `bin/merge_metadata.py`, `bin/length_scale_counts.R` (its median-length scaling already lives in `DESeq2_normalise_counts.R`), `configs/container.config` and `requirements.txt` (user approved). **Replaced** the clone-FASTA helper with `scripts/prepare_inputs_from_panaroo.py`, which uses Panaroo's `gene_data.csv` (includes refound genes), strips Panaroo status suffixes and writes a metadata template. 4 unit tests on a synthetic Panaroo directory built from Panaroo's own writer code (not yet tested on a real Panaroo run, since no `gene_data.csv` is in test_data). See "Unused files" in CLAUDE.md. Confirm with the user before deleting (some may be useful as helper utilities). |
