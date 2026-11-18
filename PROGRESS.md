@@ -1,0 +1,171 @@
+# PROGRESS.md
+
+Shared progress tracker for everyone working on this repo, people and agents alike.
+Read [CLAUDE.md](CLAUDE.md) first.
+
+## Protocol
+
+- **Claim a task before starting.** Change its status to `IN PROGRESS (<agent/branch>, YYYY-MM-DD)`.
+  Don't start a task someone else has claimed. If two tasks touch the same files (for example
+  P2/P3/P4 all edit the normalisation R scripts), do them on one branch, or one after another.
+- **When you finish**, set the status to `DONE (YYYY-MM-DD)`, add a one-line summary, and name the
+  branch, PR or commit.
+- **Decisions** made with the user go in the Decision log. Write down the reasoning, not just the
+  result.
+- **Questions for the user** go in Open questions. Don't act on an output-affecting change until
+  the user has answered.
+- Status values: `TODO` · `IN PROGRESS` · `BLOCKED (reason)` · `NEEDS USER (question)` · `DONE`.
+- Use absolute dates. Branch each task off `dev` (see Git workflow in CLAUDE.md).
+
+---
+
+## Plan (overview)
+
+Phases run in order. Within a phase, tasks on separate branches can run in parallel.
+
+**Phase 0: Baseline (T0).** Before any code changes, run the test profile on unchanged `main` and
+save its outputs, as a fixed record of current behaviour. Then every later change can be checked
+against it.
+
+**Phase 1: Normalisation changes.** These are all on one branch, `feat/normalisation`, because
+they edit the same scripts. Do them in this order, checking against the baseline after each one:
+1. P3: remove `--perc` and `SUBSET_GENES`. Expected: outputs identical (the subset was never used).
+2. P4: remove TMM. Expected: DESeq2 outputs identical.
+3. P6: linear outputs, with `umap.R` applying log2 itself. Expected: new = 2^old − 1, and the UMAP
+   is identical.
+4. P5: sum split genes. Expected: only split-gene rows change in `raw_counts`/`norm_counts`, and
+   their c/L rate is unchanged.
+5. P2: replace RPKM with nTPM. New output; check by hand on synthetic data.
+6. Update `docs/normalisation.md` (remove the *[planned]* markers) and the README Output section.
+
+**Phase 2: Trimming (P1, fastp), on `feat/fastp`.** This can start in parallel with Phase 1. It
+needs fastp in the container: rebuild the image or use a biocontainer per process. Expected:
+counts change slightly (different trimmer), so compare correlations with the baseline rather than
+requiring identical values.
+
+**Phase 3: Reproducibility and repo hygiene.** H2 (pin versions and version-tag the image), H3
+(fix CI, plus a test option that reads local files), H4/H7/H8 (cleanup), H5 (README), then
+H6 (nf-core cost/benefit write-up).
+
+**Phase 4: Name and release (H1).** Rename everything. Merge `dev` into `main` and tag `v1.0.0`.
+Get a Zenodo DOI.
+
+**Phase 5: Manuscript (M1–M3).** Outline and benchmarking design can start any time, but the
+results need the Phase 1–2 pipeline.
+
+---
+
+## Tasks
+
+### Pipeline changes (these affect outputs, so get user sign-off on the details)
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| P1 | Replace Trim Galore with fastp for adaptor trimming; drop FastQC (fastp does QC). | TODO | Approved. Also update the `KALLISTO_QUANT` filename symlinks (they rely on Trim Galore's names), `environment.yml`, README and `save_trimmed` publishing. Consider publishing the fastp JSON/HTML reports, and optionally MultiQC (already in env). Agree fastp parameters with the user. |
+| T0 | Capture baseline outputs and add a regression check. | TODO (waiting for user to start Docker) | **Do this first.** See "T0 procedure" below. Also add small synthetic-data unit tests for the merge and normalisation scripts. |
+| P2 | Replace RPKM with nTPM, computed from DESeq2 core-gene size factors. | TODO | Approved 2026-11-18 (option b). Definition: x_gs = (c_gs / L_gs) / sf_s, where L is the isolate's own effective length, then multiplied by one global constant K so that the mean over samples of the per-sample total (all non-NA genes) is 1e6. K is identical for every gene and sample, so it doesn't affect comparisons. Proposed name: **nTPM** ("normalised TPM", a precedent from the Human Protein Atlas), file `ntpm.tsv`; check the name with the user. The README and methods must state that per-sample totals are only *approximately* 1e6. Median length cancels out, so P5 doesn't affect this output. |
+| P3 | Remove `--perc`, `SUBSET_GENES` and `gene_set_ST_*.tsv`; output every gene. | TODO | Approved 2026-11-18. Also remove the `-p` branch in the R scripts, `bin/subset_genes.py`, and the param from config, help, README and validation. Accessory genes stay NA. |
+| P4 | Remove TMM: DESeq2 only. | TODO | Approved 2026-11-18. Remove `TMM_NORMALISE_COUNTS`, `bin/TMM_normalise_counts.R` and `--norm_method` (help, config, README, validation). edgeR can then come out of `environment.yml`. |
+| P5 | Sum (not average) counts and effective lengths for split genes. | TODO | Approved 2026-11-18. Edit `bin/merge_kallisto_counts.py` and `bin/merge_kallisto_lens.py`. The per-isolate rate is unchanged; the median length, and so the magnitude of `raw_counts` and `norm_counts`, changes only for genes that are split in some isolates. |
+| P6 | Output linear (non-log) matrices. | TODO | Approved 2026-11-18. Drop the hard-coded `-t TRUE`, and say clearly in the README (and in file names or headers if useful) that values are untransformed. **`UMAP_SAMPLES` currently relies on log2 `norm_counts`, so `umap.R` must apply log2(x+1) itself** to keep the plot unchanged. |
+| — | Suggested order: T0 → one branch `feat/normalisation` for P3 + P4 + P5 + P6 + P2 (they all touch the same R and Python scripts) → P1 (fastp; independent, can run in parallel on its own branch) → H-tasks. | | |
+
+### Publication / repo hygiene (no change to outputs)
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| H1 | Choose a new pipeline name. | TODO | The git remote is already `github.com/adamd3/OrthoQuant`, but the code, README, CI and test URLs still say StrainQuant. Is OrthoQuant the candidate? It should describe what the pipeline does: per-isolate pseudo-alignment and pangenome-aware merging of expression. It shouldn't imply "strains". Then rename everything: repo, README, `main.nf` header and help, Docker image `adamd3/strainseq`, conda env name, CI, test URLs. |
+| H2 | Pin software versions for reproducibility. | TODO | `environment.yml` uses `>=`. Containers use `:latest` with `--pull=always`. Publish a versioned image tag and pin it in the config. |
+| H3 | Fix CI. | TODO | It pushes `:latest` on every PR, and fork PRs have no secrets. It only triggers on pushes to `main` (add `dev`). It uses old actions (`checkout@v2`, `login-action@v1`). Test data comes from `main`, not the branch under test. The minimum Nextflow version is 21.10.3, which is old. Consider adding small unit tests (pytest/testthat) for the merging and normalisation scripts. |
+| H4 | Clean up unused code. | TODO | See "Unused files" in CLAUDE.md. Confirm with the user before deleting (some may be useful as helper utilities). |
+| H5 | Update README. | TODO | Use the agreed definitions of the output matrices (CLAUDE.md, "Meaning of the output matrices"). Update parameters after P3/P4. Add a citation section. Do this after P1–P6 land. |
+| H6 | Assess nf-core compliance. | TODO | The user is reluctant to do heavy lifting just for nf-core. First write up a cost/benefit: what nf-core listing needs (template, nf-schema, modules, MultiQC, nf-test) versus cheap wins worth taking anyway (`nextflow_schema.json`, `-profile test`, versioned containers, `versions.yml`). |
+| H7 | Clean up the repo. | TODO | Stray zero-byte `test_data/.!NNNNN!*.fq.gz` files (failed-transfer leftovers, untracked). Decide whether to commit `docker_build_and_push.sh`. Add a CITATION.cff and a Zenodo DOI before submission. |
+| H8 | Fix minor code issues (R8). | TODO | No output change. |
+
+### Manuscript (Genome Biology)
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| M1 | Draft an outline for a Genome Biology "Method" or "Software" article. | TODO | Check the current GB article types and requirements: availability, OSI licence (MIT ✓), archived version. |
+| M2 | Plan benchmarking and validation. | TODO | For example, compare against single-reference mapping (such as PAO1) on multi-isolate datasets; use simulated reads with known expression for different isolate sets and accessory fractions; check robustness of core-gene size factors as core size shrinks. The design needs input from the user. |
+| M3 | Choose the showcase dataset(s). | TODO | Test data is *P. aeruginosa* (SRX5123741/2/4, the HZI AMR cohort). |
+
+### T0 procedure (baseline run)
+
+How the test is wired (checked 2026-11-18): `-profile test` loads `configs/test.config`. That
+sets `meta_file` and `gpa_file` to raw GitHub URLs for `test_data/` on `main`.
+`meta_merged.txt` in turn points `fastq1`/`fasta` at raw GitHub URLs. So the test uses the
+`test_data/` files, but **downloads them from GitHub `main`**, not from the local folder. That's the
+same input CI uses: 3 *P. aeruginosa* isolates, single-end, subsampled. Local `main` matches
+`origin/main` and all the URLs return 200.
+
+Steps:
+1. Run on unchanged `main` (code untouched; only the notes are committed):
+   `nextflow run . -profile test,docker --outdir <scratch>/baseline_results -w <scratch>/work`
+   (with `JAVA_HOME` set as described in CLAUDE.local.md on the user's Mac).
+2. Record the Nextflow version, git commit and the image digest of `adamd3/strainseq:latest`
+   (amd64 only; last pushed 2025-07-29). `--pull=always` means a later image push could change
+   the tools, which is why the digest matters.
+3. Copy the outputs with `cp -L` (they're symlinks into `work/`) to `tests/baseline/`. The key
+   files are `gene_counts/{raw_counts,norm_counts,rpkm_counts}.tsv`, the
+   `kallisto_quant/kallisto_merged_*` tables and `pipeline_info/metadata_final_*.tsv`. They're
+   small enough to commit.
+4. Write a small comparison script (`tests/compare_to_baseline.py`) that checks each Phase 1
+   expectation and reports any unexpected differences.
+
+Later (H3): add a test option that reads the **local** `test_data/` files, so changes to test
+data on a branch get tested, and runs need no network.
+
+---
+
+## Code review findings (2026-11-18)
+
+- **R1. `--perc` does nothing.** Resolved: remove it (P3).
+- **R2. RPKM ignores size factors.** It uses column sums of length-scaled counts over all non-NA
+  genes. Resolved: being replaced (P2).
+- **R3. TMM `norm_counts` are on a different scale from DESeq2's.** Resolved: TMM is being removed
+  (P4).
+- **R4. Split genes.** Counts and effective lengths are both averaged across the `;`-separated
+  loci, so counts/length = sum/sum and the per-isolate rate is correct. **But** the median length
+  across isolates is taken from the *averaged* (per-fragment) length. If a gene is split into two
+  in most isolates, the median comes out at about half the full gene length. This doesn't affect
+  comparisons across samples within a gene (it's a per-gene constant), but it does make
+  `raw_counts` too small for that gene and would bias any between-gene measure (P2). Fix: sum
+  instead of averaging (P5). Small additional caveat: kallisto's effective length subtracts about
+  one fragment length per locus, so two fragments have a summed effective length slightly shorter
+  than the intact gene. This is minor and probably not worth correcting.
+- **R5. Paired-end detection is global.** `check_metadata.py` marks every sample as paired if any
+  `fastq2` is filled in, so mixed single-end and paired-end inputs would break. Unanswered: should
+  mixed input be supported, or rejected with a clear error?
+- **R6. Log2 outputs.** `norm_counts.tsv` and `rpkm_counts.tsv` are log2(x+1)-transformed
+  (`-t TRUE` is hard-coded), but the file names and README don't say so (P6).
+- **R7. Downstream differential expression.** Length scaling gives non-integer `raw_counts`. If
+  users take them into DESeq2 for differential expression, document the recommended route:
+  rounded `raw_counts`, or raw `est_counts` plus a per-gene, per-sample length offset (as tximport
+  does). Unanswered; lower priority, but reviewers may ask.
+- **R8. Minor issues** (fine to fix with no output change): `KALLISTO_QUANT` takes the `gpa`
+  input but never uses it; `ch_trimgalore_*` channels are never consumed; `when: metadata.exists()`
+  can never be false; the `--group` help text says it's mandatory and also gives a default; the
+  `slurm` profile needs `params.workdir`, which is never defined.
+
+## Open questions for the user
+
+- Q1–Q3: resolved 2026-11-18 (see Decision log).
+- **Q1b (P2):** Is the name "nTPM" / `ntpm.tsv` OK?
+- **Q4 (R5):** Mixed single-end and paired-end input: support it or reject it?
+- **Q5 (H1):** Name ideas: should the name stress pangenome, isolate-specific or reference-free?
+
+## Decision log
+
+| Date | Decision | Reasoning |
+|------|----------|-----------|
+| 2026-11-18 | Created CLAUDE.md and PROGRESS.md for multi-agent coordination. | User request. |
+| 2026-11-18 | Remove `--perc`; output all genes with NA for absent genes. | It was meant as a gene-inclusion filter but was never wired in; not needed. |
+| 2026-11-18 | Drop TMM; DESeq2 median-of-ratios only. | Simpler; avoids the TMM scale inconsistency (R3). |
+| 2026-11-18 | The length-normalised measure must use core-gene scaling, not per-sample totals over all genes. | Different accessory content between isolates would distort per-sample totals. |
+| 2026-11-18 | Keep split-gene averaging of the per-isolate rate (pending Q2 on median length). | Mean/mean = sum/sum, so the rate is correct. |
+| 2026-11-18 | Length-normalised measure = option (b): (count / own effective length) / DESeq2 core size factor × global constant to TPM-like scale. Rejected plain TPM and core-anchored TPM. | Robust to differing accessory content and to a few dominant core genes. Comparable between genes and across samples. |
+| 2026-11-18 | Split genes: sum counts and lengths (P5). | Median length then reflects the intact gene. |
+| 2026-11-18 | Output linear matrices, not log2 (P6). | More conventional; users log-transform as needed. Must be stated clearly. |
+| 2026-11-18 | Git workflow: `main` (releases) / `dev` (integration) / feature branches; no AI attribution in commits. | User delegated branching; user request on attribution. |
