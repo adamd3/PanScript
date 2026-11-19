@@ -68,6 +68,11 @@ and refound gene, so refound pseudogenes are included. It also writes a metadata
     python scripts/prepare_inputs_from_panaroo.py \
         --panaroo_dir /path/to/panaroo_output --outdir pipeline_inputs
 
+Both Panaroo files can be gzipped (`gene_data.csv.gz`, `gene_presence_absence.csv.gz`).
+`gene_data.csv` is large (about 10 GB compressed for 3,000 genomes) but is streamed, so memory use
+stays small. Add `--isolates ID1 ID2 ...` to write FASTAs only for the isolates you have RNA-seq
+data for; it still reads the whole file (a few minutes for 3,000 genomes).
+
 This creates `pipeline_inputs/fasta/<isolate>.fna` and `pipeline_inputs/metadata_template.tsv`
 (with `dna_sample_id` and `fasta` filled in). Complete the template with `rna_sample_id`,
 `sample_name`, `fastq1` and `fastq2` (one row per RNA-seq sample), and pass Panaroo's

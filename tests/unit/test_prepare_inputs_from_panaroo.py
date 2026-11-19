@@ -9,6 +9,7 @@ carry status suffixes (_len, _pseudo, or _stop in older versions).
 """
 
 import csv
+import gzip
 import shutil
 import subprocess
 import sys
@@ -103,6 +104,26 @@ class PrepareInputsTest(unittest.TestCase):
         self.assertFalse((self.d / "out" / "fasta" / "isoA.fna").exists())
         r = self.run_script("--isolates", "nope")
         self.assertNotEqual(r.returncode, 0)
+
+    def test_gzipped_inputs(self):
+        p = self.d / "panaroo"
+        plain = self.run_script()
+        expected = (self.d / "out" / "fasta" / "isoA.fna").read_text()
+        shutil.rmtree(self.d / "out")
+        for name in ("gene_data.csv", "gene_presence_absence.csv"):
+            with open(p / name, "rb") as src, gzip.open(p / (name + ".gz"), "wb") as dst:
+                dst.write(src.read())
+            (p / name).unlink()
+        r = self.run_script()
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(r.stderr, plain.stderr)
+        self.assertEqual((self.d / "out" / "fasta" / "isoA.fna").read_text(), expected)
+
+    def test_missing_input_file(self):
+        (self.d / "panaroo" / "gene_data.csv").unlink()
+        r = self.run_script()
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("gene_data.csv(.gz) not found", r.stderr)
 
 
 if __name__ == "__main__":
