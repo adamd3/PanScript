@@ -57,6 +57,7 @@ Sadenosylmethioninedecarboxylaseproenzyme	646.0	646.0	646.0
 50SribosomalproteinL33	19.0638	19.0638	19.0638
 2dehydro3deoxyphosphooctonatealdolase	697.0	697.0	697.0
 ddpX~~~tetD	613.0	613.0	613.0
+fdnG~~~fdoG	2932.0	2932.0	2932.0
 ATPsynthaseAchain	721.0	721.0	721.0
 group_18332	667.0	667.0	667.0
 psiE~~~tolC_3~~~tolC_2~~~tolC_1	139.0	139.0	139.0
@@ -3415,6 +3416,7 @@ yafL_2~~~yafL_1~~~hypotheticalprotein	448.0	448.0	448.0
 cheD~~~cheB2~~~conservedhypotheticalprotein	1355.0	1355.0	1355.0
 allR~~~iclR~~~allR_2~~~probabletranscriptionalregulator	631.0	631.0	631.0
 group_5886	553.0	553.0	553.0
+group_5794	1261.0	1261.0	1261.0
 gyrA_2~~~gyrA~~~gyrA_1	2623.0	2617.0	2623.0
 ytpA_3~~~ytpA_1	1612.0	1612.0	1612.0
 group_5689	97.0001	97.0001	97.0001
@@ -3481,6 +3483,7 @@ group_2101	307.0	307.0	307.0
 group_1677	139.0	139.0	139.0
 catI~~~subunitAprobableCoAtransferase	703.0	703.0	703.0
 HistidinephosphotransferproteinHptC	217.0	217.0	217.0
+group_748	115.0	9.8295	115.0
 lipopolysaccharidebiosyntheticproteinLpxO1	751.0	751.0	751.0
 group_543	229.0	229.0	229.0
 srpR~~~probabletranscriptionalregulator	520.0	520.0	520.0
@@ -3620,11 +3623,12 @@ group_6656	340.0	340.0	340.0
 fepA~~~fepA_2~~~fepA_3~~~fepA_1~~~outermembraneproteinPfeAprecursorFerricenterobactinreceptor	2092.0	2092.0	2092.0
 group_5864	94.0001	94.0001	94.0001
 cmpR_7~~~cysL_3~~~cmpR_6~~~cysL_2~~~benM_4~~~cysL_1~~~probabletranscriptionalregulator	712.0	712.0	712.0
+group_5656	259.0	259.0	259.0
 rsmC_1~~~rsmC_2~~~rsmC~~~conservedhypotheticalprotein	850.0	850.0	850.0
 ycjP_1~~~ycjP_2~~~probablepermeaseofABCsugartransporter	697.0	697.0	697.0
 mhpD~~~rhmT_2~~~xylJ~~~2oxohept3ene17dioatehydratase	655.0	655.0	655.0
 nagD~~~hypotheticalprotein	751.0	751.0	751.0
-yhgF_2~~~yhgF~~~yhgF_1~~~conservedhypotheticalprotein	2191.0		2191.0
+yhgF_2~~~yhgF~~~yhgF_1~~~conservedhypotheticalprotein	2191.0	2180.0	2191.0
 NADHquinonereductase	838.0	838.0	838.0
 group_5264	958.0	958.0	958.0
 phnW~~~phnW_2~~~2aminoethylphosphonatepyruvateaminotransferase	967.0	967.0	967.0
@@ -4037,7 +4041,7 @@ acoR~~~acoR_2~~~hypotheticalprotein~~~eamB_2~~~eamB_1~~~rhtB_5	463.0	463.0	463.0
 hslU~~~hslU_1	1195.0	1195.0	1195.0
 ssuD_5~~~ssuD_4~~~ssuD_6~~~ssuD_3~~~ssuD_2	1000.0	1000.0	1000.0
 group_3610	835.0	835.0	835.0
-group_3433	208.0	208.0	
+group_3433	208.0	208.0	208.0
 ldc~~~ornithinedecarboxylase	1015.0	1015.0	1015.0
 pntB~~~subunitalphapart2putativeNADPtranshydrogenase	160.0	160.0	160.0
 group_1724	49.4247	49.4247	49.4247
@@ -4161,6 +4165,7 @@ group_3564	1021.0	1021.0	1021.0
 group_3563	142.0	142.0	142.0
 lsrG_1~~~lsrG_2~~~hypotheticalprotein	154.0	154.0	154.0
 dksA_1~~~dksA_2~~~DksA2	256.0	256.0	256.0
+group_2148	595.0	595.0	595.0
 group_2003	85.0011	85.0011	85.0011
 group_1325	238.0	238.0	238.0
 group_31798	19.0638	19.0638	19.0638
@@ -4444,6 +4449,7 @@ oprM_1	1291.0	1291.0	1291.0
 group_4252	85.0011	85.0011	85.0011
 ssuC_5~~~ssuC_1~~~ssuC_3~~~probablepermeaseofABCtaurinetransporter	670.0	670.0	670.0
 cueR_1~~~cueR_2~~~cueR_3~~~regulatorofliugenes	256.0	256.0	256.0
+group_1073	140.0	139.0	140.0
 group_174	64.0516	64.0516	64.0516
 group_32487	8.91948	8.91948	8.91948
 group_31719	25.324	25.324	25.324
@@ -4524,6 +4530,7 @@ vraS	515.7365	515.7365	515.7365
 yybR_1~~~conservedhypotheticalprotein	331.0	331.0	331.0
 fdxA_1~~~torA~~~dorA~~~dmsA~~~fdxA_2~~~probableferredoxin	190.0	190.0	190.0
 group_5543	1180.0	1180.0	1180.0
+fadL_1~~~fadL_2~~~probableoutermembraneproteinprecursor	1302.0	1302.0	1302.0
 gcvH_2~~~gcvH_3~~~gcvH_1	241.0	235.0	235.0
 hbaA~~~pqsA~~~bclA~~~pqsA_2~~~pqsA_1~~~hbaA_1	1405.0	1405.0	1405.0
 scoA	550.0	550.0	550.0
@@ -4642,6 +4649,7 @@ benC_1~~~benC_2~~~benC~~~2dioxygenaseelectrontransfercomponenttoluate1	865.0	865
 group_31226	76.0064	76.0064	76.0064
 group_16012	55.1953	55.1953	55.1953
 group_14872	64.0516	64.0516	64.0516
+group_14651	66.0374	67.0317	66.0374
 group_12556	328.0	328.0	328.0
 group_12551	187.0	187.0	187.0
 iorB_3~~~iorB_2~~~iorB_1	2047.0	2047.0	2047.0
@@ -4668,6 +4676,7 @@ group_43	541.0	541.0	541.0
 group_31716	6.21	6.21	6.21
 group_31649	13.7365	13.7365	13.7365
 group_31538	29.2345	29.2345	29.2345
+group_21189	19.5103	19.0638	19.0638
 fecI_2~~~fecI_5~~~fecI_7~~~fecI_12~~~fecI_11~~~fecI_1~~~fecI_14~~~fecI_10~~~HasI	367.0	367.0	367.0
 dat~~~dat_2~~~dat_1	1171.0	1171.0	1171.0
 group_11161	463.0	463.0	463.0
@@ -5082,7 +5091,7 @@ ccoN2~~~ccoN1_3~~~CcoNsubunitcbb3typeCytochromecoxidase	1279.0	1279.0	1279.0
 group_13430	310.0	310.0	310.0
 gltR_3~~~yofA_5~~~gltR_1~~~yofA_4~~~gltR_2~~~gltR_4~~~gltR_6~~~gltR_5~~~probabletranscriptionalregulator	706.0	706.0	706.0
 group_9248	10.9088	10.9088	10.9088
-group_5610	1612.0		1612.0
+group_5610	1612.0	1612.0	1612.0
 group_18462	36.0583	36.0583	36.0583
 ogt_2~~~ogt~~~methylatedDNAproteincysteinemethyltransferase	373.0	373.0	373.0
 group_10685	733.0	733.0	733.0
@@ -5099,16 +5108,18 @@ sfnC_3~~~hsaA_1~~~sfnC_1~~~probableFMNH2dependentmonooxygenase	1036.0	1036.0	103
 glpQ_2	979.0	979.0	979.0
 yhcM_4~~~yhcM_3~~~yhcM_2~~~zapE_3~~~yhcM_1	1006.0	1006.0	1006.0
 group_31542	6.9214	6.9214	6.9214
+group_31500	19.5103	19.0638	19.0638
 group_31367	94.0001	94.0001	94.0001
 ntrC_2~~~ntrC_3~~~nifA_1~~~sfnR_1~~~sfnR_3~~~nifA~~~nifA_2	982.0	982.0	982.0
 group_21765	10.9088	10.9088	10.9088
 group_13514	6.21	6.21	6.21
 group_12922	1189.0	1189.0	1189.0
-group_4095	163.0	163.0	
+group_4095	163.0	163.0	163.0
 zraR_5~~~glnG~~~sfnR_3~~~sfnR_2~~~probabletranscriptionalregulator	937.0	937.0	937.0
 dimethylargininedimethylaminohydrolaseDdaH	616.0	616.0	616.0
 group_31255	15.5846	15.5846	15.5846
 group_31245	25.324	25.324	24.7239
+HigB	154.0	154.0	154.0
 metI~~~metP_2~~~metP_1~~~metP~~~probablepermeaseofABCtransporter	505.0	505.0	505.0
 LphFDhydroxyprolinedehydrogenasegammasubunit	88.0006	88.0006	88.0006
 group_13763	1577.0	1577.0	1577.0
@@ -5214,6 +5225,7 @@ group_5394	169.0	169.0	169.0
 gutB_3~~~acoC~~~gutB_2~~~gutB_1~~~23butanedioldehydrogenase	943.0	943.0	943.0
 group_31494	14.6185	14.6185	14.6185
 group_31435	175.0	175.0	175.0
+group_14929	1054.0	553.0	553.0
 ybdK~~~hypotheticalprotein	1066.0	985.0	985.0
 group_13539	115.0	115.0	115.0
 group_10305	589.0	589.0	589.0
@@ -5244,6 +5256,7 @@ group_10716	7.80511	7.80511	7.80511
 phzF_1~~~yddE_1~~~yddE_3~~~yddE_2~~~hypotheticalprotein	706.0	706.0	706.0
 phzB2_2~~~phzB2_1~~~phzB2~~~probablephenazinebiosynthesisprotein	340.0	340.0	340.0
 curA_3~~~curA_2~~~curA~~~curA_1	889.0	889.0	889.0
+betP_2~~~betP_1~~~betP_3	2275.0	2275.0	2275.0
 group_10998	70.019	70.019	70.019
 ssuA_3~~~ssuA_1~~~ssuA_2~~~ssuA_5~~~ssuA_6~~~ssuA_7~~~conservedhypotheticalprotein	811.0	811.0	811.0
 group_7218	1228.0	1228.0	1228.0
@@ -5355,6 +5368,7 @@ arsB~~~lgrD_2~~~arsB_2~~~arsB_1~~~ArsBprotein	1135.0	1135.0	1135.0
 lrp_5~~~lrp_6~~~lrp_3~~~transcriptionalregulatorBkdR	313.0	313.0	313.0
 sdhA_2~~~aprA_2	1576.0	1576.0	1576.0
 group_31502	8.91948	8.91948	8.91948
+group_24150	418.0	418.0	418.0
 yurK_2~~~yvoA_4~~~yidP_1~~~yidP_2~~~yvoA_3~~~probabletranscriptionalregulator	601.0	601.0	601.0
 cirA_6~~~hypotheticalprotein	626.0	626.0	626.0
 gnd~~~gnd_2	1171.0	1171.0	1171.0
@@ -5404,9 +5418,10 @@ ghrB~~~ghrB_2~~~tkrA~~~ghrB_1~~~ghrB_3~~~probable2hydroxyaciddehydrogenase	838.0
 fdhA_2~~~fdhA_1~~~fdhA_3	1099.0	1099.0	1099.0
 pslK~~~pslK_2~~~pslK_1~~~murJ_2~~~PslL	1261.0	1261.0	1261.0
 group_31328	55.1953	55.1953	55.1953
-group_32041	106.0	106.0	
+group_32041	106.0	106.0	107.0
 group_31807	10.9088	10.9088	10.9088
 pslF~~~hpaB~~~ptk~~~pslF_2~~~pslF_1~~~PslF	1039.0	1039.0	1039.0
+group_31536	19.9697	20.4424	20.4424
 group_17598	412.0	412.0	412.0
 pslJ~~~pslJ_2~~~pslJ_1~~~PslJ	1288.0	1288.0	1288.0
 group_8465	778.0	778.0	778.0
@@ -5419,7 +5434,7 @@ group_31773	112.0	112.0	112.0
 por~~~PslG	1180.0	1180.0	1180.0
 group_10229	6.43085	6.43085	6.43085
 group_31685	12.9312	12.9312	12.9312
-group_10907	1361.0		
+group_10907	1361.0	1123.0	1142.0
 group_32088	19.0638	19.0638	19.0638
 prmB_2	73.0112	82.002	82.002
 group_10402	31.3862	31.3862	31.3862
@@ -5473,6 +5488,7 @@ rhmD~~~rhmD_2~~~rhmD_1	1027.0	1027.0	1027.0
 group_13659	811.0	811.0	811.0
 group_5599	847.0	847.0	847.0
 group_20204	25.324	25.324	25.324
+group_18108	39.4185	38.5618	38.5618
 glyA2_1~~~glyA2~~~glyA_2~~~glyA2_2~~~glyA_1~~~serinehydroxymethyltransferase	1105.0	1105.0	1105.0
 prtN~~~transcriptionalregulatorPrtN	166.0	166.0	166.0
 aldH_2~~~aldH_3~~~aldH_1~~~probablealdehydedehydrogenase	1435.0	1435.0	1435.0
@@ -5486,6 +5502,7 @@ leuS~~~leuS_2~~~leucyltRNAsynthetase	2473.0	2473.0	2473.0
 group_10519	670.0	670.0	670.0
 group_31573	120.0	121.0	121.0
 group_5355	79.0036	79.0036	79.0036
+group_3897	115.0	115.0	115.0
 group_7699	133.0	133.0	133.0
 group_31643	126.0	127.0	127.0
 exoY~~~exoY_2~~~exoY_1~~~adenylatecyclaseExoY	988.0	988.0	988.0
@@ -5508,7 +5525,7 @@ mcpB_2~~~mcpB_4~~~mcpB_5~~~mcp2_3~~~pctC~~~mcpB_3~~~mcpB_1~~~mcpB_6	1750.0	1750.
 group_31319	58.1281	58.1281	58.1281
 group_5405	9.35544	9.35544	9.35544
 ywnH~~~bltD_1~~~aaaT~~~ywnH_2	385.0	385.0	385.0
-group_32067	175.0	175.0	
+group_32067	175.0	175.0	175.0
 group_31621	14.0216	13.7365	13.7365
 prkC_2~~~lolD_4~~~prkC_3~~~ecfA1~~~macB_1~~~macB_5~~~lolD_2~~~macB_3~~~TagT1	571.0	571.0	571.0
 group_31337	10.3458	10.3458	10.3458
@@ -5518,27 +5535,31 @@ group_25532	8.91948	8.91948	8.91948
 pelD~~~pelD_1~~~pelD_2	1219.0	1219.0	1219.0
 group_10869	1111.0	1111.0	1108.0
 group_21194	19.0638	19.0638	19.0638
-group_31271	103.0	103.0	
+group_31271	103.0	103.0	103.0
 group_21314	16.6423	16.6423	16.6423
 group_11017	550.0	565.0	565.0
+group_5751	148.0	148.0	148.0
 group_31442	12.1958	12.1958	12.1958
 group_2619	229.0	229.0	229.0
 mcpB_1~~~mcpB_6~~~mcp2_3~~~mcpB_5~~~mcpB_4~~~mcpB_7~~~mcpB_3~~~mcp2_4	1741.0	1741.0	1741.0
 group_10892	406.0	406.0	406.0
 group_1002	70.019	70.019	70.019
-group_9190	430.0		430.0
+group_9190	430.0	501.0	430.0
 lptF~~~lptG~~~LipopolysaccharideexportsystempermeaseproteinLptG	919.0		919.0
 group_11669	370.0	367.0	367.0
 group_11114	38.5618		38.5618
+group_11097	87.0007	86.0009	86.0009
 group_32026	29.2345	29.2345	29.2345
 echA8_2~~~echA8_4~~~echA8_3~~~echA8_6~~~probableenoylCoAhydrataseisomerase	820.0	820.0	820.0
 group_25601	73.0112		73.0112
 group_10909	19.0638	103.0	103.0
 group_9564	109.0	109.0	109.0
-dmlR_16~~~oprM_6~~~oprM_3~~~oprM_7~~~dmlR_22~~~dmlR_21~~~oprM_5	115.0		1041.0
+dmlR_16~~~oprM_6~~~oprM_3~~~oprM_7~~~dmlR_22~~~dmlR_21~~~oprM_5	115.0	1230.0	1041.0
 phzB2_1~~~phzB2_2~~~phzB2~~~probablephenazinebiosynthesisprotein	340.0	340.0	340.0
 group_31451	65.044	64.0516	64.0516
+puuA_4~~~puuA_3~~~puuA_6~~~puuA_2~~~puuA_5~~~Glutamylpolyaminesynthetase	877.0	775.0	750.0
 group_5136	88.0006	88.0006	88.0006
+group_31452	60.0956	61.0822	61.0822
 group_2959	166.0	166.0	166.0
 group_31453	10.3458	10.3458	10.3458
 group_4820	175.0	175.0	175.0
@@ -5546,9 +5567,12 @@ group_19410	973.0	973.0	973.0
 group_31750	6.66748	6.66748	6.66748
 group_31568	8.91948	8.91948	8.91948
 group_31945	118.0	118.0	
+group_6704	138.0	139.0	138.0
 hcpC_2~~~hcpC_1~~~hcpC~~~hcpC_3~~~hcpC_4~~~hcpC_5	730.0	673.0	730.0
 group_14898	7996.0	6520.0	7996.0
 group_31805	17.7996	17.7996	17.7996
+ureR_7~~~ureR_3~~~ureR_2~~~ureR_5~~~ureR_9~~~ureR_4~~~probabletranscriptionalregulator	1048.0	871.0	1048.0
+group_5658	403.0	403.0	403.0
 group_3982	46.6066	46.6066	46.6066
 group_31778	9.35544	9.35544	
 group_32086	77.0053	76.0064	76.0064
@@ -5559,6 +5583,7 @@ group_16231	52.2911	52.2911	52.2911
 group_31620	17.7996	17.7996	17.7996
 group_22441	6.21	6.21	6.21
 group_21655	11.965	12.1958	12.1958
+group_31617	9.35544	9.35544	
 group_31457	9.35544	9.35544	9.35544
 hcaT_1~~~hcaT_2	1015.0	1015.0	1015.0
 group_19461	29.2345	29.2345	29.2345
@@ -5567,6 +5592,7 @@ pilW_1~~~pilW_2~~~pilW~~~type4fimbrialbiogenesisproteinPilW	676.0	676.0
 pilE~~~type4fimbrialbiogenesisproteinPilY2	3536.0	199.0	
 pilX~~~type4fimbrialbiogenesisproteinPilX	439.0	439.0	
 type4fimbrialbiogenesisproteinFimT	361.0	361.0	
+group_4511	329.0	328.0	328.0
 epsG~~~type4fimbrialbiogenesisproteinPilV	409.0	409.0	
 group_11014	7.80511	7.80511	
 group_10338	154.0	154.0	154.0
@@ -5581,9 +5607,11 @@ group_31443	31.3862	31.3862	31.3862
 group_31482	25.324	25.324	25.324
 group_31728	15.5846	15.5846	15.5846
 group_14438	67.0317	67.0317	67.0317
+group_40	109.0	109.0	109.0
 group_21660	12.1958	12.1958	12.1958
 group_678	103.0	103.0	
 phzD~~~aroH_2~~~phzD2_1~~~aroH_3~~~phzD2~~~phzD2_2	475.0	475.0	475.0
+group_22292	6.9214	6.9214	6.9214
 group_5205	667.0	667.0	667.0
 group_10853	733.0	733.0	733.0
 group_31720	10.9088	10.9088	10.9088
@@ -5666,7 +5694,7 @@ uppP~~~uppP_1~~~bacitracinresistanceprotein	685.0	685.0	685.0
 group_31971	67.0317	67.0317	67.0317
 group_11055	385.0	172.0	
 insK	307.0	369.0	46.6066
-hcpC_2~~~hcpC_3~~~hcpC_4~~~hcpC_1~~~hcpC_7~~~hcpC_5~~~hcpC~~~Tli5b1typeVIsecretionlipaseimmunityprotein	730.0	733.0	
+hcpC_2~~~hcpC_3~~~hcpC_4~~~hcpC_1~~~hcpC_7~~~hcpC_5~~~hcpC~~~Tli5b1typeVIsecretionlipaseimmunityprotein	730.0	733.0	734.0
 epsF_2~~~gspF~~~epsF_3~~~epsF_4~~~epsF_1~~~epsF_5~~~epsF_6~~~pilC~~~pilC_1~~~pilC_2	1069.0	1069.0	1069.0
 oprD_4~~~oprD_18~~~oprD_5~~~oprD_8~~~oprD_2~~~oprD_20~~~oprD_12~~~oprD_7~~~oprD_17~~~oprD_13~~~oprD_10~~~oprD_3~~~oprD_6~~~oprD_19~~~oprD_14~~~oprD_11~~~oprD_15~~~oprD_16~~~oprD_9~~~oprD_1	1114.0	1177.0	1177.0
 group_7576	658.0		
@@ -5755,7 +5783,7 @@ group_18995	457.0	457.0
 group_5904	1177.0	1177.0	1177.0
 oprB_2~~~oprB_1~~~oprB_3~~~GlucosecarbohydrateoutermembraneporinOprBprecursor	82.002	937.0	655.0
 group_31185	7.80511	7.80511	
-group_12766	433.0	433.0	
+group_12766	433.0	433.0	1173.0
 group_13878	1234.0	1234.0	
 group_12515	292.0	292.0	
 hcpC_4~~~hcpC_3~~~hcpC_1~~~hcpC_2~~~hcpC	673.0	670.0	
@@ -5768,6 +5796,7 @@ group_15130	961.0	961.0
 group_13571	2083.0	2083.0	
 typeVIeffectorprotein	1012.0		
 group_25593	772.0		
+hcpA_2~~~hcpA_1~~~hcpA_4~~~hcpA_3	428.0		
 group_25575	133.0	133.0	133.0
 group_14811	601.0	598.0	
 group_10133	61.0822		850.0
@@ -5835,6 +5864,7 @@ group_14631	598.0
 group_10147	1000.0		
 group_25777	6.43085	6.43085	
 alpA~~~alpa_1~~~alpa~~~alpA_2	64.0516		
+group_13758	550.0	550.0	
 group_31613	331.0	331.0	331.0
 group_17957	1531.0		
 group_19155	1039.0	343.0	46.6066
@@ -5861,6 +5891,7 @@ group_100	154.0
 group_7317	130.0		
 group_20859	85.0011		
 group_20865	250.0	250.0	
+lgrB_3	7079.0		
 topB~~~topB_2~~~topB_3~~~topB_1	1882.0	1882.0	
 group_2377	757.0	757.0	
 group_19922	1699.0	1666.0	
@@ -5956,6 +5987,7 @@ ssa1~~~ssa1_1~~~ssa1_2	2776.0
 ltrA_1~~~ltrA~~~ltrA_2	1537.0	1537.0	
 group_16623	736.0	736.0	
 group_4450	190.0		252.0
+group_3374	112.0	112.0	
 acoD_1	41.1625	41.1625	41.1625
 benM_7~~~hcaR_2~~~benM_5~~~catM_1~~~benM_2~~~benM_4~~~benM_6~~~benM_3~~~benM_1~~~hcaR_1~~~hcaR_3~~~catM_2~~~hdfR_7~~~benM_8~~~benM_11~~~hcaR_5	796.0	787.0	
 soj_4~~~soj_2~~~soj_3~~~soj_8~~~soj_7~~~soj_1~~~soj_6	490.0	490.0	
@@ -6030,6 +6062,7 @@ group_18336	157.0
 group_14658	220.0	220.0	
 group_14616	604.0	607.0	
 group_20830	821.0		
+group_1243	77.0053		
 group_19851	97.0001		
 group_18573	130.0	130.0	
 group_10618	259.0	259.0	
@@ -6110,6 +6143,7 @@ trbE~~~virB4~~~trbE_1~~~virB4_2~~~virB4_1	2305.0	2305.0
 group_19707	157.0		
 group_8498	20.4424		
 oprM_5~~~oprM_2~~~oprM_8	302.42470000000003		
+group_30819	444.0		
 group_31519	8.51793	8.51793	
 group_22010	8.91948	8.91948	
 group_13099	100.0		
@@ -6132,6 +6166,7 @@ group_25537	325.0
 group_9085	817.0		
 group_23423	496.0		
 group_13785	370.0		
+group_28293	580.0		
 bshA~~~mshA	1033.0		
 trxB_3~~~trxB_1	745.0		
 merD_1~~~merD	217.0		
@@ -6161,6 +6196,7 @@ group_19448	3550.0
 wzz~~~wzzE	889.0		
 group_13275	1510.0	1498.0	
 group_12098	1279.0		
+gcd_2~~~gcd~~~quiA	2521.0		
 group_16443	15.5846		
 group_14146	1276.0		
 group_9151	91.0003		
@@ -6178,8 +6214,10 @@ group_12704	1003.0
 group_8476	340.0		
 group_18756	235.0		
 group_17840	556.0	556.0	
+group_13300	341.0		
 group_11246	112.0		
 parE1_1~~~parE1~~~parE1_2	202.0		
+group_26817	7.48819		
 rapA_2~~~rapA_1~~~rapA~~~rapA_3~~~rapA_4	2689.0		
 group_19521	2260.0		
 group_15978	1624.0		1753.0
@@ -6193,6 +6231,7 @@ group_17975	9.8295
 group_14455	1069.0		
 group_12881	352.0		
 group_24330	166.0		
+oprB_1~~~oprB_3~~~oprB_2~~~probableglucosesensitiveporin	560.0		
 group_13406	1156.0	1156.0	
 yejK_4~~~yejK~~~yejK_2~~~yejK_3~~~yejK_1	874.0		
 group_11333	229.0		
@@ -6202,6 +6241,7 @@ group_12935	1138.0
 group_11666	205.0		
 hin~~~pinR~~~hin_2~~~tnpRb	412.0		
 group_19381	2818.0		
+group_6368	691.0		
 group_3861	1498.0		
 topA_3~~~topA_2	1771.0	1771.0	
 group_16668	673.0	259.0	
@@ -6426,6 +6466,7 @@ group_10607	1144.0
 group_1966	673.0		
 group_19545	652.0		
 group_15895	100.0		
+group_14348	572.0		
 orf7_1~~~orf7_2~~~orf7_3~~~orf7	604.0	601.0	
 orf2_1	208.0		
 group_19764	349.0		
@@ -6613,38 +6654,24 @@ group_17271	9.8295
 group_25786	511.0		
 group_25785	76.0064		
 group_25784	124.0		
-group_748		9.8295	
-group_1073		139.0	
-group_21189		19.0638	19.0638
-group_31500		19.0638	19.0638
-group_14929		553.0	553.0
-group_24150		418.0	418.0
-group_31536		20.4424	20.4424
+cheB2		1039.0	
 group_11580		736.0	736.0
 group_31585		10.9088	10.9088
 group_31802		55.1953	55.1953
 group_23863		457.0	457.0
-group_18108		38.5618	38.5618
 group_31456		85.0011	85.0011
+group_25485		539.0	539.0
 group_24660		376.0	376.0
 group_31592		49.4247	49.4247
-group_11097		86.0009	86.0009
 group_3331		211.0	211.0
 acoD_1~~~acoD~~~acoD_3~~~NADdependentaldehydedehydrogenaseExaC~~~aldB		1370.0	1319.0
-puuA_4~~~puuA_3~~~puuA_6~~~puuA_2~~~puuA_5~~~Glutamylpolyaminesynthetase		775.0	750.0
-group_31452		61.0822	61.0822
 mcpB_2~~~mcp2_4~~~pctC~~~mcpB_4~~~mcp2_3~~~mcpB_5~~~mcpB_6~~~mcpB_1~~~mcpB_3~~~mcpB_9~~~mcpB_7~~~chemotactictransducerPctB		1741.0	
-group_6704		139.0	
-ureR_7~~~ureR_3~~~ureR_2~~~ureR_5~~~ureR_9~~~ureR_4~~~probabletranscriptionalregulator		871.0	
-group_5658		403.0	403.0
 group_18760		33.6633	33.6633
 group_25774		8.91948	8.91948
 group_31627		7.80511	7.80511
-group_31617		9.35544	
 ndhL_2~~~hcrA~~~hcrA_2~~~ndhM~~~hcrA_3~~~hcrA_1		2056.0	2056.0
 hcrB~~~cutS~~~probablehydroxylasemolybdopterincontainingsubunit		841.0	841.0
 cutS~~~probableferredoxin		364.0	364.0
-group_4511		328.0	328.0
 group_31218		17.7996	17.7996
 Tle3Type6lipaseeffector		2002.0	2008.0
 group_17421		43.8484	43.8484
@@ -6662,6 +6689,7 @@ ArmRantirepressorforMexR		21.9418	21.9418
 wbpL~~~orfN~~~wecA~~~mraY_1~~~tagO		871.0	736.0
 group_31485		46.6066	46.6066
 PA5471leaderpeptide		19.0638	19.0638
+group_2102		172.0	172.0
 group_31577		58.1281	58.1281
 group_9573		109.0	109.0
 group_21402		15.5846	15.2527
@@ -6693,12 +6721,13 @@ hcpA_2~~~hcpA_1~~~hcpA_3~~~hcpA_4		354.0	370.0
 group_5192		139.0	139.0
 group_26256		323.0	323.0
 group_1866		52.2911	52.2911
-group_31437		12.9312	
+group_31437		12.9312	12.9312
 Tsi6		136.0	136.0
 bvgS_1~~~bvgS_3~~~bvgS_4~~~bvgS_2~~~rcsC_6		2737.0	2737.0
 tauA_1~~~ssuA_4~~~ssuA_8~~~ssuA_6~~~ssuA_7~~~tauA_2~~~ssuA_1~~~ssuA_3~~~ssuA_2~~~ssuB_4~~~cmpB_2~~~cmpB_1~~~cmpB_3~~~cmpD_1~~~ssuC_4~~~probablepermeaseofABCtransporter		1907.0	1907.0
+group_4678		598.0	598.0
 group_19875		27.2129	27.2129
-group_31420		8.14747	
+group_31420		8.14747	8.14747
 group_237		67.0317	67.0317
 group_22389		6.43085	6.43085
 group_3225		169.0	169.0
@@ -6706,15 +6735,17 @@ group_21247		17.7996	17.7996
 group_25780		7.80511	7.80511
 group_31300		52.2911	52.2911
 group_31324		97.0001	97.0001
+group_3808		10.3458	10.3458
 group_9388		61.0822	61.0822
 hpmA~~~fhaB~~~cdiA1~~~ibpA~~~cdiA~~~ibpA_1~~~hpmA_1~~~shlA~~~cdiA2		1595.0	
+group_5725		41.1625	41.1625
 malL		118.0	118.0
 group_31599		94.0001	94.0001
 syrM1~~~syrM1_1~~~syrM1_2~~~probabletranscriptionalregulator		745.0	745.0
 group_5361		391.0	392.0
 group_24019		21.9418	
 group_31461		49.4247	50.3754
-group_31358		109.0	
+group_31358		109.0	108.0
 group_31177		19.0638	
 group_3128		409.0	409.0
 group_7260		133.0	133.0
@@ -6725,14 +6756,15 @@ group_31472		11.5236	11.5236
 group_22004		8.91948	8.91948
 group_21511		13.7365	13.7365
 fhaB~~~ibpA~~~hpmA~~~hpmA_1~~~hypotheticalprotein~~~hpmA_2~~~ibpA_1		1609.0	
+mntH_1~~~mntH_2~~~mntH_3		1179.0	1179.0
 group_20657		23.5677	23.5677
 group_31740		20.4424	20.4424
 group_31642		9.8295	9.8295
 group_14857		64.0516	64.0516
 group_31279		244.0	244.0
 group_31423		52.2911	
-group_31282		41.1625	
-group_31194		241.0	
+group_31282		41.1625	40.2855
+group_31194		241.0	240.0
 group_9979		295.0	295.0
 yecD_2~~~yecD_1~~~yecD_3~~~hypotheticalprotein		424.0	424.0
 group_4488		838.0	838.0
@@ -6745,7 +6777,7 @@ group_31707		100.0
 group_21317		16.6423	16.6423
 group_10828		106.0	106.0
 hypotheticalmembraneprotein		226.0	226.0
-group_31336		154.0	
+group_31336		154.0	154.0
 group_31305		76.0064	76.0064
 group_32102		67.0317	67.0317
 mcp2_3~~~mcpB_4~~~mcpB_3~~~trg_3~~~mcpB_5~~~pctA~~~mcp2_1		769.0	770.0
@@ -6758,9 +6790,11 @@ group_9207		682.0	682.0
 EfhP		319.0	319.0
 sasA_16~~~envZ_3~~~envZ_2		1156.0	1156.0
 group_9494		361.0	361.0
+group_7788		567.0	567.0
 group_13713		190.0	190.0
 group_19166		31.3862	32.1317
 group_31648		13.7365	
+group_7603		196.0	196.0
 group_31307		70.019	70.019
 yojI_1~~~yojI_2~~~pvdE~~~pvdE_3~~~pvdE_2~~~yojI		1504.0	1504.0
 purN_2~~~pvdF_1~~~pvdF		679.0	727.0
@@ -6777,12 +6811,13 @@ ibpA~~~hpmA~~~fhaB_2~~~hpmA_2		3715.0
 fhaB~~~ibpA~~~ibpA_2~~~shlA~~~hpmA~~~hpmA_1~~~ibpA_1~~~fhaB_2		7.48819	
 group_31623		17.7996	17.7996
 gsiB~~~conservedhypotheticalprotein		196.0	196.0
+group_3193		358.0	358.0
 group_31479		55.1953	55.1953
 group_31668		20.4424	
 group_31596		10.9088	10.9088
 pys2~~~pys2_2~~~pys2_1~~~pys2_3		1708.0	
 group_358		448.0	448.0
-group_9492		76.0064	
+group_9492		76.0064	76.0064
 group_32626		121.0	121.0
 group_13553		859.0	
 group_31768		25.324	25.324
@@ -6805,6 +6840,7 @@ group_9068		27.2129	27.2129
 group_11594		991.0	
 group_31597		142.0	142.0
 group_31533		46.6066	46.6066
+puuA_4~~~puuA_3		186.0	339.0
 group_22217		7.48819	7.48819
 group_31661		9.35544	
 group_31960		52.2911	52.2911
@@ -6894,6 +6930,7 @@ group_13322		76.0064
 group_25022		19.0638	
 group_3992		88.0006	
 group_4310		187.0	187.0
+group_5331		422.0	422.0
 group_4576		154.0	
 group_16283		124.0	
 group_2368		41.1625	
@@ -6982,6 +7019,7 @@ group_13187		595.0
 group_2602		214.0	
 group_20640		172.0	
 group_28337		46.6066	
+fpvA_1~~~fpvA_2~~~fpvA_3~~~pupA~~~pupB		2299.0	
 arsC_1~~~arsC_2		382.0	
 group_18783		926.0	
 pvdD_3~~~pvdI~~~pvdI_2~~~pvdD_2~~~lgrB_2~~~lgrD_2		508.0	
@@ -7146,8 +7184,10 @@ trbC~~~trbC_1		238.0
 group_15746		2977.0	
 intA_2~~~xerD_3		1015.0	
 group_13273		397.0	
+group_6729		121.0	
 trbF_2~~~trbF_1~~~trbF		556.0	
 group_17761		1219.0	
+group_4483		553.0	
 benM_6~~~hcaR_1~~~benM_7~~~hcaR_4		757.0	
 group_6728		10.3458	
 group_4094		523.0	523.0
@@ -7213,6 +7253,7 @@ group_18506		148.0
 hrpB~~~hrpB_3		307.0	
 group_9572		247.0	
 group_15206		808.0	
+group_6214		208.0	
 sugE_2		283.0	
 fimA_1~~~fimA_2		493.0	
 narL_1		238.0	
@@ -7261,6 +7302,7 @@ group_20217		352.0
 group_19128		376.0	
 group_15176		1384.0	
 group_6601		2713.0	
+group_5374		289.0	
 intA~~~intA_2~~~intS_1~~~intS~~~intS_3~~~intA_1~~~intS_4		1108.0	
 clpP_3		1933.0	
 group_22110		8.14747	
@@ -7298,6 +7340,7 @@ group_19940		1852.0
 group_15011		79.0036	36.0583
 group_18349		661.0	
 ykfG~~~ykfG_1~~~ykfG_2~~~ykfG_3~~~ykfG_5~~~ykfG_6		361.0	
+group_4061		541.0	
 group_2402		10.9088	
 group_15940		1129.0	
 group_9913		337.0	
@@ -7497,8 +7540,10 @@ group_19693		2542.0
 group_16774		64.0516	
 group_15219		7.19434	
 group_13920		253.0	
+group_5168		492.0	
 group_4835		1495.0	
 group_2859		220.0	
+group_1232		292.0	
 group_15870		550.0	
 group_11033		112.0	
 group_19904		121.0	
@@ -7548,6 +7593,7 @@ group_31689		36.0583
 group_18499		142.0	
 group_16592		3544.0	
 group_9303		646.0	
+group_6192		202.0	
 group_31575		169.0	
 group_17902		76.0064	
 group_24355		154.0	
@@ -7779,6 +7825,7 @@ group_15512		139.0
 group_13283		76.0064	
 group_12921		79.0036	
 group_19187		220.0	
+group_5653		433.0	
 group_11078		1216.0	
 group_5818		1015.0	
 group_14165		64.0516	
@@ -7814,6 +7861,7 @@ group_11494		91.0003
 group_31528		31.3862	
 group_1472		160.0	
 group_31902		58.1281	
+group_10888		478.0	
 group_8539		130.0	
 group_16200		70.019	
 group_11030		697.0	
@@ -7907,6 +7955,7 @@ group_14973			133.0
 bfpB_2~~~bfpB			1561.0
 ramA_6~~~probabletransportermembranesubunit			1282.0
 group_4993			505.0
+hxuA_1~~~hxuA_3~~~hxuA_2			3549.0
 group_16738			340.0
 group_13282			49.4247
 ramA_4~~~ramA_5~~~hypotheticalprotein			664.0
@@ -7925,6 +7974,7 @@ group_20777			2083.0
 group_13905			100.0
 pyoS3A~~~pyoS3A_1~~~pyoS3A_2~~~pys2_1~~~pys2			2059.0
 group_11859			235.0
+yibA			543.0
 group_12260			619.0
 group_14358			14.6185
 group_11677			1234.0
@@ -7966,6 +8016,7 @@ dmlR_25~~~dmlR_33~~~dmlR_19~~~dmlR_34~~~dmlR_10			748.0
 group_17178			8.51793
 group_15155			301.0
 group_16967			487.0
+group_3630			1201.0
 group_9005			559.0
 group_4681			1147.0
 group_11960			181.0
@@ -8005,6 +8056,7 @@ soj_3~~~soj_7~~~soj_6			718.0
 group_11690			889.0
 group_20223			160.0
 group_14357			43.8484
+group_16663			2598.0
 group_8481			1582.0
 group_12484			154.0
 group_4319			184.0
@@ -8015,6 +8067,7 @@ group_16618			29.2345
 nemA_4~~~nemA_3			949.0
 group_13930			406.0
 group_8885			682.0
+group_6388			164.0
 group_16682			316.0
 intA_2~~~intA_3~~~intA_1~~~intA~~~intA_4			1108.0
 algR~~~algR_1~~~algR_2			187.0

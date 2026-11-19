@@ -2,13 +2,13 @@
 
 The reference outputs that later changes are checked against (see `tests/README.md`).
 
-**Current baseline: v3, after Phase 2 (fastp, Python UMAP, pinned container) with
-`--strandedness auto` as the default.**
+**Current baseline: v4, after Panaroo status suffixes are stripped when matching locus IDs
+(R12/Q12), on top of v3 (Phase 2: fastp, Python UMAP, pinned container, `--strandedness auto`).**
 
 | Item | Value |
 |------|-------|
-| Date | 2026-11-18 |
-| Pipeline code | `feat/phase2-container` (merged into `dev` on 2026-11-18) |
+| Date | 2026-11-19 |
+| Pipeline code | `fix/panaroo-suffixes` (branched from `dev` @ `1472222`) |
 | Command | `nextflow run . -profile test,docker --outdir <results> -w <work>` (no overrides) |
 | Nextflow | 23.10.1 (Java 11, macOS arm64; container under amd64 emulation) |
 | Container | `adamd3/panscript:2.0.0-dev` = `sha256:b97d5bec60caf57a5a68ca6a16151dbc76d3d511a8847abd4c6d588d8f2e3fb3` (identical image first published as `adamd3/strainseq:2.0.0-dev` before the rename to PanScript) (amd64; built from this repo's `environment.yml` + `Dockerfile`) |
@@ -32,8 +32,8 @@ The reference outputs that later changes are checked against (see `tests/README.
 - **The size factors can't be trusted as a check on normalisation.** At about 100k reads per
   sample, most core genes have counts of 0–2. Normalisation maths is checked with synthetic data in
   `tests/unit/`.
-- 41–47 genes per isolate are NA because their Panaroo loci (`*_refound_*_stop` / `_len`) aren't in
-  the input FASTA files. They're listed in `pipeline_info/missing_loci.tsv`.
+- No Panaroo locus is missing from the isolate FASTAs (`pipeline_info/missing_loci.tsv` is empty).
+  8236 gene groups have a value in at least one sample; 5713 are core (non-NA in all 3).
 
 ## History
 Retrieve an old version with `git show <commit>:tests/baseline/<file>`.
@@ -44,7 +44,14 @@ Retrieve an old version with `git show <commit>:tests/baseline/<file>`.
   pre-publication-changes reference (Trim Galore, log2 outputs, averaged split genes, RPKM).
 - **v2** (commit `a067dd2`): after the Phase 1 normalisation changes, using the old
   `adamd3/strainseq:latest` image (`sha256:0e549c29…`) with Trim Galore 0.6.10.
-- **v3** (this version): after Phase 2. Compared with v2: fastp instead of Trim Galore (merged-count
+- **v3** (commit `1472222`): after Phase 2. Compared with v2: fastp instead of Trim Galore (merged-count
   Spearman 0.999, nTPM 0.997; same genes and NA pattern), the UMAP is now Python with a fixed seed,
   and all other tool versions are unchanged. `--strandedness auto` gives the same result as v2's
   explicit `1`.
+- **v4** (this version): Panaroo status suffixes (`_len`, `_pseudo`, `_stop`) are stripped when
+  matching locus IDs (PROGRESS.md R12). Compared with v3: 41/42/47 more genes quantified per isolate
+  (all previously listed in `missing_loci.tsv`; their sequences were in the FASTA under the plain
+  ID), 53 new rows, 39 more core genes (5674 → 5713). No existing kallisto value changed; 6
+  `raw_counts`/`norm_counts` values in 4 rows moved because a gene's median length gained an
+  isolate; size factors unchanged; nTPM is v3 × 0.997163 everywhere (only the global constant
+  changed). kallisto `abundance.tsv` files and UMAP coordinates are identical.

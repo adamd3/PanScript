@@ -38,8 +38,16 @@ BIN = REPO / "bin"
 #                   missing from A's FASTA) -> must be NA in A, not 0
 #   split3        : split in isolate A, only one of its two loci quantified
 #                   (partial; flagged by the missing-loci report, PROGRESS P7)
+#   sfx1          : Panaroo IDs carry status suffixes (_stop, _len_stop) that
+#                   are not part of the FASTA/kallisto ID (PROGRESS.md R12)
+#   split4        : split in isolate A, one locus listed with a _len suffix
+#   rawfirst1/2   : isolate C has BOTH "dC_rf_stop" and "dC_rf" as real
+#                   sequence IDs; the raw ID must win over the stripped one
+#   sfxmiss       : suffixed locus whose plain ID is also missing -> NA
 # A locus whose est_counts is None is listed by Panaroo but absent from the
-# kallisto output (i.e. missing from the isolate FASTA).
+# kallisto output (i.e. missing from the isolate FASTA). An optional 4th
+# element is the ID as listed in gene_presence_absence, when it differs from
+# the sequence ID.
 SAMPLES = ["sA", "sB", "sC"]
 DNA = {"sA": "dA", "sB": "dB", "sC": "dC"}
 N_CORE = 12
@@ -70,7 +78,27 @@ def build_dataset():
     genes["split3"] = {"sA": [("dA_split3a", 55.0, 400.0), ("dA_split3b", None, None)],
                        "sB": [("dB_split3", 330.0, 1020.0)],
                        "sC": [("dC_split3", 81.0, 1000.0)]}
+    genes["sfx1"] = {"sA": [("dA_sfx1", 140.0, 980.0, "dA_sfx1_stop")],
+                     "sB": [("dB_sfx1", 300.0, 1000.0, "dB_sfx1_len_stop")],
+                     "sC": [("dC_sfx1", 60.0, 990.0)]}
+    genes["split4"] = {"sA": [("dA_split4a", 90.0, 450.0, "dA_split4a_len"),
+                              ("dA_split4b", 40.0, 350.0)],
+                       "sB": [("dB_split4", 350.0, 810.0)],
+                       "sC": [("dC_split4", 85.0, 800.0)]}
+    genes["rawfirst1"] = {"sA": [("dA_rf1", 210.0, 1500.0)],
+                          "sB": [("dB_rf1", 450.0, 1490.0)],
+                          "sC": [("dC_rf_stop", 111.0, 1480.0)]}
+    genes["rawfirst2"] = {"sA": [("dA_rf2", 180.0, 700.0)],
+                          "sB": [("dB_rf2", 390.0, 690.0)],
+                          "sC": [("dC_rf", 77.0, 720.0)]}
+    genes["sfxmiss"] = {"sA": [("dA_sfxmiss", None, None, "dA_sfxmiss_stop")],
+                        "sB": [("dB_sfxmiss", 200.0, 600.0)],
+                        "sC": [("dC_sfxmiss", 50.0, 610.0)]}
     return genes
+
+
+def panaroo_id(locus):
+    return locus[3] if len(locus) > 3 else locus[0]
 
 
 def write_inputs(d: Path, genes):
@@ -81,7 +109,7 @@ def write_inputs(d: Path, genes):
                "REF": f"ref_{g}"}
         for s in SAMPLES:
             loci = per[s]
-            row[DNA[s]] = ";".join(l[0] for l in loci) if loci else ""
+            row[DNA[s]] = ";".join(panaroo_id(l) for l in loci) if loci else ""
         rows.append(row)
     pd.DataFrame(rows).to_csv(d / "gpa.csv", index=False)
 
@@ -207,6 +235,17 @@ class NormalisationTest(unittest.TestCase):
         raw = read_matrix(self.tmp / "out" / "raw_counts.tsv")
         med = np.median([1200.0, 1190.0, 1210.0])
         self.assertAlmostEqual(raw.loc["split1", "sA"], 200.0 / 1200.0 * med)
+
+    def test_panaroo_suffixes_stripped(self):
+        counts = read_matrix(self.tmp / "counts.tsv")
+        self.assertEqual(counts.loc["sfx1"].tolist(), [140.0, 300.0, 60.0])
+        self.assertEqual(counts.loc["split4", "sA"], 130.0)   # 90 (_len) + 40
+        self.assertTrue(np.isnan(counts.loc["sfxmiss", "sA"]))
+
+    def test_raw_id_matched_before_stripping(self):
+        counts = read_matrix(self.tmp / "counts.tsv")
+        self.assertEqual(counts.loc["rawfirst1", "sC"], 111.0)  # dC_rf_stop itself
+        self.assertEqual(counts.loc["rawfirst2", "sC"], 77.0)   # dC_rf
 
     def test_unquantified_split_gene_is_na_not_zero(self):
         for f in ["counts.tsv", "lens.tsv"]:
