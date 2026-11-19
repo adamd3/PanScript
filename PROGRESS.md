@@ -19,7 +19,10 @@ Read [CLAUDE.md](CLAUDE.md) first.
 
 ---
 
-## ▶ Start here (status as of 2026-11-19, evening)
+## ▶ Start here (status as of 2026-11-19, end of day)
+
+**To resume:** read CLAUDE.md, then this section. Work is on `dev` (clean, pushed, CI green).
+No task is claimed or in progress, and there are no unmerged branches.
 
 **v2.0.0 is released.** Tag `v2.0.0` on `main`; GitHub release
 https://github.com/adamd3/PanScript/releases/tag/v2.0.0; image `adamd3/panscript:2.0.0`
@@ -27,12 +30,21 @@ https://github.com/adamd3/PanScript/releases/tag/v2.0.0; image `adamd3/panscript
 10.5281/zenodo.24375404). Verified: `nextflow run adamd3/PanScript -r v2.0.0 -profile test,docker`
 from GitHub matches baseline v4. Phases 0–4 are done.
 
+**Since the release, on `dev` only:** the DOI badge and citation in README, CITATION.cff and
+CITATIONS.md (commit 078b454). `main` doesn't show the DOI yet (see Q15).
+
+**User's machine:** fixed on 2026-11-19. Plain `nextflow` is now Homebrew 26.10.6 (conda's
+Nextflow was removed and `JAVA_HOME` in `~/.bash_profile` was corrected).
+
 **Next steps, in order:**
-1. **Manuscript (Phase 5):** M1 (outline), M2 (benchmark design, including PanXpress and
-   microberna comparisons), M3 (showcase dataset), M4 (redraw the pipeline diagram;
+1. **Ask the user Q15** (merge the DOI docs commit into `main` now, or wait for the next release?).
+2. **Manuscript (Phase 5):** start with M1 (outline for a Genome Biology Software/Method
+   article: check current article types and requirements, and do a literature search on related
+   tools). Then M2 (benchmark design, including PanXpress and microberna comparisons; needs the
+   user's input), M3 (showcase dataset), M4 (redraw the pipeline diagram;
    `docs/images/panscript_pipeline_lowres.png` predates fastp/MultiQC/input checks).
-2. **CITATION.cff co-authors** (user will supply later).
-3. **Smaller open items:** R7 (document the recommended downstream DE workflow), H3 remainder (a
+3. **CITATION.cff co-authors** (the user will supply them later).
+4. **Smaller open items:** R7 (document the recommended downstream DE workflow), H3 remainder (a
    test option using local `test_data/` instead of GitHub URLs).
 
 For later releases: bump `manifest.version`, build/push a new image with
@@ -43,8 +55,8 @@ tag, and `gh release create` (Zenodo mints a new version DOI automatically).
 
 ## Plan (overview)
 
-Status: Phase 0 ✓ · Phase 1 ✓ · Phase 1b ✓ · Phase 2 ✓ · Phase 3 mostly ✓ (cheap wins H9–H14 and parts of H7 left) ·
-Phase 4: renamed ✓, release pending · Phase 5 not started.
+Status: Phase 0 ✓ · Phase 1 ✓ · Phase 1b ✓ · Phase 2 ✓ · Phase 3 ✓ (except the H3 local-test option) ·
+Phase 4 ✓ (v2.0.0 released 2026-11-19) · Phase 5 (manuscript) not started.
 
 Phases run in order. Within a phase, tasks on separate branches can run in parallel.
 
@@ -213,6 +225,8 @@ data on a branch get tested, and runs need no network.
 
 ## Open questions for the user
 
+- **Q15 (open, 2026-11-19):** merge the DOI docs commit (078b454, docs only) from `dev` into
+  `main` now, so the GitHub front page shows the DOI, or leave it for the next release?
 - Q1–Q3: resolved 2026-11-18 (see Decision log).
 - Q1b: resolved 2026-11-18. Keep `ntpm.tsv`; the "n" (normalised) is explained in the README and docs.
 - Q9: resolved 2026-11-18 → P9 (fixed seed; rewrite the UMAP in Python).
@@ -223,13 +237,11 @@ data on a branch get tested, and runs need no network.
 - Q14: resolved 2026-11-19 (user: go ahead). Done in H15. Was: raise the minimum Nextflow from 23.10 to 24.10? It enables `resourceLimits` (replacing the `max_cpus`/`max_memory` params and closures) and a current nf-schema (2.4.x; 2.6+ needs 25.10 and Java 17). Also: right-size the process labels (kallisto currently asks for 12 CPUs / 72 GB, far more than bacterial gene sets need).
 - Q13: resolved 2026-11-19. Adopt all the cheap wins in `docs/nf-core-assessment.md` (H9–H14); the user approved the output changes they bring.
 - Q4: resolved 2026-11-19. Reject mixed single-end and paired-end input with a clear error (R5).
-- **Q5 (H1):** Name ideas: should the name stress pangenome, isolate-specific or reference-free?
 - Q6: resolved 2026-11-18 → P7. The FASTA files are per-isolate CDS from Bakta or Prokka, the same
   annotation that goes into Panaroo, supplied by the user. Pseudogenes are wanted *if* the user
   supplies their sequences.
-- **Q7a (R10):** Set `strandedness = 1` in the test profile? That changes the baseline, so it
-  would be re-captured. (Q7b resolved → P8. Q7c: the user should check any real analyses of this
-  cohort for the setting they used.)
+- Q7b resolved → P8. Q7c: the user should check any real analyses of this cohort for the
+  strandedness setting they used.
 - Q8: resolved 2026-11-18. Fail when more than 50% of a sample's loci are missing from its
   FASTA; warn otherwise.
 - Q7a: resolved 2026-11-18. The test profile now uses `strandedness = 1`, and the baseline was
