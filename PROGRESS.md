@@ -19,29 +19,25 @@ Read [CLAUDE.md](CLAUDE.md) first.
 
 ---
 
-## ▶ Start here (status as of 2026-11-19)
+## ▶ Start here (status as of 2026-11-19, evening)
 
-**Where things stand.** Phases 0–2 done; Phase 3 done except the cheap wins from H6. Pipeline is
-**PanScript** (`adamd3/PanScript`, image `adamd3/panscript:2.0.0-dev`). `main` still has the old
-pre-2026 code; nothing released yet.
-
-**Done 2026-11-19, merged into `dev` (not yet pushed):**
-- `fix/panaroo-suffixes`: Q12/R12 suffix stripping, baseline **v4**, docs, and all
-  PROGRESS updates for the day.
-- `fix/reject-mixed-reads`: Q4/R5.
-- `feat/panaroo-helper-gz`: H4b, helper verified on a real Panaroo run.
-- `docs/nf-core-assessment`: H6 write-up.
+**v2.0.0 is released.** Tag `v2.0.0` on `main`; GitHub release
+https://github.com/adamd3/PanScript/releases/tag/v2.0.0; image `adamd3/panscript:2.0.0`
+(`sha256:7a1fbe6c…`); Zenodo concept DOI **10.5281/zenodo.24375403** (v2.0.0:
+10.5281/zenodo.24375404). Verified: `nextflow run adamd3/PanScript -r v2.0.0 -profile test,docker`
+from GitHub matches baseline v4. Phases 0–4 are done.
 
 **Next steps, in order:**
-1. **Release v2.0.0** in progress on `release/v2.0.0`: MultiQC (H12) and docs (H13) done; image `adamd3/panscript:2.0.0` pushed 2026-11-19 (`sha256:7a1fbe6c…`, user OK).
-2. **Release v2.0.0** (needs user OK): add MultiQC (H12) to `environment.yml`, build and push
-   `adamd3/panscript:2.0.0` with `scripts/build_and_push_image.sh 2.0.0`; set it in
-   `nextflow.config`; manifest `version = '2.0.0'`; CHANGELOG; CITATION.cff; merge `dev` into
-   `main`; tag `v2.0.0`; Zenodo DOI (H7 remaining).
-3. **Manuscript** M1 (outline), M2 (benchmark design, including PanXpress and microberna
-   comparisons), M3 (showcase dataset), M4 (redraw the pipeline diagram).
-4. **Smaller open items:** R7 (document the recommended downstream DE workflow), H3 remainder (a
+1. **Manuscript (Phase 5):** M1 (outline), M2 (benchmark design, including PanXpress and
+   microberna comparisons), M3 (showcase dataset), M4 (redraw the pipeline diagram;
+   `docs/images/panscript_pipeline_lowres.png` predates fastp/MultiQC/input checks).
+2. **CITATION.cff co-authors** (user will supply later).
+3. **Smaller open items:** R7 (document the recommended downstream DE workflow), H3 remainder (a
    test option using local `test_data/` instead of GitHub URLs).
+
+For later releases: bump `manifest.version`, build/push a new image with
+`scripts/build_and_push_image.sh`, update `process.container`, CHANGELOG, merge `dev` → `main`,
+tag, and `gh release create` (Zenodo mints a new version DOI automatically).
 
 ---
 
@@ -127,7 +123,7 @@ results need the Phase 1–2 pipeline.
 | H12 | MultiQC report (fastp + kallisto). | DONE (2026-11-19, `release/v2.0.0`) | **Result:** `MULTIQC` process (`modules/multiqc.nf`, `assets/multiqc_config.yml`), MultiQC 1.35 in `environment.yml`. Sections: general stats, fastp, kallisto (from new `kallisto_quant/<sample>.kallisto.log`), and our strandedness and missing-loci tables as custom content. Sample names aligned across sections. `--skip_multiqc`. Tested with the MultiQC biocontainer before the image rebuild; expression matrices unchanged. |
 | H13 | nf-core-style docs. | DONE (2026-11-19, `release/v2.0.0`) | **Result:** README slimmed to intro, quick start, outputs summary and citation; details moved to `docs/usage.md` and new `docs/output.md`; `CITATIONS.md`, `CHANGELOG.md` (v2.0.0 vs 1.x, incl. breaking changes) and `CITATION.cff` added. **NEEDS USER:** ORCID / co-authors for CITATION.cff. |
 | H14 | Config overhaul: no site-specific profiles. | DONE (2026-11-19, `feat/config-overhaul`) | **Result:** removed the `cambridge` and `slurm` profiles (user: relics; site settings go in a `-c` config, documented in README "Running on a cluster"), the unused `name`, `cachedir` and `config_profile_*` params, and the Singularity `--bind $PWD`/cacheDir (use `NXF_SINGULARITY_CACHEDIR`). Added an `apptainer` profile. The `test` profile no longer picks the container engine itself: use `-profile test,docker` (or singularity/apptainer/conda). Outputs identical to baseline v4. Resource limits (`max_*` params vs `resourceLimits`) and right-sizing the process labels wait on Q14. |
-| H7 | Clean up the repo. | MOSTLY DONE (2026-11-18, `chore/cleanup`) | **Result:** deleted the 3 empty `test_data/.!NNNNN!*.fq.gz` files; replaced the untracked `docker_build_and_push.sh` (pushed `:latest`) with `scripts/build_and_push_image.sh <version>` (reads the repo from nextflow.config, builds, smoke-tests, runs unit tests in the image, asks before pushing). **Remaining:** CITATION.cff and Zenodo DOI (at release). Stray zero-byte `test_data/.!NNNNN!*.fq.gz` files (failed-transfer leftovers, untracked). Decide whether to commit `docker_build_and_push.sh`. Add a CITATION.cff and a Zenodo DOI before submission. |
+| H7 | Clean up the repo. | DONE (2026-11-19: CITATION.cff, Zenodo DOI at the v2.0.0 release) — was MOSTLY DONE (2026-11-18, `chore/cleanup`) | **Result:** deleted the 3 empty `test_data/.!NNNNN!*.fq.gz` files; replaced the untracked `docker_build_and_push.sh` (pushed `:latest`) with `scripts/build_and_push_image.sh <version>` (reads the repo from nextflow.config, builds, smoke-tests, runs unit tests in the image, asks before pushing). **Remaining:** CITATION.cff and Zenodo DOI (at release). Stray zero-byte `test_data/.!NNNNN!*.fq.gz` files (failed-transfer leftovers, untracked). Decide whether to commit `docker_build_and_push.sh`. Add a CITATION.cff and a Zenodo DOI before submission. |
 | H8 | Fix minor code issues (R8). | TODO | No output change. |
 
 ### Manuscript (Genome Biology)
@@ -262,6 +258,7 @@ data on a branch get tested, and runs need no network.
 | 2026-11-18 | Pipeline renamed to **PanScript**; image `adamd3/panscript`. | User decision after several rounds (see Q5). Docker needs lowercase names. |
 | 2026-11-18 | Git workflow: `main` (releases) / `dev` (integration) / feature branches; no AI attribution in commits. | User delegated branching; user request on attribution. |
 | 2026-11-19 | Strip Panaroo status suffixes when matching locus IDs (Q12/R12); baseline v4. | The suffixes aren't part of the sequence ID, so ~0.6% of genes per isolate (39 core) were NA for no biological reason. Raw ID is tried first so a real ID ending in `_stop` still wins. |
+| 2026-11-19 | Released v2.0.0 (tag, GitHub release, image `adamd3/panscript:2.0.0`, Zenodo DOI 10.5281/zenodo.24375403). | User approved the image push and release. |
 | 2026-11-19 | Validate params with our own schema-driven code, not the nf-schema plugin (H9). | nf-schema 2.4.2 breaks on Nextflow 26 (string CLI values, ignored config); unpinned versions print a warning banner on every run. Own code is version-proof and needs no plugin download. |
 | 2026-11-19 | Minimum Nextflow raised to 24.10 (H15). | Needed for `resourceLimits` and a current nf-schema; 24.10 is two years old. Users on 23.x must upgrade. |
 | 2026-11-19 | No site-specific profiles in `nextflow.config` (H14). | User: the `cambridge`/`slurm` profiles are relics; site settings belong in a user `-c` config. |
