@@ -33,7 +33,7 @@ pre-2026 code; nothing released yet.
 - `docs/nf-core-assessment`: H6 write-up.
 
 **Next steps, in order:**
-1. nf-core cheap wins (Q13 approved): H14, H11, H10, H9 (no image change needed), then H13.
+1. nf-core cheap wins (Q13 approved): H11, H10, H9 (after Q14), then H13. H14 done.
 2. **Release v2.0.0** (needs user OK): add MultiQC (H12) to `environment.yml`, build and push
    `adamd3/panscript:2.0.0` with `scripts/build_and_push_image.sh 2.0.0`; set it in
    `nextflow.config`; manifest `version = '2.0.0'`; CHANGELOG; CITATION.cff; merge `dev` into
@@ -125,7 +125,7 @@ results need the Phase 1–2 pipeline.
 | H11 | `--publish_dir_mode`, default `copy`. | TODO | Approved (Q13). Outputs become copies, not symlinks into `work/`. Update CLAUDE.md's `cp -L` note and the README. |
 | H12 | MultiQC report (fastp + kallisto). | TODO | Approved (Q13). Needs MultiQC in `environment.yml`, so do it with the v2.0.0 image build. New output. |
 | H13 | nf-core-style docs: `docs/usage.md`, `docs/output.md`, `CITATIONS.md`, `CHANGELOG.md`. | TODO | Partly part of the v2.0.0 release. No output change. |
-| H14 | Move the `cambridge` profile out of `nextflow.config` into its own config file. | TODO | No output change; keep `-profile cambridge` working. |
+| H14 | Config overhaul: no site-specific profiles. | DONE (2026-11-19, `feat/config-overhaul`) | **Result:** removed the `cambridge` and `slurm` profiles (user: relics; site settings go in a `-c` config, documented in README "Running on a cluster"), the unused `name`, `cachedir` and `config_profile_*` params, and the Singularity `--bind $PWD`/cacheDir (use `NXF_SINGULARITY_CACHEDIR`). Added an `apptainer` profile. The `test` profile no longer picks the container engine itself: use `-profile test,docker` (or singularity/apptainer/conda). Outputs identical to baseline v4. Resource limits (`max_*` params vs `resourceLimits`) and right-sizing the process labels wait on Q14. |
 | H7 | Clean up the repo. | MOSTLY DONE (2026-11-18, `chore/cleanup`) | **Result:** deleted the 3 empty `test_data/.!NNNNN!*.fq.gz` files; replaced the untracked `docker_build_and_push.sh` (pushed `:latest`) with `scripts/build_and_push_image.sh <version>` (reads the repo from nextflow.config, builds, smoke-tests, runs unit tests in the image, asks before pushing). **Remaining:** CITATION.cff and Zenodo DOI (at release). Stray zero-byte `test_data/.!NNNNN!*.fq.gz` files (failed-transfer leftovers, untracked). Decide whether to commit `docker_build_and_push.sh`. Add a CITATION.cff and a Zenodo DOI before submission. |
 | H8 | Fix minor code issues (R8). | TODO | No output change. |
 
@@ -223,6 +223,7 @@ data on a branch get tested, and runs need no network.
 - Q11: resolved 2026-11-18. `--strandedness auto` is the default; the test profile uses it.
 - Q12: resolved 2026-11-19. Yes: strip Panaroo status suffixes when matching locus IDs (done, R12).
 - Q5: resolved 2026-11-18. Name is **PanScript**.
+- **Q14 (H9/H14):** Raise the minimum Nextflow from 23.10 to 24.10? It enables `resourceLimits` (replacing the `max_cpus`/`max_memory` params and closures) and a current nf-schema (2.4.x; 2.6+ needs 25.10 and Java 17). Also: right-size the process labels (kallisto currently asks for 12 CPUs / 72 GB, far more than bacterial gene sets need).
 - Q13: resolved 2026-11-19. Adopt all the cheap wins in `docs/nf-core-assessment.md` (H9–H14); the user approved the output changes they bring.
 - Q4: resolved 2026-11-19. Reject mixed single-end and paired-end input with a clear error (R5).
 - **Q5 (H1):** Name ideas: should the name stress pangenome, isolate-specific or reference-free?
@@ -260,4 +261,5 @@ data on a branch get tested, and runs need no network.
 | 2026-11-18 | Pipeline renamed to **PanScript**; image `adamd3/panscript`. | User decision after several rounds (see Q5). Docker needs lowercase names. |
 | 2026-11-18 | Git workflow: `main` (releases) / `dev` (integration) / feature branches; no AI attribution in commits. | User delegated branching; user request on attribution. |
 | 2026-11-19 | Strip Panaroo status suffixes when matching locus IDs (Q12/R12); baseline v4. | The suffixes aren't part of the sequence ID, so ~0.6% of genes per isolate (39 core) were NA for no biological reason. Raw ID is tried first so a real ID ending in `_stop` still wins. |
+| 2026-11-19 | No site-specific profiles in `nextflow.config` (H14). | User: the `cambridge`/`slurm` profiles are relics; site settings belong in a user `-c` config. |
 | 2026-11-19 | Reject mixed single-end/paired-end runs (Q4/R5). | Simplest correct behaviour; kallisto runs in one mode for all samples. Users split such cohorts into separate runs. |

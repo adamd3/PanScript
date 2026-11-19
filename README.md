@@ -36,7 +36,29 @@ You can run the pipeline as follows:
         --group majority_ST \
         -profile conda -resume
 
-You can run with [`Docker`](https://www.docker.com/) or [`Singularity`](https://sylabs.io/guides/3.5/user-guide/introduction.html) by specifying ` -profile docker` or ` -profile singularity`, respectively.
+Choose how the software is provided with `-profile docker`, `-profile singularity`, `-profile apptainer` or `-profile conda`. The container profiles all use the same versioned image. Singularity and Apptainer cache images in the directory given by `NXF_SINGULARITY_CACHEDIR` / `NXF_APPTAINER_CACHEDIR`.
+
+To check your setup, run the small test dataset: `nextflow run adamd3/PanScript -profile test,docker --outdir test_results`.
+
+### Running on a cluster
+
+The pipeline has no built-in site profiles. Put your cluster's settings in a small config file and pass it with `-c`. For example, for SLURM:
+
+    // my_cluster.config
+    process {
+        executor       = 'slurm'
+        queue          = 'my_partition'
+        clusterOptions = '--account=my_account'
+    }
+    executor.queueSize = 100
+    params {
+        max_cpus   = 32        // the largest node available to you
+        max_memory = '128.GB'
+    }
+
+    nextflow run adamd3/PanScript -profile singularity -c my_cluster.config ...
+
+Your institution may already have a Nextflow config (for example in [nf-core/configs](https://github.com/nf-core/configs)); its `process`, `executor` and container settings work here too.
 
 The `-resume` parameter will re-start the pipeline if it has been previously run.
 
