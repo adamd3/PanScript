@@ -81,7 +81,7 @@ This creates `pipeline_inputs/fasta/<isolate>.fna` and `pipeline_inputs/metadata
   - `dna_sample_id`: gene sequence sample identifier (must match the column name in the Panaroo gene presence/absence file)
   - `sample_name`: unique identifier for the sample
   - `fastq1`: path to fastq file for RNA-Seq data
-  - `fastq2`: (optional) path to 2nd fastq file for paired-end RNA-Seq data - leave blank for single-end data
+  - `fastq2`: (optional) path to 2nd fastq file for paired-end RNA-Seq data - leave blank for single-end data. All samples in a run must be the same type: the pipeline stops if some samples have `fastq2` and others don't
   - `fasta`: path to fasta file containing gene sequences
   - Additional columns are optional
 
