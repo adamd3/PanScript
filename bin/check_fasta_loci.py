@@ -78,10 +78,13 @@ def main():
     p.add_argument("--summary", required=True)
     a = p.parse_args()
 
-    gpa = pd.read_csv(a.gene_presence_absence, low_memory=False, dtype=str)
-    if a.dna_sample_id not in gpa.columns:
+    # read only the columns needed: the table can have thousands of isolates
+    header = pd.read_csv(a.gene_presence_absence, nrows=0).columns
+    if a.dna_sample_id not in header:
         sys.exit(f"ERROR: dna_sample_id '{a.dna_sample_id}' (sample {a.sample_name}) is not a "
                  f"column of the gene presence/absence file.")
+    gpa = pd.read_csv(a.gene_presence_absence, low_memory=False, dtype=str,
+                      usecols=["Gene", a.dna_sample_id])
     cells = gpa.set_index("Gene")[a.dna_sample_id].dropna()
     cells = cells[cells.str.strip() != ""]
     ids = fasta_ids(a.fasta)

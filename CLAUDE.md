@@ -114,7 +114,7 @@ file in sync with any change to normalisation code.
   was mostly `symlink` before). With `--publish_dir_mode symlink`, `results/` files point into
   `work/`, so use `cp -L` when saving them.
 - CI (`.github/workflows/ci.yml`, on pushes to `main`/`dev` and on PRs) runs the unit tests inside
-  the pinned image, then the test profile on Nextflow 23.10.1 and latest-stable, and checks the
+  the pinned image, then the test profile on Nextflow 24.10.0 and latest-stable, and checks the
   outputs against `tests/baseline` with `tests/compare_to_baseline.py`. **CI never pushes
   images.** `container.yml` only checks that the image still builds when `environment.yml` or the
   `Dockerfile` changes. A PR that changes outputs on purpose must re-capture the baseline in the
@@ -123,7 +123,7 @@ file in sync with any change to normalisation code.
   `scripts/build_and_push_image.sh <version>`, which builds, smoke-tests and runs the unit tests in
   the image, then asks before pushing; **ask the user** before confirming the push; then set that tag in `nextflow.config`
   (`process.container`) and re-capture the baseline.
-- **Nextflow versions:** 23.10.0 and later (`manifest.nextflowVersion`). Code must parse under
+- **Nextflow versions:** 24.10.0 and later (`manifest.nextflowVersion`, raised from 23.10 on 2026-11-19 for `resourceLimits` and nf-schema). Code must parse under
   Nextflow's strict syntax (default from 25.x): no statements outside workflows or functions; use
   `error()`, not `exit`; no helper functions in config files; no `$VAR` environment variables in
   config strings.

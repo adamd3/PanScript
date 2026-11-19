@@ -1,6 +1,6 @@
 process DESEQ_NORMALISE_COUNTS {
     tag "$merged_counts"
-    label 'process_medium'
+    label 'process_single'
     publishDir "${params.outdir}/gene_counts", mode: params.publish_dir_mode
 
     input:

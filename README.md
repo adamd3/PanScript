@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/adamd3/PanScript/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/adamd3/PanScript/actions/workflows/ci.yml)
 
-[![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A523.10.0-23aa62.svg?labelColor=000000)](https://www.nextflow.io/)
+[![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A524.10.0-23aa62.svg?labelColor=000000)](https://www.nextflow.io/)
 [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
 [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
@@ -26,7 +26,7 @@ The pipeline requires the output from a pan-genome analysis with [`Panaroo`](htt
 
 ## Installation
 
-You will need to install [`Nextflow`](https://www.nextflow.io/) (version 23.10.0 or later; tested up to the latest release).
+You will need to install [`Nextflow`](https://www.nextflow.io/) (version 24.10.0 or later; tested up to the latest release).
 
 You can run the pipeline as follows:
 
@@ -49,14 +49,13 @@ The pipeline has no built-in site profiles. Put your cluster's settings in a sma
         executor       = 'slurm'
         queue          = 'my_partition'
         clusterOptions = '--account=my_account'
+        resourceLimits = [cpus: 32, memory: 128.GB, time: 24.h]   // your largest node
     }
     executor.queueSize = 100
-    params {
-        max_cpus   = 32        // the largest node available to you
-        max_memory = '128.GB'
-    }
 
     nextflow run adamd3/PanScript -profile singularity -c my_cluster.config ...
+
+By default each kallisto task asks for 8 CPUs and 8 GB of memory and the other steps for less. On a smaller machine, cap the requests with `process.resourceLimits` in the same way (for example `[cpus: 4, memory: 8.GB]`).
 
 Your institution may already have a Nextflow config (for example in [nf-core/configs](https://github.com/nf-core/configs)); its `process`, `executor` and container settings work here too.
 

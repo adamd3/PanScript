@@ -26,7 +26,7 @@ process KALLISTO_QUANT {
 
 process MERGE_COUNTS_AND_LENS {
     tag "merge_counts_and_lens"
-    label 'process_high'
+    label 'process_single'
     publishDir "${params.outdir}/kallisto_quant", mode: params.publish_dir_mode
 
     input:

@@ -6,7 +6,7 @@
 ================================================================================
     Github : [github.com/adamd3/PanScript]
 
-    Written to parse under both Nextflow 23.10 and the strict syntax of
+    Written to parse under both Nextflow 24.10 and the strict syntax of
     Nextflow >= 25 (no top-level statements; errors via error()).
 */
 

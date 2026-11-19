@@ -5,7 +5,6 @@
  */
 process SOFTWARE_VERSIONS {
     tag "software_versions"
-    label 'process_low'
     publishDir "${params.outdir}/pipeline_info", mode: params.publish_dir_mode
 
     output:
