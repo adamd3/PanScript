@@ -6,6 +6,7 @@ authors:
   - family-names: Dinan
     given-names: Adam
 version: 2.0.0
+date-released: "2026-11-19"
 license: MIT
 repository-code: "https://github.com/adamd3/PanScript"
 abstract: >

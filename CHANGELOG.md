@@ -2,7 +2,7 @@
 
 All notable changes to PanScript. Versions follow [semantic versioning](https://semver.org/).
 
-## v2.0.0 (unreleased)
+## v2.0.0 (2026-11-19)
 
 The first release as **PanScript** (previously StrainQuant). Versions before 2026 count as 1.x.
 
