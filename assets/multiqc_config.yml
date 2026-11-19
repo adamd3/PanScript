@@ -1,0 +1,52 @@
+# MultiQC configuration for PanScript (used by the MULTIQC process)
+title: "PanScript"
+subtitle: "Read QC, pseudo-alignment and input checks"
+report_comment: >
+  Summary of one PanScript run. Expression matrices are in gene_counts/;
+  see docs/output.md for what each output contains.
+
+# Sample names: fastp reports and kallisto logs are named <sample>.fastp.*;
+# strip that so every section uses the pipeline's sample_name.
+fastp:
+  s_name_filenames: true
+extra_fn_clean_exts:
+  - type: regex
+    pattern: '_[12]\.fastp$'
+  - type: regex
+    pattern: '\.fastp$'
+  - type: regex
+    pattern: '\.kallisto$'
+
+# Our own input-check tables (pipeline_info/*.tsv), shown as tables
+custom_data:
+  strandedness_check:
+    file_format: "tsv"
+    section_name: "Strandedness check"
+    description: >
+      Library strandedness inferred per sample from a subsample of reads
+      (CHECK_STRANDEDNESS). fraction_fr is the share of stranded
+      pseudo-alignments in the forward orientation.
+    plot_type: "table"
+  fasta_loci_summary:
+    file_format: "tsv"
+    section_name: "Panaroo loci missing from FASTA"
+    description: >
+      Per sample: loci listed by Panaroo for the isolate that are missing from
+      its gene FASTA (CHECK_FASTA_LOCI). Missing loci can't be quantified, so
+      their gene groups are NA. Details in pipeline_info/missing_loci.tsv.
+    plot_type: "table"
+sp:
+  strandedness_check:
+    fn: "strandedness_check.tsv"
+  fasta_loci_summary:
+    fn: "fasta_loci_summary.tsv"
+
+report_section_order:
+  fastp:
+    order: 50
+  kallisto:
+    order: 40
+  strandedness_check:
+    order: 30
+  fasta_loci_summary:
+    order: 20

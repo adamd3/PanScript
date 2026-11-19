@@ -8,6 +8,7 @@ otherwise. Run inside the container, e.g.:
 
 
 import shutil
+import os
 import subprocess
 import sys
 import tempfile
@@ -20,8 +21,13 @@ import pandas as pd
 SCRIPT = Path(__file__).resolve().parents[2] / "bin" / "umap_samples.py"
 def _umap_works():
     # a real import, not just find_spec: a broken umap/scipy install should skip
+    # (with the same writable cache dirs that bin/umap_samples.py sets, so
+    # this doesn't skip when run as a non-root user, as in CI)
+    env = dict(os.environ)
+    env.setdefault("NUMBA_CACHE_DIR", "/tmp/numba_cache")
+    env.setdefault("MPLCONFIGDIR", "/tmp/mplconfig")
     r = subprocess.run([sys.executable, "-c", "import umap, matplotlib"],
-                       capture_output=True)
+                       capture_output=True, env=env)
     return r.returncode == 0
 
 

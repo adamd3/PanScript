@@ -30,5 +30,7 @@ dependencies:
   # Read processing and quantification
   - bioconda::fastp=1.4.0
   - bioconda::kallisto=0.51.1
+  # QC report across samples
+  - bioconda::multiqc=1.35
   # `ps`, needed by Nextflow for task metrics
   - conda-forge::procps-ng=4.0.6

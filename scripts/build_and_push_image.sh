@@ -30,7 +30,7 @@ docker build --platform linux/amd64 -t "$IMAGE" .
 
 echo "== Smoke test"
 docker run --rm --platform linux/amd64 "$IMAGE" bash -c \
-    'kallisto version && fastp --version && python -c "import pandas, umap, matplotlib" && Rscript -e "library(DESeq2)" > /dev/null'
+    'kallisto version && fastp --version && multiqc --version && python -c "import pandas, umap, matplotlib" && Rscript -e "library(DESeq2)" > /dev/null'
 
 echo "== Unit tests inside the image"
 docker run --rm --platform linux/amd64 -u "$(id -u):$(id -g)" -e HOME=/tmp \

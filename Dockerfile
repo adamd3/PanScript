@@ -13,3 +13,8 @@ RUN micromamba install -y -n base -f /tmp/environment.yml && \
 # Make the environment's tools available however the container is started
 # (Nextflow, docker run, Singularity), not only via the micromamba entrypoint
 ENV PATH=/opt/conda/bin:$PATH
+
+# numba (used by umap-learn) and matplotlib need writable cache directories;
+# the image's site-packages aren't writable when tasks run as the calling user
+ENV NUMBA_CACHE_DIR=/tmp/numba_cache \
+    MPLCONFIGDIR=/tmp/mplconfig
