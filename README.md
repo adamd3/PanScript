@@ -102,6 +102,24 @@ This creates `pipeline_inputs/fasta/<isolate>.fna` and `pipeline_inputs/metadata
 `sample_name`, `fastq1` and `fastq2` (one row per RNA-seq sample), and pass Panaroo's
 `gene_presence_absence.csv` as `--gpa_file`.
 
+### Panaroo's locus ID suffixes
+
+In `gene_presence_absence.csv`, Panaroo adds a suffix to some locus IDs to flag possible problems
+with that gene in that isolate:
+
+- `_len`: the gene's length differs markedly from the usual length in its gene group (for example
+  a truncated or extended gene).
+- `_pseudo`: the sequence isn't a valid gene (for example it has internal stop codons), which
+  usually means a pseudogene.
+- `_stop` (older Panaroo versions): a premature stop codon. It can be combined with `_len`, as in
+  `_len_stop`.
+
+These suffixes aren't part of the gene's sequence ID in the isolate FASTA, so the pipeline matches
+each locus on its exact ID first, then with the suffixes removed. Flagged genes are therefore
+quantified like any other gene. If you'd rather exclude them, filter them out downstream: the
+suffixes are visible in `gene_presence_absence.csv` (`gene_presence_absence_roary.csv` and
+`gene_presence_absence.Rtab` list the same loci without suffixes).
+
 ### Input files
 
 - **Metadata file**: tab-delimited (TSV) file, which must contain at least the following named columns:
