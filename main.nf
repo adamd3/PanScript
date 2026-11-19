@@ -20,6 +20,7 @@ include {FASTP} from './modules/trim_reads'
 include {KALLISTO_QUANT; MERGE_COUNTS_AND_LENS; CHECK_STRANDEDNESS} from './modules/kallisto'
 include {DESEQ_NORMALISE_COUNTS} from './modules/normalisation'
 include {UMAP_SAMPLES} from './modules/plots'
+include {SOFTWARE_VERSIONS} from './modules/versions'
 
 
 
@@ -86,6 +87,10 @@ def validateParams() {
     if (params.max_missing_loci < 0 || params.max_missing_loci > 1) {
         error('ERROR: --max_missing_loci must be a fraction between 0 and 1.')
     }
+    def publish_modes = ['copy', 'symlink', 'rellink', 'link', 'copyNoFollow', 'move']
+    if (!(params.publish_dir_mode in publish_modes)) {
+        error("ERROR: --publish_dir_mode must be one of: ${publish_modes.join(', ')}.")
+    }
 }
 
 
@@ -99,6 +104,8 @@ workflow MAIN {
     main:
     ch_samples  = file(params.meta_file, checkIfExists: true)
     ch_gpa_file = file(params.gpa_file, checkIfExists: true)
+
+    SOFTWARE_VERSIONS()
 
 
     /*
@@ -255,6 +262,7 @@ def helpMessage() {
       --save_trimmed [bool]           Save the fastp-trimmed reads in <outdir>/fastp/trimmed.
       --seed [int]                    Random seed for the UMAP, so plots are reproducible. Default = 42.
       --outdir [file]                 The output directory where the results will be saved (default: './results').
+      --publish_dir_mode [str]        How results are saved in --outdir: copy, symlink, rellink, link, copyNoFollow or move. Default = copy.
       -name [str]                     Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic.
 
     """.stripIndent()

@@ -1,6 +1,6 @@
 process CHECK_META_FILE {
     tag "$metadata"
-    publishDir "${params.outdir}/pipeline_info", mode: 'copy'
+    publishDir "${params.outdir}/pipeline_info", mode: params.publish_dir_mode
 
     input:
     path metadata

@@ -77,6 +77,7 @@ Explanation of parameters:
 - `save_trimmed`: save the trimmed reads in `<outdir>/fastp/trimmed/`. Default = false.
 - `seed`: random seed for the UMAP, so the plot is reproducible. Default = 42.
 - `outdir`: the output directory where the results will be saved (Default: `./results`).
+- `publish_dir_mode`: how results are saved in `outdir`. `copy` (the default) makes independent files, so you can delete Nextflow's `work/` directory afterwards. `symlink` saves disk space but the results then break if `work/` is deleted. Other options: `rellink`, `link`, `copyNoFollow`, `move`.
 
 ## Required input
 
@@ -148,4 +149,4 @@ This creates `pipeline_inputs/fasta/<isolate>.fna` and `pipeline_inputs/metadata
    See [docs/normalisation.md](docs/normalisation.md) for formulas and rationale.
 3. **kallisto_quant** directory containing per-sample kallisto output and the merged count and effective-length matrices.
 4. **umap_samples** directory containing a UMAP of samples (`umap_<group>.png`) and its coordinates (`umap_coordinates.tsv`). It's computed on log2(`norm_counts` + 1) of the core genes, with `n_neighbors` = 15 (or 3 with fewer than 15 samples, and always fewer than the number of samples), and a fixed `--seed`, so it's reproducible.
-5. **pipeline_info** directory containing the processed metadata and the input-check reports: `missing_loci.tsv`, `fasta_loci_summary.tsv` and `strandedness_check.tsv`.
+5. **pipeline_info** directory containing the processed metadata and the input-check reports: `missing_loci.tsv`, `fasta_loci_summary.tsv` and `strandedness_check.tsv`, plus `software_versions.yml` (versions of the pipeline, Nextflow, the container and every tool used; useful for a methods section).
