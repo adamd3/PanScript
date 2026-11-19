@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use PanScript, please cite it as below, along with the tools it uses (CITATIONS.md)."
+title: "PanScript: isolate-specific bacterial RNA-seq quantification across a pangenome"
+type: software
+authors:
+  - family-names: Dinan
+    given-names: Adam
+version: 2.0.0
+date-released: "2026-11-19"
+license: MIT
+repository-code: "https://github.com/adamd3/PanScript"
+abstract: >
+  A Nextflow pipeline that quantifies gene expression in bacterial RNA-seq data
+  without a single reference genome. Reads from each isolate are pseudo-aligned
+  to that isolate's own gene set, and expression is merged across isolates
+  through the orthologous gene groups of a Panaroo pangenome, then normalised
+  with core-genome size factors.
+keywords:
+  - RNA-seq
+  - bacteria
+  - pangenome
+  - transcriptomics
+  - Nextflow

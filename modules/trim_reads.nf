@@ -1,53 +1,48 @@
-process TRIMGALORE {
+/*
+ * Adaptor trimming and read QC with fastp, using fastp's default settings.
+ * Extra options can be passed with --fastp_args (e.g. to approximate the
+ * previous Trim Galore defaults: see docs/usage.md).
+ */
+process FASTP {
     tag "$meta.sample_id"
-    label 'process_high'
-    container 'adamd3/strainseq:latest'
-    publishDir "${params.outdir}/trim_galore", mode: 'copy',
+    label 'process_medium'
+    publishDir "${params.outdir}/fastp", mode: params.publish_dir_mode,
         saveAs: { filename ->
-                      if (filename.endsWith('.html')) "fastqc/$filename"
-                      else if (filename.endsWith('.zip')) "fastqc/zips/$filename"
-                      else if (filename.endsWith('trimming_report.txt')) "logs/$filename"
-                      else params.save_trimmed ? filename : null
+                      if (filename.endsWith('.fastp.fq.gz')) params.save_trimmed.toString() == 'true' ? "trimmed/$filename" : null
+                      else if (filename =~ /\.fastp\.(json|html|log)$/) filename
+                      else null   // e.g. the isolate FASTA passed through to quantification
                 }
 
     input:
     tuple val(meta), path(reads), path(fasta)
 
     output:
-    tuple val(meta), path("*{trimmed,val}*.fq.gz"), path(fasta) , emit: trimmed_reads
-    tuple val(meta), path("*.txt")                              , emit: trimgalore_results_mqc
-    tuple val(meta), path("*.{zip,html}")                       , emit: trimgalore_fastqc_reports_mqc
-    tuple val(meta), path("*unpaired*.fq.gz")                   , emit: unpaired, optional: true
-
-    when:
-    !params.skip_trimming
+    tuple val(meta), path("${meta.sample_id}*.fastp.fq.gz"), path(fasta), emit: trimmed_reads
+    path "${meta.sample_id}.fastp.{json,html,log}",                          emit: reports
 
     script:
-    // Calculate number of --cores for TrimGalore based on value of task.cpus
-    // See: https://github.com/FelixKrueger/TrimGalore/blob/master/Changelog.md#version-060-release-on-1-mar-2019
-    // See: https://github.com/nf-core/atacseq/pull/65
-    // (Max no cores = 4, since there are diminishing returns beyond this)
-    def cores = 1
-    if (task.cpus) {
-        cores = (task.cpus as int) - 3
-        if (cores < 1) cores = 1
-        if (cores > 4) cores = 4
-    }
-
-
-    def name = task.ext.prefix ?: "${meta.sample_id}"
-
+    def name    = meta.sample_id
+    def args    = params.fastp_args ?: ''
+    def threads = Math.min(task.cpus as int, 16)   // fastp uses at most 16 threads
     if (meta.paired_end) {
         """
-        [ ! -f  ${name}_1.fastq.gz ] && ln -s ${reads[0]} ${name}_1.fastq.gz
-        [ ! -f  ${name}_2.fastq.gz ] && ln -s ${reads[1]} ${name}_2.fastq.gz
-        trim_galore --cores $cores --fastqc --paired --gzip \\
-            ${name}_1.fastq.gz ${name}_2.fastq.gz
+        fastp \\
+            -i ${reads[0]} -I ${reads[1]} \\
+            -o ${name}_1.fastp.fq.gz -O ${name}_2.fastp.fq.gz \\
+            --thread $threads \\
+            --json ${name}.fastp.json --html ${name}.fastp.html \\
+            $args \\
+            2> ${name}.fastp.log
         """
     } else {
         """
-        [ ! -f  ${name}.fastq.gz ] && ln -s $reads ${name}.fastq.gz
-        trim_galore --cores $cores --fastqc --gzip ${name}.fastq.gz
+        fastp \\
+            -i $reads \\
+            -o ${name}.fastp.fq.gz \\
+            --thread $threads \\
+            --json ${name}.fastp.json --html ${name}.fastp.html \\
+            $args \\
+            2> ${name}.fastp.log
         """
     }
 }

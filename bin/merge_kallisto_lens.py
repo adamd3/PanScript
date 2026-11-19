@@ -3,7 +3,31 @@
 import argparse
 import pandas as pd
 import os.path
-from collections import Counter
+import re
+
+
+# Panaroo appends status suffixes to locus IDs in gene_presence_absence.csv
+# (_len: length deviates from the group; _pseudo: invalid gene; _stop: premature
+# stop codon, older versions), sometimes several (e.g. _len_stop). They are not
+# part of the sequence ID in the isolate FASTA, so a locus is matched on its raw
+# ID first and then with suffixes stripped one at a time (PROGRESS.md R12).
+PANAROO_SUFFIX = re.compile(r"_(len|pseudo|stop)$")
+
+
+def resolve_locus(locus, ids):
+    """Return the ID in `ids` that `locus` refers to, or `locus` if none does."""
+    cur = locus
+    while cur not in ids:
+        stripped = PANAROO_SUFFIX.sub("", cur)
+        if stripped == cur:
+            return locus
+        cur = stripped
+    return cur
+
+
+def resolve_cell(cell, ids):
+    """Resolve each ';'-separated locus of a gene_presence_absence cell."""
+    return ";".join(resolve_locus(l, ids) for l in str(cell).split(";"))
 
 
 def parse():
@@ -27,10 +51,13 @@ def parse():
 
 
 def merge_counts(gene_presence_absence, metadata_merged, kallisto_dir, outf):
-    csv_data = pd.read_csv(gene_presence_absence, low_memory=False)
     metadata = pd.read_csv(metadata_merged, sep = "\t")
-    colnames = csv_data.columns.values.tolist()
+    # read only the Gene column and the isolates in the metadata: the table
+    # can have thousands of isolates
+    colnames = pd.read_csv(gene_presence_absence, nrows=0).columns.values.tolist()
     metadata = metadata[metadata['dna_sample_id'].isin(colnames)]
+    csv_data = pd.read_csv(gene_presence_absence, low_memory=False,
+                           usecols=["Gene"] + metadata['dna_sample_id'].unique().tolist())
     quant_dfs = []
     for index, row in metadata.iterrows():
         sample_name = row['sample_name']
@@ -42,14 +69,18 @@ def merge_counts(gene_presence_absence, metadata_merged, kallisto_dir, outf):
         quant_dat = quant_dat.rename(columns={'target_id': sample_name})
         cg = csv_data[["Gene", dna_sample_id]]
         cg = cg.rename(columns={dna_sample_id: sample_name})
+        ids = set(quant_dat[sample_name])
+        cg[sample_name] = cg[sample_name].map(
+            lambda c: resolve_cell(c, ids), na_action='ignore')
         all_genes = (cg[sample_name].dropna()).tolist()
         split_genes = [g for g in all_genes if ";" in str(g)]
         split_dict = {}
         for split_set in split_genes:
             ind_genes = split_set.split(";")
             expr_vals = quant_dat[quant_dat[sample_name].isin(ind_genes)]
-            mean_len = expr_vals["eff_length"].mean()
-            split_dict[split_set] = mean_len
+            # gene split into several loci in this isolate: total effective
+            # length over its loci (NaN, not 0, if none were quantified)
+            split_dict[split_set] = expr_vals["eff_length"].sum(min_count=1)
         quant_split = pd.DataFrame([split_dict]).transpose()
         quant_split.rename(columns={0:'eff_length'}, inplace=True)
         quant_split[sample_name] = quant_split.index

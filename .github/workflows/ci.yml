@@ -1,56 +1,80 @@
-name: StrainQuant CI
+name: CI
+
+# Unit tests and an end-to-end test-profile run, checked against the stored
+# regression baseline (tests/baseline). CI never publishes images: building and
+# pushing a new image tag is a deliberate manual step (see CLAUDE.md).
 
 on:
   push:
-    branches:
-      - main
+    branches: [main, dev]
   pull_request:
+  workflow_dispatch:
 
 env:
   NXF_ANSI_LOG: false
-  CAPSULE_LOG: none
 
 jobs:
-  test:
-    name: Run pipeline with test data
-    if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'adamd3/StrainQuant') }}"
+  unit-tests:
+    name: Unit tests (in pipeline container)
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        # Nextflow versions
-        include:
-          # Test pipeline minimum Nextflow version
-          - NXF_VER: "21.10.3"
-            NXF_EDGE: ""
-          # Test latest edge release of Nextflow
-          - NXF_VER: ""
-            NXF_EDGE: "1"
     steps:
       - name: Check out pipeline code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v5
+
+      - name: Get container image from nextflow.config
+        id: image
+        run: echo "image=$(grep -oP "^process\.container\s*=\s*'\K[^']+" nextflow.config)" >> "$GITHUB_OUTPUT"
+
+      - name: Run unit tests
+        run: |
+          docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp \
+            -v "$PWD":/repo -w /repo "${{ steps.image.outputs.image }}" \
+            python -m unittest discover -s tests/unit -v
+
+  pipeline:
+    name: Test profile (Nextflow ${{ matrix.nxf }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # minimum supported version (manifest.nextflowVersion) and latest release
+        nxf: ["24.10.0", "latest-stable"]
+    steps:
+      - name: Check out pipeline code
+        uses: actions/checkout@v5
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
 
       - name: Install Nextflow
-        env:
-          NXF_VER: ${{ matrix.NXF_VER }}
-          # Uncomment only if the edge release is more recent than the latest stable release
-          # See https://github.com/nextflow-io/nextflow/issues/2467
-          # NXF_EDGE: ${{ matrix.NXF_EDGE }}
-        run: |
-          wget -qO- get.nextflow.io | bash
-          chmod +x nextflow
-          sudo mv nextflow /usr/local/bin/
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v1
+        uses: nf-core/setup-nextflow@v2
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          version: ${{ matrix.nxf }}
 
-      - name: Build and publish to docker
-        run: |
-          docker build  --platform linux/amd64 -t adamd3/strainseq:latest .
-          docker push adamd3/strainseq:latest
+      - name: Get container image from nextflow.config
+        id: image
+        run: echo "image=$(grep -oP "^process\.container\s*=\s*'\K[^']+" nextflow.config)" >> "$GITHUB_OUTPUT"
 
       - name: Run pipeline with test data
+        run: nextflow run ${GITHUB_WORKSPACE} -profile test,docker --outdir ./results
+
+      - name: Compare outputs with regression baseline
+        # results/ contains symlinks into work/, so mount the workspace at the
+        # same path inside the container
         run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile test,docker --outdir ./results
+          docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp \
+            -v "$GITHUB_WORKSPACE":"$GITHUB_WORKSPACE" -w "$GITHUB_WORKSPACE" \
+            "${{ steps.image.outputs.image }}" \
+            python tests/compare_to_baseline.py results
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nextflow-logs-${{ matrix.nxf }}
+          path: |
+            .nextflow.log
+            results/pipeline_info/

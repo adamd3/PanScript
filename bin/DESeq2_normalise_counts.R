@@ -21,18 +21,6 @@ option_list <- list(
         type = "character", default = NULL,
         help = "table of effective lengths per gene", metavar = "character"
     ),
-    make_option(c("-g", "--genes"),
-        type = "character", default = NULL,
-        help = "core gene subset to be used", metavar = "character"
-    ),
-    make_option(c("-p", "--perc"),
-        type = "character", default = NULL,
-        help = "filter to core genes?", metavar = "character"
-    ),
-    make_option(c("-t", "--log_transform"),
-        type = "character", default = NULL,
-        help = "log transform the counts? default = FALSE", metavar = "character"
-    ),
     make_option(c("-o", "--outdir"),
         type = "character", default = NULL,
         help = "output directory for results", metavar = "character"
@@ -44,20 +32,12 @@ opt <- parse_args(opt_parser)
 
 counts_f <- opt$counts
 lengths_f <- opt$lengths
-gene_f <- opt$genes
-perc <- if (opt$perc == "TRUE") TRUE else FALSE
-log <- if (opt$log_transform == "TRUE") TRUE else FALSE
 outdir <- opt$outdir
 
 
 ## Read data
 counts_tab <- suppressMessages(read_tsv(counts_f))
 lengths_tab <- suppressMessages(read_tsv(lengths_f))
-core_genome <- if (!is.null(gene_f)) {
-    suppressMessages(read_tsv(gene_f))
-} else {
-    NULL
-}
 
 lengths_tab <- lengths_tab[match(counts_tab$Gene, lengths_tab$Gene), ]
 
@@ -89,47 +69,27 @@ size_factors <- sizeFactors(dds)
 
 
 
-if (isTRUE(perc)) {
-    ## subset to `perc` gene set
-    counts_tab_perc <- subset(counts_tab_scaled, rownames(
-        counts_tab_scaled
-    ) %in% core_genome$gene)
-    counts_tab_perc[is.na(counts_tab_perc)] <- 0
+## get size factor-scaled counts (all genes; accessory genes stay NA)
+res_df <- sweep(counts_tab_scaled, 2, size_factors, `/`)
 
-    median_sub <- median_lens[rownames(counts_tab_perc)]
-
-    ## get size factor-scaled counts
-    res_df <- sweep(counts_tab_perc, 2, size_factors, `/`)
-
-    ## get RPKM values
-    lib_sf <- (colSums(counts_tab_perc, na.rm = TRUE) / 1e6)
-    gene_sf <- sapply(median_sub, function(l) {
-        l / 1e3 * lib_sf
-    })
-    gene_sf <- as.data.frame(t(gene_sf))
-    rpkm_df <- counts_tab_perc / gene_sf
-} else {
-    ## get size factor-scaled counts
-    res_df <- sweep(counts_tab_scaled, 2, size_factors, `/`)
-
-    ## get RPKM values
-    lib_sf <- (colSums(counts_tab_scaled, na.rm = TRUE) / 1e6)
-    gene_sf <- sapply(median_lens, function(l) {
-        l / 1e3 * lib_sf
-    })
-    gene_sf <- as.data.frame(t(gene_sf))
-    rpkm_df <- counts_tab_scaled / gene_sf
-}
+## get nTPM values (see docs/normalisation.md):
+##   x[g, s] = (counts / isolate's own effective length) / size factor
+## i.e. reads per unit length, normalised for library size with the core-gene
+## size factors (not per-sample totals, which depend on accessory gene content).
+## A single global constant K puts values on a TPM-like scale: per-sample
+## totals average 1e6 across samples. K is identical for every gene and sample,
+## so it does not affect any comparison.
+rate_df <- sweep(counts_tab / lengths_tab, 2, size_factors, `/`)
+K <- 1e6 / mean(colSums(rate_df, na.rm = TRUE))
+ntpm_df <- rate_df * K
 
 
-if (isTRUE(log)) {
-    res_df <- log2(res_df + 1)
-    rpkm_df <- log2(rpkm_df + 1)
-}
+## NB: all outputs are on a linear scale (no log transform); downstream steps
+## (e.g. umap.R) apply their own transform where needed.
 
 ## convert rownames to column
 res_df <- tibble::rownames_to_column(as.data.frame(res_df), "feature_id")
-rpkm_df <- tibble::rownames_to_column(as.data.frame(rpkm_df), "feature_id")
+ntpm_df <- tibble::rownames_to_column(as.data.frame(ntpm_df), "feature_id")
 counts_tab_scaled <- tibble::rownames_to_column(as.data.frame(
     counts_tab_scaled
 ), "feature_id")
@@ -147,7 +107,7 @@ write.table(
 )
 
 write.table(
-    rpkm_df, file.path(outdir, "rpkm_counts.tsv"),
+    ntpm_df, file.path(outdir, "ntpm.tsv"),
     col.names = TRUE, row.names = FALSE,
     sep = "\t", quote = FALSE
 )

@@ -1,55 +1,36 @@
 process KALLISTO_QUANT {
     tag "$meta.sample_id"
     label 'process_high'
-    container 'adamd3/strainseq:latest'
-    publishDir "${params.outdir}/kallisto_quant", mode: 'symlink'
+    publishDir "${params.outdir}/kallisto_quant", mode: params.publish_dir_mode
 
     input:
-    path gpa
-    tuple val(meta), path(reads), path(fasta)
-    val strandedness
+    tuple val(meta), path(reads), path(fasta), val(strandedness)
 
     output:
     path "kallisto_${meta.sample_id}", emit: kallisto_out_dirs
+    path "${meta.sample_id}.kallisto.log", emit: log
 
     script:
-    def name = task.ext.prefix ?: "${meta.sample_id}"
-
-    if (strandedness == 0){
-        strand_arg = ""
-    } else if (strandedness == 1){
-        strand_arg = "--fr-stranded"
-    } else if (strandedness==2){
-        strand_arg = "--rf-stranded"
-    }
-
-    if (meta.paired_end) {
-        // if trimming has not been performed, must symlink to match expected file names
-        // kallisto params -l, -s are estimated from paired end data, but are required when using --single
-        """
-        [ ! -f  ${name}_1_val_1.fq.gz ] && ln -s ${reads[0]} ${name}_1_val_1.fq.gz
-        [ ! -f  ${name}_2_val_2.fq.gz ] && ln -s ${reads[1]} ${name}_2_val_2.fq.gz
-        kallisto index -i ${name}.kidx $fasta
-        kallisto quant -t $task.cpus -i ${name}.kidx \
-            ${strand_arg} -o kallisto_${name} ${name}_1_val_1.fq.gz ${name}_2_val_2.fq.gz
-        """
-    } else {
-        """
-        [ ! -f  ${name}_trimmed.fq.gz ] && ln -s $reads ${name}_trimmed.fq.gz
-        kallisto index -i ${name}.kidx $fasta
-        kallisto quant -t $task.cpus -i ${name}.kidx \
-            ${strand_arg} --single -l ${params.fragment_len} -s ${params.fragment_sd} \
-            -o kallisto_${name} ${name}_trimmed.fq.gz
-        """
-    }
+    def name       = task.ext.prefix ?: "${meta.sample_id}"
+    def strand_arg = ['', '--fr-stranded', '--rf-stranded'][strandedness as int]
+    // fragment length mean/sd are estimated from paired-end data, but must be
+    // given for single-end reads
+    def single_arg = meta.paired_end ? '' : "--single -l ${params.fragment_len} -s ${params.fragment_sd}"
+    """
+    kallisto index -i ${name}.kidx $fasta
+    kallisto quant -t $task.cpus -i ${name}.kidx \\
+        $strand_arg $single_arg \\
+        -o kallisto_${name} $reads \
+        2> ${name}.kallisto.log || { cat ${name}.kallisto.log >&2; exit 1; }
+    cat ${name}.kallisto.log >&2
+    """
 }
 
 
 process MERGE_COUNTS_AND_LENS {
     tag "merge_counts_and_lens"
-    label 'process_high'
-    container 'adamd3/strainseq:latest'
-    publishDir "${params.outdir}/kallisto_quant", mode: 'symlink'
+    label 'process_single'
+    publishDir "${params.outdir}/kallisto_quant", mode: params.publish_dir_mode
 
     input:
     path gpa_file
@@ -72,5 +53,39 @@ process MERGE_COUNTS_AND_LENS {
         --gene_presence_absence=$gpa_file \
         --metadata_merged=$meta_merged \
         --outf=${lens_file}
+    """
+}
+
+
+/*
+ * Infer library strandedness from a subsample of reads (first N reads,
+ * pseudoaligned with --fr-stranded and with --rf-stranded) and warn if it
+ * disagrees with params.strandedness. Does not change any quantification.
+ */
+process CHECK_STRANDEDNESS {
+    tag "$meta.sample_id"
+    label 'process_low'
+
+    input:
+    tuple val(meta), path(reads), path(fasta)
+
+    output:
+    path "${meta.sample_id}.strandedness.tsv", emit: result
+    stdout emit: message
+
+    script:
+    def name   = meta.sample_id
+    def single = meta.paired_end ? "" : "--single -l ${params.fragment_len} -s ${params.fragment_sd}"
+    """
+    strandedness_check.py subsample --n ${params.strandedness_check_reads} --out sub $reads
+    kallisto index -i ${name}.kidx $fasta > kallisto_index.log 2>&1
+    for mode in fr rf; do
+        kallisto quant -t $task.cpus -i ${name}.kidx --\${mode}-stranded $single \\
+            -o q_\${mode} sub_*.fq.gz > kallisto_\${mode}.log 2>&1
+    done
+    strandedness_check.py infer \\
+        --fr q_fr/run_info.json --rf q_rf/run_info.json \\
+        --sample '${name}' --specified ${params.strandedness} \\
+        --out ${name}.strandedness.tsv
     """
 }

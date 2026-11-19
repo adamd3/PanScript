@@ -1,33 +1,36 @@
-# You can use this file to create a conda environment for this pipeline:
-#   conda env create -f environment.yml
-name: strain_seq-1.0.0
+# Software environment for the pipeline: used to build the Docker image
+# (Dockerfile) and by `-profile conda`.
+#
+# All versions are pinned for reproducibility. kallisto, DESeq2, R and pandas
+# match the versions in the image used for the 2026-11 regression baseline
+# (tests/baseline/PROVENANCE.md). Change a pin only deliberately, then re-run
+# tests/compare_to_baseline.py and record the change in PROGRESS.md.
+#
+# Only conda-forge and bioconda are used (no Anaconda `defaults` channel).
+name: panscript
 channels:
   - conda-forge
   - bioconda
-  - defaults
 dependencies:
-  ## conda-forge packages
-  - conda-forge::numpy>=1.24
-  - conda-forge::python>=3.9,<3.12
-  - conda-forge::gawk>=5.1
-  - conda-forge::pigz>=2.6
-  - conda-forge::textwrap3>=0.9
-  - conda-forge::pandas>=2.0
-  - conda-forge::r-base>=4.2
-  - conda-forge::r-matrixstats>=0.63
-  - conda-forge::r-optparse>=1.7
-  - conda-forge::r-pheatmap>=1.0
-  - conda-forge::r-rcolorbrewer>=1.1
-  - conda-forge::r-reshape2>=1.4
-  - conda-forge::r-scales>=1.2
-  - conda-forge::r-tidyverse>=2.0
-  - conda-forge::r-umap>=0.2
-
-  ## bioconda packages
-  - bioconda::fastqc>=0.12
-  - bioconda::trim-galore>=0.6
-  - bioconda::kallisto>=0.48
-  - bioconda::bioconductor-edger>=3.42
-  - bioconda::bioconductor-deseq2>=1.40
-  - bioconda::pyfaidx>=0.7
-  - bioconda::multiqc>=1.15
+  # Python: merging counts, input checks, UMAP
+  - conda-forge::python=3.11.13
+  - conda-forge::pandas=2.3.1
+  - conda-forge::numpy=2.3.2
+  - conda-forge::umap-learn=0.6.0
+  - conda-forge::pynndescent=0.7.0
+  - conda-forge::numba=0.68.1
+  - conda-forge::scikit-learn=1.9.1
+  - conda-forge::matplotlib-base=3.10.9
+  # R: size factors and normalisation
+  - conda-forge::r-base=4.4.3
+  - conda-forge::r-matrixstats=1.5.0
+  - conda-forge::r-optparse=1.7.5
+  - conda-forge::r-tidyverse=2.0.0
+  - bioconda::bioconductor-deseq2=1.46.0
+  # Read processing and quantification
+  - bioconda::fastp=1.4.0
+  - bioconda::kallisto=0.51.1
+  # QC report across samples
+  - bioconda::multiqc=1.35
+  # `ps`, needed by Nextflow for task metrics
+  - conda-forge::procps-ng=4.0.6

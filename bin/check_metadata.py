@@ -4,6 +4,7 @@ import argparse
 import pandas as pd
 import numpy as np
 import os.path
+import sys
 
 def parse():
     parser = argparse.ArgumentParser()
@@ -20,10 +21,18 @@ def check_meta(sample_file, outf):
     # remove empty rows
     sample_dat.replace("", float("NaN"), inplace=True)
     sample_dat.dropna(subset = ["dna_sample_id"], inplace=True)
-    if(len(sample_dat.fastq2.value_counts()) > 0):
-        sample_dat['paired'] = "1"
-    else:
-        sample_dat['paired'] = "0"
+    # single-end and paired-end samples can't be mixed in one run: kallisto is
+    # run in one mode for every sample (PROGRESS.md R5/Q4)
+    has_fq2 = sample_dat["fastq2"].astype(str).str.strip().ne("") & sample_dat["fastq2"].notna()
+    if has_fq2.any() and not has_fq2.all():
+        single = sample_dat.loc[~has_fq2, "sample_name"].astype(str).tolist()
+        paired = sample_dat.loc[has_fq2, "sample_name"].astype(str).tolist()
+        sys.exit(
+            "ERROR: the metadata mixes single-end samples (no fastq2: "
+            + ", ".join(single) + ") and paired-end samples (fastq2 given: "
+            + ", ".join(paired) + "). All samples in a run must be either single-end or "
+            "paired-end. Run them as separate pipeline runs.")
+    sample_dat['paired'] = "1" if has_fq2.all() else "0"
     sample_dat.to_csv(outf, index=False, sep='\t')
 
 if __name__ == "__main__":

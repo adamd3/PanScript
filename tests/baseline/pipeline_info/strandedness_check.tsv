@@ -1,0 +1,4 @@
+sample	reads_tested	pseudoaligned_fr	pseudoaligned_rf	fraction_fr	inferred	inferred_strandedness	specified_strandedness	agrees	used_strandedness
+ZG301975	100000	50435	2856	0.9464	forward	1	auto	n/a (auto)	1
+ZG205864	100000	50852	6137	0.8923	forward	1	auto	n/a (auto)	1
+ZG302367	100000	47232	2621	0.9474	forward	1	auto	n/a (auto)	1

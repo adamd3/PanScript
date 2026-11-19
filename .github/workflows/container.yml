@@ -1,0 +1,28 @@
+name: Container build
+
+# Checks that the image still builds when its definition changes. Does not
+# push: publishing a new image tag is a deliberate manual step (CLAUDE.md).
+
+on:
+  push:
+    branches: [main, dev]
+    paths: [environment.yml, Dockerfile, .dockerignore]
+  pull_request:
+    paths: [environment.yml, Dockerfile, .dockerignore]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build image (no push)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out pipeline code
+        uses: actions/checkout@v5
+
+      - name: Build
+        run: docker build --platform linux/amd64 -t pipeline-image:ci .
+
+      - name: Smoke test
+        run: |
+          docker run --rm pipeline-image:ci bash -c \
+            'kallisto version && fastp --version && python -c "import pandas, umap, matplotlib" && Rscript -e "library(DESeq2)" > /dev/null'
