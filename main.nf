@@ -240,7 +240,8 @@ def helpMessage() {
       --meta_file [file]              Path to file containing sample metadata.
       --gpa_file [file]               Path to file containing gene presence/absence per strain (from Panaroo output).
       -profile [str]                  Configuration profile to use. Can use multiple (comma separated).
-                                      Available: docker, singularity, conda, test, slurm, cambridge
+                                      Available: docker, singularity, apptainer, conda, test.
+                                      Cluster settings: add -c <your_site.config> (see README).
 
     Other options:
       --group [str]                   Metadata column used to colour samples in the UMAP. Default = majority_ST.
@@ -254,7 +255,6 @@ def helpMessage() {
       --save_trimmed [bool]           Save the fastp-trimmed reads in <outdir>/fastp/trimmed.
       --seed [int]                    Random seed for the UMAP, so plots are reproducible. Default = 42.
       --outdir [file]                 The output directory where the results will be saved (default: './results').
-      --cachedir [str]                Defines the path where Singularity images are cached [default: $params.cachedir]
       -name [str]                     Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic.
 
     """.stripIndent()
