@@ -33,7 +33,7 @@ pre-2026 code; nothing released yet.
 - `docs/nf-core-assessment`: H6 write-up.
 
 **Next steps, in order:**
-1. **Release v2.0.0** in progress on `release/v2.0.0`: MultiQC (H12) and docs (H13) done; image `adamd3/panscript:2.0.0` built and tested locally, push needs user OK.
+1. **Release v2.0.0** in progress on `release/v2.0.0`: MultiQC (H12) and docs (H13) done; image `adamd3/panscript:2.0.0` pushed 2026-11-19 (`sha256:7a1fbe6c…`, user OK).
 2. **Release v2.0.0** (needs user OK): add MultiQC (H12) to `environment.yml`, build and push
    `adamd3/panscript:2.0.0` with `scripts/build_and_push_image.sh 2.0.0`; set it in
    `nextflow.config`; manifest `version = '2.0.0'`; CHANGELOG; CITATION.cff; merge `dev` into

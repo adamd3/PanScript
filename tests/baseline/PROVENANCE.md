@@ -56,5 +56,5 @@ Retrieve an old version with `git show <commit>:tests/baseline/<file>`.
   isolate; size factors unchanged; nTPM is v3 × 0.997163 everywhere (only the global constant
   changed). kallisto `abundance.tsv` files and UMAP coordinates are identical.
   **Also reproduced exactly (2026-11-19) with the v2.0.0 release image `adamd3/panscript:2.0.0`**
-  (local image ID `sha256:19f735b51a19…`; adds MultiQC 1.35 and numba/matplotlib cache settings;
+  (`sha256:7a1fbe6c1d3dd916f37d60b515fb04c9253e785b0f38f5646e7e3443ff49422b` on Docker Hub; adds MultiQC 1.35 and numba/matplotlib cache settings;
   every other tool version unchanged) on Nextflow 24.10.0, and on 26.10.6 with the 2.0.0-dev image.
