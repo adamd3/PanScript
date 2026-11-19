@@ -15,7 +15,7 @@
             "properties": {
                 "meta_file": {
                     "type": "string",
-                    "description": "Sample metadata file (tab-separated; see README).",
+                    "description": "Sample metadata file (tab-separated; see docs/usage.md).",
                     "format": "file-path",
                     "exists": true,
                     "fa_icon": "fas fa-file-csv"
@@ -104,7 +104,7 @@
             }
         },
         "input_check_options": {
-            "title": "Input checks",
+            "title": "Input checks and QC report",
             "type": "object",
             "properties": {
                 "max_missing_loci": {
@@ -119,6 +119,11 @@
                     "description": "Reads per sample used to check (or, with --strandedness auto, infer) strandedness. 0 skips the check.",
                     "default": 200000,
                     "minimum": 0
+                },
+                "skip_multiqc": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Don't make the MultiQC report (one HTML report of read QC, pseudo-alignment rates and input checks across all samples)."
                 }
             }
         },

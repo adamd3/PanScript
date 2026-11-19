@@ -21,6 +21,7 @@ include {KALLISTO_QUANT; MERGE_COUNTS_AND_LENS; CHECK_STRANDEDNESS} from './modu
 include {DESEQ_NORMALISE_COUNTS} from './modules/normalisation'
 include {UMAP_SAMPLES} from './modules/plots'
 include {SOFTWARE_VERSIONS} from './modules/versions'
+include {MULTIQC} from './modules/multiqc'
 
 
 
@@ -179,9 +180,10 @@ workflow MAIN {
     CHECK_FASTA_LOCI.out.missing
         .collectFile(name: 'missing_loci.tsv', keepHeader: true, skip: 1, sort: true,
                      storeDir: "${params.outdir}/pipeline_info")
-    CHECK_FASTA_LOCI.out.summary
+    ch_loci_summary = CHECK_FASTA_LOCI.out.summary
         .collectFile(name: 'fasta_loci_summary.tsv', keepHeader: true, skip: 1, sort: true,
                      storeDir: "${params.outdir}/pipeline_info")
+    ch_multiqc_files = Channel.empty().mix(ch_loci_summary)
     CHECK_FASTA_LOCI.out.message
         .filter { it.trim() }
         .subscribe { log.warn it.trim() }
@@ -193,9 +195,10 @@ workflow MAIN {
         CHECK_STRANDEDNESS (
             ch_raw_reads
         )
-        CHECK_STRANDEDNESS.out.result
+        ch_strandedness_tsv = CHECK_STRANDEDNESS.out.result
             .collectFile(name: 'strandedness_check.tsv', keepHeader: true, skip: 1, sort: true,
                          storeDir: "${params.outdir}/pipeline_info")
+        ch_multiqc_files = ch_multiqc_files.mix(ch_strandedness_tsv)
         CHECK_STRANDEDNESS.out.message
             .filter { it.trim() }
             .subscribe { log.warn it.trim() }
@@ -211,6 +214,7 @@ workflow MAIN {
             ch_raw_reads
         )
         ch_reads_for_quant = FASTP.out.trimmed_reads
+        ch_multiqc_files = ch_multiqc_files.mix(FASTP.out.reports.flatten().filter { it.name.endsWith('.json') })
     }
 
     // Strandedness for each sample's quantification: the --strandedness value,
@@ -234,6 +238,17 @@ workflow MAIN {
         ch_quant_input
     )
     ch_kallisto_out_dirs = KALLISTO_QUANT.out.kallisto_out_dirs
+    ch_multiqc_files = ch_multiqc_files.mix(KALLISTO_QUANT.out.log)
+
+    /*
+     *  QC report across all samples
+     */
+    if (!isTrue(params.skip_multiqc)) {
+        MULTIQC (
+            ch_multiqc_files.collect(),
+            file("${projectDir}/assets/multiqc_config.yml", checkIfExists: true)
+        )
+    }
 
     /*
      *  Merge counts
@@ -311,6 +326,6 @@ def helpMessage() {
     }
     lines << ''
     lines << 'Software profiles: docker, singularity, apptainer, conda (plus test for the test dataset).'
-    lines << 'Cluster settings: add -c <your_site.config> (see README, "Running on a cluster").'
+    lines << 'Cluster settings: add -c <your_site.config> (see docs/usage.md, "Running on a cluster").'
     log.info lines.join('\n')
 }

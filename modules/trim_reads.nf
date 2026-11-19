@@ -1,7 +1,7 @@
 /*
  * Adaptor trimming and read QC with fastp, using fastp's default settings.
  * Extra options can be passed with --fastp_args (e.g. to approximate the
- * previous Trim Galore defaults: see README).
+ * previous Trim Galore defaults: see docs/usage.md).
  */
 process FASTP {
     tag "$meta.sample_id"

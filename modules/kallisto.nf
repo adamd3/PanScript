@@ -8,6 +8,7 @@ process KALLISTO_QUANT {
 
     output:
     path "kallisto_${meta.sample_id}", emit: kallisto_out_dirs
+    path "${meta.sample_id}.kallisto.log", emit: log
 
     script:
     def name       = task.ext.prefix ?: "${meta.sample_id}"
@@ -19,7 +20,9 @@ process KALLISTO_QUANT {
     kallisto index -i ${name}.kidx $fasta
     kallisto quant -t $task.cpus -i ${name}.kidx \\
         $strand_arg $single_arg \\
-        -o kallisto_${name} $reads
+        -o kallisto_${name} $reads \
+        2> ${name}.kallisto.log || { cat ${name}.kallisto.log >&2; exit 1; }
+    cat ${name}.kallisto.log >&2
     """
 }
 

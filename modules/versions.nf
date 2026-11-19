@@ -32,6 +32,7 @@ process SOFTWARE_VERSIONS {
       matplotlib: \$(python -c 'import matplotlib; print(matplotlib.__version__)')
       R: \$(Rscript -e 'cat(as.character(getRversion()))')
       DESeq2: \$(Rscript -e 'cat(as.character(packageVersion("DESeq2")))')
+      multiqc: \$(multiqc --version 2>/dev/null | sed 's/.*version //')
     END_VERSIONS
     """
 }

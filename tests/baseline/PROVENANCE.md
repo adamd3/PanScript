@@ -55,3 +55,6 @@ Retrieve an old version with `git show <commit>:tests/baseline/<file>`.
   `raw_counts`/`norm_counts` values in 4 rows moved because a gene's median length gained an
   isolate; size factors unchanged; nTPM is v3 × 0.997163 everywhere (only the global constant
   changed). kallisto `abundance.tsv` files and UMAP coordinates are identical.
+  **Also reproduced exactly (2026-11-19) with the v2.0.0 release image `adamd3/panscript:2.0.0`**
+  (local image ID `sha256:19f735b51a19…`; adds MultiQC 1.35 and numba/matplotlib cache settings;
+  every other tool version unchanged) on Nextflow 24.10.0, and on 26.10.6 with the 2.0.0-dev image.
