@@ -7,6 +7,10 @@ gene FASTA cannot be quantified by kallisto, so their gene groups end up NA
 which genes were not quantified, and stops the run if most loci are missing,
 which almost always means the wrong FASTA or a mismatched dna_sample_id.
 
+Panaroo's status suffixes on locus IDs (_len, _pseudo, _stop) are not part of
+the sequence ID, so a locus counts as present if its raw ID, or its ID with
+those suffixes stripped, is in the FASTA (the merge scripts match the same way).
+
 Outputs:
   --outf     one row per missing locus (sample, gene group, locus, flags)
   --summary  one row per sample with counts
@@ -32,6 +36,24 @@ import sys
 import pandas as pd
 
 REFOUND_FLAGGED = re.compile(r"refound.*_(stop|len)$")
+
+# Panaroo appends status suffixes to locus IDs in gene_presence_absence.csv
+# (_len, _pseudo, _stop; sometimes several, e.g. _len_stop). They are not part
+# of the sequence ID, so a locus is matched on its raw ID first and then with
+# suffixes stripped one at a time, exactly as in merge_kallisto_*.py
+# (PROGRESS.md R12).
+PANAROO_SUFFIX = re.compile(r"_(len|pseudo|stop)$")
+
+
+def resolve_locus(locus, ids):
+    """Return the ID in `ids` that `locus` refers to, or `locus` if none does."""
+    cur = locus
+    while cur not in ids:
+        stripped = PANAROO_SUFFIX.sub("", cur)
+        if stripped == cur:
+            return locus
+        cur = stripped
+    return cur
 
 
 def fasta_ids(path):
@@ -70,7 +92,7 @@ def main():
     for gene, cell in cells.items():
         loci = [l.strip() for l in cell.split(";") if l.strip()]
         n_loci += len(loci)
-        missing = [l for l in loci if l not in ids]
+        missing = [l for l in loci if resolve_locus(l, ids) not in ids]
         if not missing:
             continue
         split = len(loci) > 1

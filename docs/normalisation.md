@@ -38,11 +38,21 @@ When a gene group maps to several loci in an isolate, their counts and effective
 gene in that isolate, and the rate *c/L* is the pooled rate over its loci. If none of the loci were
 quantified (all missing from the isolate FASTA), the value is NA, not 0.
 
-Loci that Panaroo lists but that are missing from the isolate's FASTA can't be quantified. They're
-reported in `pipeline_info/missing_loci.tsv` (`CHECK_FASTA_LOCI`), with a `split_partial` flag when
-only some loci of a split gene are missing, because that gene is then undercounted. In the test
-data, every missing locus is a Panaroo "refound" gene flagged `_stop` or `_len`, which Bakta and
-Prokka don't output as CDS.
+**Matching locus IDs.** In `gene_presence_absence.csv`, Panaroo appends status suffixes to some
+locus IDs: `_len` (length differs from the rest of the group), `_pseudo` (invalid gene) and `_stop`
+(premature stop codon, in older versions), sometimes more than one (for example `_len_stop`). These
+aren't part of the sequence ID in the isolate FASTA. Each locus is therefore matched on its raw ID
+first, then with those suffixes stripped one at a time; the first ID that kallisto (or the FASTA)
+knows is used. This is done the same way in the merge scripts and in `CHECK_FASTA_LOCI`.
+
+Loci that Panaroo lists but that are missing from the isolate's FASTA (under any of those IDs)
+can't be quantified. They're reported in `pipeline_info/missing_loci.tsv` (`CHECK_FASTA_LOCI`), with
+a `split_partial` flag when only some loci of a split gene are missing, because that gene is then
+undercounted.
+
+(Before 2026-11-19, IDs were matched literally. In the test data that left 41–47 loci per isolate
+unmatched, all of them Panaroo "refound" genes listed as `*_stop` or `*_len` whose sequences were in
+the FASTA under the plain ID. Those genes were NA, 39 of them core genes.)
 
 (Before 2026-11-18 both were averaged. That gave the same rate, but it made *M<sub>g</sub>* the
 length of a fragment: in the test data, the median length of affected genes was typically half the

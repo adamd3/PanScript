@@ -78,6 +78,25 @@ class CheckFastaLociTest(unittest.TestCase):
         self.assertEqual(r.stdout.strip(), "")
         self.assertEqual(len(pd.read_csv(self.d / "miss.tsv", sep="\t")), 0)
 
+    def test_panaroo_suffixes_stripped(self):
+        # FASTA has the plain IDs; Panaroo lists them with _stop / _len
+        write_fasta(self.d / "a.fna", self.present + ["1_refound_99", "1_refound_77"])
+        r = self.run_script("a.fna")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        miss = pd.read_csv(self.d / "miss.tsv", sep="\t")
+        self.assertEqual(set(miss["locus"]), {"dA_sp2", "dA_sa1", "dA_sa2"})
+
+    def test_chained_suffixes_and_raw_id_first(self):
+        rows = [{"Gene": "g1", "dA": "x_len_stop"}, {"Gene": "g2", "dA": "y_pseudo"},
+                {"Gene": "g3", "dA": "z_stop"}, {"Gene": "g4", "dA": "w_stop"}]
+        pd.DataFrame(rows).to_csv(self.d / "gpa.csv", index=False)
+        # z_stop exists as a real ID; w_stop has no match under any ID
+        write_fasta(self.d / "a.fna", ["x", "y", "z_stop", "q"])
+        r = self.run_script("a.fna")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        miss = pd.read_csv(self.d / "miss.tsv", sep="\t")
+        self.assertEqual(miss["locus"].tolist(), ["w_stop"])
+
     def test_gzipped_fasta(self):
         write_fasta(self.d / "a.fna.gz", self.present, gz=True)
         r = self.run_script("a.fna.gz")

@@ -19,36 +19,30 @@ Read [CLAUDE.md](CLAUDE.md) first.
 
 ---
 
-## ▶ Start here (status as of 2026-11-18, end of day)
+## ▶ Start here (status as of 2026-11-19)
 
-**Where things stand.** Phases 0, 1, 1b and 2 are done, and most of Phase 3 too. All of it is on
-`dev` and pushed. The pipeline is **PanScript** (GitHub repo `adamd3/PanScript`, image
-`adamd3/panscript:2.0.0-dev`). CI is green on Nextflow 23.10.1 and latest-stable, and outputs match
-`tests/baseline` (v3) exactly. Note that `main` still has the old pre-2026 code; nothing has been
-released yet.
+**Where things stand.** Phases 0–2 done; Phase 3 done except the cheap wins from H6. Pipeline is
+**PanScript** (`adamd3/PanScript`, image `adamd3/panscript:2.0.0-dev`). `main` still has the old
+pre-2026 code; nothing released yet.
+
+**Done 2026-11-19, on branches, uncommitted, waiting for the user's OK to commit and merge into `dev`:**
+- `fix/panaroo-suffixes` (main checkout): Q12/R12 suffix stripping, baseline **v4**, docs, and all
+  PROGRESS updates for the day.
+- `fix/reject-mixed-reads` (worktree `../PanScript-q4`): Q4/R5.
+- `feat/panaroo-helper-gz` (worktree `../PanScript-helper`): H4b, helper verified on a real Panaroo run.
+- `docs/nf-core-assessment` (worktree `../PanScript-docs`): H6 write-up.
 
 **Next steps, in order:**
-1. **Q12: waiting on the user** (recommended: yes). Strip Panaroo status suffixes (`_len`, `_pseudo`,
-   `_stop`) when matching locus IDs (R12). Where: `bin/merge_kallisto_counts.py`,
-   `bin/merge_kallisto_lens.py`, `bin/check_fasta_loci.py` (try the raw ID first, then the stripped
-   one). Expected on the test data: missing loci 130 → 0, 41–47 more genes quantified per isolate,
-   core set +39. This changes outputs, so add unit tests, check the differences are confined to
-   those genes, **re-capture baseline v4**, and update `docs/normalisation.md` and the README
-   `max_missing_loci` text.
-2. **H6: nf-core cost/benefit write-up** (not started). What nf-core listing would require
-   (template, nf-schema/`nextflow_schema.json`, nf-core modules, MultiQC, nf-test, linting) versus
-   cheap wins worth taking anyway. A short doc for the user to decide.
-3. **Test `scripts/prepare_inputs_from_panaroo.py` on a real Panaroo run.** It's only tested on a
-   synthetic directory. Ask the user for a real Panaroo output (`gene_data.csv` +
-   `gene_presence_absence.csv`).
-4. **Release v2.0.0** (needs user OK): build and push `adamd3/panscript:2.0.0` with
-   `scripts/build_and_push_image.sh 2.0.0`; set it in `nextflow.config`; manifest `version = '2.0.0'`;
-   CHANGELOG; CITATION.cff; merge `dev` into `main`; tag `v2.0.0`; Zenodo DOI (H7 remaining).
-5. **Manuscript** M1 (outline), M2 (benchmark design, including PanXpress and microberna
+1. Commit and merge the four branches above (user OK), then remove the worktrees.
+2. **Q13:** which nf-core cheap wins to adopt (`docs/nf-core-assessment.md`).
+3. **Release v2.0.0** (needs user OK): build and push `adamd3/panscript:2.0.0` with
+   `scripts/build_and_push_image.sh 2.0.0` (add MultiQC first if Q13 says so); set it in
+   `nextflow.config`; manifest `version = '2.0.0'`; CHANGELOG; CITATION.cff; merge `dev` into
+   `main`; tag `v2.0.0`; Zenodo DOI (H7 remaining).
+4. **Manuscript** M1 (outline), M2 (benchmark design, including PanXpress and microberna
    comparisons), M3 (showcase dataset), M4 (redraw the pipeline diagram).
-6. **Smaller open items:** Q4/R5 (mixed single-end and paired-end input), R7 (document the
-   recommended downstream DE workflow), H3 remainder (a test option using local `test_data/`
-   instead of GitHub URLs).
+5. **Smaller open items:** R7 (document the recommended downstream DE workflow), H3 remainder (a
+   test option using local `test_data/` instead of GitHub URLs).
 
 ---
 
@@ -123,9 +117,10 @@ results need the Phase 1–2 pipeline.
 | H1 | Choose a new pipeline name. | DONE (2026-11-18, `chore/rename-panscript`, merged into `dev`); GitHub repo renamed to `adamd3/PanScript` by the user, local remote updated | **Decided 2026-11-18: PanScript.** Renamed everywhere describing the current pipeline (README, main.nf, manifest, environment name, test config and test-data URLs, CLAUDE.md, diagram filename); historical records keep old names. Image re-tagged and pushed as `adamd3/panscript:2.0.0-dev` (same digest `b97d5bec…`). URLs point to `github.com/adamd3/PanScript` (verified 200; old names redirect). Docs diagram `panscript_pipeline_lowres.png` still shows the old name and Trim Galore steps → redraw (M4). History: OrthoQuant (original) → StrainQuant. The GitHub repo is currently `adamd3/StrainQuant`, and the old names `OrthoQuant` and `StrainSeq` redirect to it. Renaming the repo back to OrthoQuant would work smoothly with GitHub's redirects. Candidates proposed 2026-11-18: **OrthoQuant** (recommended), **PanQuant**. A quick web search found no tool with either exact name; the nearest are *OrthoQuantum* (eukaryotic phylogenetic profiling, NAR 2022) and *PanXpress* (bacterial pan-transcriptomics). Before deciding, check bioconda, PyPI and GitHub for clashes. It should describe what the pipeline does: per-isolate pseudo-alignment and pangenome-aware merging of expression. It shouldn't imply "strains". Then rename everything: repo, README, `main.nf` header and help, Docker image `adamd3/strainseq`, conda env name, CI, test URLs. |
 | H2 | Pin software versions and rebuild the container. | MOSTLY DONE (2026-11-18) | **Published** `adamd3/strainseq:2.0.0-dev`, now `adamd3/panscript:2.0.0-dev` (`sha256:b97d5bec…`) with the user's approval; it's set once in `nextflow.config` and `--pull=always` was removed. Baseline v3 was captured with it. **Remaining:** a final release tag (with the final name, H1), an optional multi-arch build, and CI still builds and pushes `:latest` (H3). **Done:** `environment.yml` fully pinned (kallisto, DESeq2, R and pandas unchanged from the baseline image; adds fastp 1.4.0, umap-learn 0.6.0, matplotlib 3.10.9, procps-ng; drops `defaults`, Trim Galore, FastQC, edgeR, R umap, multiqc and pyfaidx); micromamba 1.5.10 Dockerfile without `COPY . /app`; `.dockerignore`; per-module containers removed (one `process.container` in nextflow.config). Built locally as `strainquant-local:phase2` (amd64); all 32 unit tests pass inside it. **Remaining:** publish the image with a version tag (needs the user's OK and the final name), set that tag in config, drop `--pull=always`, re-capture baseline v3 with the published digest, multi-arch build (optional). **Not before T0; combine the rebuild with P1** (fastp has to go in the image anyway). Dockerfile/env issues: (1) base `continuumio/miniconda3` is unpinned; pin it or switch to a pinned `mambaorg/micromamba`. (2) `environment.yml` uses `>=`; pin exact versions. (3) Drop the Anaconda `defaults` channel (licensing terms for large organisations); use conda-forge + bioconda with strict priority. (4) `COPY . /app` bakes the whole repo (test data, stray files) into the image; it isn't needed, since Nextflow supplies `bin/`. Remove it or add a `.dockerignore`. (5) Update dependencies: add fastp; remove trim-galore, fastqc and (after P4) edgeR; keep multiqc only if used. (6) Replace `:latest` and `--pull=always` (always-pull also makes every task contact Docker Hub: on 2026-11-18 a test run failed on a registry timeout and needed `-resume`) with a version tag `adamd3/<name>:vX.Y.Z`, set once in config (modules also hard-code the image). (7) Build for amd64 **and** arm64 with `docker buildx` *if* all bioconda dependencies have linux-aarch64 builds; check each one, otherwise stay amd64-only. After rebuilding, compare outputs with the T0 baseline: a new kallisto or DESeq2 version could shift values slightly. |
 | H3 | Fix CI. | DONE (2026-11-18, `fix/ci`); **first CI run on `dev` green**: unit tests, plus 23.10.1 and latest-stable both matching baseline v3 exactly on Linux, UMAP included | **Result:** new `ci.yml`: unit tests inside the pinned image; test profile on Nextflow 23.10.1 and latest-stable; outputs compared against `tests/baseline`. Triggers: push to main/dev, PRs. No secrets, **no image pushes**. New `container.yml`: build-only check when environment.yml/Dockerfile change. **Nextflow 26 compatibility (found while testing locally):** the strict syntax rejected `check_max()` in config (replaced with inline closures), `$PWD` in config (`System.getenv('PWD')`), top-level statements in main.nf (moved into `validateParams()` + `workflow MAIN`), `exit` (`error()`), and `workflow.onComplete` in the body (removed; Nextflow prints its own summary). `when: metadata.exists()` made Nextflow 26 silently skip **every** task (URL input), so it was removed. `docker.userEmulation` is gone in 26, so `docker.runOptions = '-u $(id -u):$(id -g)'` keeps tasks running as the calling user (the new image's default user is `mambauser`, which would break on Linux). Removed `nextflow.enable.dsl=2` (minimum is now 23.10, where DSL2 is the default). Added a `manifest` (nextflowVersion >= 23.10.0, version 2.0.0dev). Verified locally: 23.10.1 and 26.10.6 both give outputs identical to baseline v3; `--help` and parameter errors work on both. Still open: test data comes from GitHub `main` URLs; optional local test option. No run history shows on GitHub. That's expected: Actions is enabled and the secrets exist, but the last push was in July 2025, so old runs have passed the retention limit. The push job's `if:` checks `github.repository == 'adamd3/StrainQuant'`. That's correct today, but it must be updated if the repo is renamed (H1). **Side effect to fix before using PRs:** every PR run rebuilds the image from unpinned `environment.yml` and **pushes it as `adamd3/strainseq:latest`**. That silently changes the tools that every `-profile docker` run (and the T0 baseline digest) uses. Until H3 is fixed, merge branches into `dev` locally instead of through GitHub PRs. It pushes `:latest` on every PR, and fork PRs have no secrets. It only triggers on pushes to `main` (add `dev`). It uses old actions (`checkout@v2`, `login-action@v1`). Test data comes from `main`, not the branch under test. The minimum Nextflow version is 21.10.3, which is old. Consider adding small unit tests (pytest/testthat) for the merging and normalisation scripts. |
+| H4b | Test `scripts/prepare_inputs_from_panaroo.py` on a real Panaroo run. | DONE (2026-11-19, `feat/panaroo-helper-gz`) | **Result:** user's run (2,967 genomes; `gene_data.csv.gz` 10.7 GB, 19.8M genes of which 1.66M refound). For the 3 test isolates the helper's FASTAs are **identical** to `test_data/SRR87372{81,82,83}.fna` (IDs and sequences), and every locus in `gene_presence_absence.csv` has a sequence. Added gzip input support; gpa loci are now kept only for the selected isolates (peak memory 3.1 GB → 43 MB; 137 s). 2 new unit tests. `gene_data.csv` stays the source: it's the only standard Panaroo output with each isolate's own sequence for refound genes (`pan_genome_reference.fa` has one sequence per group; `combined_DNA_CDS.fasta` is, as far as we know, written before refinding and uses internal clustering IDs; not verified against Panaroo's source). Limitation: without `--isolates`, all sequences are held in memory before writing. The big files are excluded locally via `.git/info/exclude`, never commit them. |
 | H4 | Clean up unused code. | DONE (2026-11-18, `chore/cleanup`) | **Result:** removed `modules/make_clone_fasta.nf`, `bin/make_single_clone_fasta.py`, `bin/merge_metadata.py`, `bin/length_scale_counts.R` (its median-length scaling already lives in `DESeq2_normalise_counts.R`), `configs/container.config` and `requirements.txt` (user approved). **Replaced** the clone-FASTA helper with `scripts/prepare_inputs_from_panaroo.py`, which uses Panaroo's `gene_data.csv` (includes refound genes), strips Panaroo status suffixes and writes a metadata template. 4 unit tests on a synthetic Panaroo directory built from Panaroo's own writer code (not yet tested on a real Panaroo run, since no `gene_data.csv` is in test_data). See "Unused files" in CLAUDE.md. Confirm with the user before deleting (some may be useful as helper utilities). |
 | H5 | Update README. | TODO | Use the agreed definitions of the output matrices (CLAUDE.md, "Meaning of the output matrices"). Update parameters after P3/P4. Add a citation section. Do this after P1–P6 land. |
-| H6 | Assess nf-core compliance. | TODO | The user is reluctant to do heavy lifting just for nf-core. First write up a cost/benefit: what nf-core listing needs (template, nf-schema, modules, MultiQC, nf-test) versus cheap wins worth taking anyway (`nextflow_schema.json`, `-profile test`, versioned containers, `versions.yml`). |
+| H6 | Assess nf-core compliance. | DONE (2026-11-19, `docs/nf-core-assessment`): write-up in `docs/nf-core-assessment.md`. Recommendation: no listing before submission; take the cheap wins (schema + nf-schema, software versions file, `--publish_dir_mode copy`, MultiQC at the next image rebuild, docs layout). **NEEDS USER:** which cheap wins to do (Q13). | The user is reluctant to do heavy lifting just for nf-core. First write up a cost/benefit: what nf-core listing needs (template, nf-schema, modules, MultiQC, nf-test) versus cheap wins worth taking anyway (`nextflow_schema.json`, `-profile test`, versioned containers, `versions.yml`). |
 | H7 | Clean up the repo. | MOSTLY DONE (2026-11-18, `chore/cleanup`) | **Result:** deleted the 3 empty `test_data/.!NNNNN!*.fq.gz` files; replaced the untracked `docker_build_and_push.sh` (pushed `:latest`) with `scripts/build_and_push_image.sh <version>` (reads the repo from nextflow.config, builds, smoke-tests, runs unit tests in the image, asks before pushing). **Remaining:** CITATION.cff and Zenodo DOI (at release). Stray zero-byte `test_data/.!NNNNN!*.fq.gz` files (failed-transfer leftovers, untracked). Decide whether to commit `docker_build_and_push.sh`. Add a CITATION.cff and a Zenodo DOI before submission. |
 | H8 | Fix minor code issues (R8). | TODO | No output change. |
 
@@ -184,7 +179,9 @@ data on a branch get tested, and runs need no network.
   than the intact gene. This is minor and probably not worth correcting.
 - **R5. Paired-end detection is global.** `check_metadata.py` marks every sample as paired if any
   `fastq2` is filled in, so mixed single-end and paired-end inputs would break. Unanswered: should
-  mixed input be supported, or rejected with a clear error?
+  mixed input be supported, or rejected with a clear error? **[DONE 2026-11-19, `fix/reject-mixed-reads`]**
+  Rejected (Q4): `check_metadata.py` stops with an error naming the single-end and paired-end
+  samples. 3 unit tests (`tests/unit/test_check_metadata.py`); test metadata output unchanged.
 - **R6. Log2 outputs.** `norm_counts.tsv` and `rpkm_counts.tsv` are log2(x+1)-transformed
   (`-t TRUE` is hard-coded), but the file names and README don't say so (P6).
 - **R7. Downstream differential expression.** Length scaling gives non-integer `raw_counts`. If
@@ -206,7 +203,7 @@ data on a branch get tested, and runs need no network.
   dUTP/TruSeq stranded kits) is sensible in general, but it's wrong for this dataset. **If any
   real analyses of this cohort used the default, they lost about 90% of reads.** → Q7.
 - **R11. UMAP is not reproducible between runs.** Found 2026-11-18. `umap.R` uses `umap.defaults`, whose `random_state` is drawn at random. Two runs on identical input gave layouts differing by up to 0.97 units. For a publication, figures should be reproducible: set a fixed `random_state` (perhaps as a `--seed` parameter). This changes the plot, so it needs the user's OK → Q9.
-- **R12. "Missing" loci are really an ID-matching bug.** Found 2026-11-18 while reading Panaroo's source (`generate_output.py`). In `gene_presence_absence.csv`, Panaroo appends status suffixes to locus IDs (`_len` if the length deviates from the group mode, `_pseudo` for invalid genes, `_stop` in older versions). These suffixes are **not part of the sequence ID** (`gene_presence_absence_roary.csv` has the plain IDs). In the test data, **all 130 "missing" loci (R9/P7) are in the isolate FASTA** under the plain ID, for example `1_refound_1076_stop` is the sequence `1_refound_1076`. So 41–47 genes per isolate (39 of them core) are NA only because the merge scripts compare IDs literally. Fix: strip the suffix when matching (raw ID first, then stripped), in `merge_kallisto_*.py` and `check_fasta_loci.py`. **Changes outputs → Q12.**
+- **R12. "Missing" loci are really an ID-matching bug.** Found 2026-11-18 while reading Panaroo's source (`generate_output.py`). In `gene_presence_absence.csv`, Panaroo appends status suffixes to locus IDs (`_len` if the length deviates from the group mode, `_pseudo` for invalid genes, `_stop` in older versions). These suffixes are **not part of the sequence ID** (`gene_presence_absence_roary.csv` has the plain IDs). In the test data, **all 130 "missing" loci (R9/P7) are in the isolate FASTA** under the plain ID, for example `1_refound_1076_stop` is the sequence `1_refound_1076`. So 41–47 genes per isolate (39 of them core) are NA only because the merge scripts compare IDs literally. Fix: strip the suffix when matching (raw ID first, then stripped), in `merge_kallisto_*.py` and `check_fasta_loci.py`. **Changes outputs → Q12.** **[DONE 2026-11-19, `fix/panaroo-suffixes`]** `resolve_locus()` (same code in all three scripts) tries the raw ID, then strips `_len`/`_pseudo`/`_stop` one at a time (the user's real Panaroo run has `_stop`, `_len` and `_len_stop`). Test data vs baseline v3: missing loci 130 → 0; 41/42/47 more genes per isolate; 53 new rows; core 5674 → 5713; no existing kallisto value changed; 6 raw/norm values in 4 rows moved (median length gained an isolate); size factors unchanged; nTPM × 0.997163 uniformly (global constant only); UMAP identical. Baseline re-captured as **v4**. 4 new unit tests (they fail on the old code); 40/40 pass in the image.
 - **R8. Minor issues** [fixed 2026-11-18: unused `gpa` input, `ch_trimgalore_*` channels, `when: metadata.exists()` and `custom_runName` removed; `--group` moved to optional args in help; undefined `params.workdir` removed from the slurm profile; conda profile now sets `conda.enabled = true` (the old `params.enable_conda` did nothing)] (fine to fix with no output change): `KALLISTO_QUANT` takes the `gpa`
   input but never uses it; `ch_trimgalore_*` channels are never consumed; `when: metadata.exists()`
   can never be false; the `--group` help text says it's mandatory and also gives a default; the
@@ -219,9 +216,10 @@ data on a branch get tested, and runs need no network.
 - Q9: resolved 2026-11-18 → P9 (fixed seed; rewrite the UMAP in Python).
 - Q10: resolved 2026-11-18 → P10 (`--strandedness auto`).
 - Q11: resolved 2026-11-18. `--strandedness auto` is the default; the test profile uses it.
-- **Q12 (R12):** Strip Panaroo status suffixes when matching locus IDs, so the 41–47 genes per isolate currently NA because of ID mismatch are quantified? Recommended: yes.
+- Q12: resolved 2026-11-19. Yes: strip Panaroo status suffixes when matching locus IDs (done, R12).
 - Q5: resolved 2026-11-18. Name is **PanScript**.
-- **Q4 (R5):** Mixed single-end and paired-end input: support it or reject it?
+- **Q13 (H6):** Which nf-core cheap wins to adopt (see `docs/nf-core-assessment.md`)? Items 2–4 change outputs (new versions file, copies instead of symlinks, MultiQC report).
+- Q4: resolved 2026-11-19. Reject mixed single-end and paired-end input with a clear error (R5).
 - **Q5 (H1):** Name ideas: should the name stress pangenome, isolate-specific or reference-free?
 - Q6: resolved 2026-11-18 → P7. The FASTA files are per-isolate CDS from Bakta or Prokka, the same
   annotation that goes into Panaroo, supplied by the user. Pseudogenes are wanted *if* the user
@@ -256,3 +254,5 @@ data on a branch get tested, and runs need no network.
 | 2026-11-18 | Published `adamd3/strainseq:2.0.0-dev`; `--strandedness auto` is the default. | User approved both. The name stays as is for now (H1 open); the image can be re-tagged at rename. |
 | 2026-11-18 | Pipeline renamed to **PanScript**; image `adamd3/panscript`. | User decision after several rounds (see Q5). Docker needs lowercase names. |
 | 2026-11-18 | Git workflow: `main` (releases) / `dev` (integration) / feature branches; no AI attribution in commits. | User delegated branching; user request on attribution. |
+| 2026-11-19 | Strip Panaroo status suffixes when matching locus IDs (Q12/R12); baseline v4. | The suffixes aren't part of the sequence ID, so ~0.6% of genes per isolate (39 core) were NA for no biological reason. Raw ID is tried first so a real ID ending in `_stop` still wins. |
+| 2026-11-19 | Reject mixed single-end/paired-end runs (Q4/R5). | Simplest correct behaviour; kallisto runs in one mode for all samples. Users split such cohorts into separate runs. |
