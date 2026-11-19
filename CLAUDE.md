@@ -110,8 +110,9 @@ file in sync with any change to normalisation code.
   the container), but **tools (kallisto, fastp, R and its packages, umap-learn) come from the Docker
   image**. So script changes are tested straight away, but a new tool (for example fastp) needs a
   rebuilt image or a per-process container.
-- Most `publishDir`s use `mode: 'symlink'`, so `results/` files point into `work/`. Use `cp -L`
-  when saving outputs, and don't delete `work/` before copying.
+- Every `publishDir` uses `mode: params.publish_dir_mode` (default `copy`, since 2026-11-19; it
+  was mostly `symlink` before). With `--publish_dir_mode symlink`, `results/` files point into
+  `work/`, so use `cp -L` when saving them.
 - CI (`.github/workflows/ci.yml`, on pushes to `main`/`dev` and on PRs) runs the unit tests inside
   the pinned image, then the test profile on Nextflow 23.10.1 and latest-stable, and checks the
   outputs against `tests/baseline` with `tests/compare_to_baseline.py`. **CI never pushes

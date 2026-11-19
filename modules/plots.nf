@@ -1,7 +1,7 @@
 process UMAP_SAMPLES {
     tag "$norm_counts"
     label 'process_medium'
-    publishDir "${params.outdir}/umap_samples", mode: 'copy'
+    publishDir "${params.outdir}/umap_samples", mode: params.publish_dir_mode
 
     input:
     path norm_counts

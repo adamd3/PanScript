@@ -1,7 +1,7 @@
 process DESEQ_NORMALISE_COUNTS {
     tag "$merged_counts"
     label 'process_medium'
-    publishDir "${params.outdir}/gene_counts", mode: 'symlink'
+    publishDir "${params.outdir}/gene_counts", mode: params.publish_dir_mode
 
     input:
     tuple path(merged_counts), path(merged_lens)

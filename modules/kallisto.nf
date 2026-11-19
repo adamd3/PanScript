@@ -1,7 +1,7 @@
 process KALLISTO_QUANT {
     tag "$meta.sample_id"
     label 'process_high'
-    publishDir "${params.outdir}/kallisto_quant", mode: 'symlink'
+    publishDir "${params.outdir}/kallisto_quant", mode: params.publish_dir_mode
 
     input:
     tuple val(meta), path(reads), path(fasta), val(strandedness)
@@ -27,7 +27,7 @@ process KALLISTO_QUANT {
 process MERGE_COUNTS_AND_LENS {
     tag "merge_counts_and_lens"
     label 'process_high'
-    publishDir "${params.outdir}/kallisto_quant", mode: 'symlink'
+    publishDir "${params.outdir}/kallisto_quant", mode: params.publish_dir_mode
 
     input:
     path gpa_file

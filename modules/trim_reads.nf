@@ -6,7 +6,7 @@
 process FASTP {
     tag "$meta.sample_id"
     label 'process_medium'
-    publishDir "${params.outdir}/fastp", mode: 'copy',
+    publishDir "${params.outdir}/fastp", mode: params.publish_dir_mode,
         saveAs: { filename ->
                       if (filename.endsWith('.fastp.fq.gz')) params.save_trimmed ? "trimmed/$filename" : null
                       else if (filename =~ /\.fastp\.(json|html|log)$/) filename
