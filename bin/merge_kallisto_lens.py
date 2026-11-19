@@ -51,10 +51,13 @@ def parse():
 
 
 def merge_counts(gene_presence_absence, metadata_merged, kallisto_dir, outf):
-    csv_data = pd.read_csv(gene_presence_absence, low_memory=False)
     metadata = pd.read_csv(metadata_merged, sep = "\t")
-    colnames = csv_data.columns.values.tolist()
+    # read only the Gene column and the isolates in the metadata: the table
+    # can have thousands of isolates
+    colnames = pd.read_csv(gene_presence_absence, nrows=0).columns.values.tolist()
     metadata = metadata[metadata['dna_sample_id'].isin(colnames)]
+    csv_data = pd.read_csv(gene_presence_absence, low_memory=False,
+                           usecols=["Gene"] + metadata['dna_sample_id'].unique().tolist())
     quant_dfs = []
     for index, row in metadata.iterrows():
         sample_name = row['sample_name']

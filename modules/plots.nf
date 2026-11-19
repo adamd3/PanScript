@@ -1,6 +1,6 @@
 process UMAP_SAMPLES {
     tag "$norm_counts"
-    label 'process_medium'
+    label 'process_single'
     publishDir "${params.outdir}/umap_samples", mode: params.publish_dir_mode
 
     input:

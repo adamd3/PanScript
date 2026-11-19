@@ -22,6 +22,7 @@ process CHECK_META_FILE {
  * more than params.max_missing_loci of the loci are missing.
  */
 process CHECK_FASTA_LOCI {
+    label 'process_single'
     tag "$meta.sample_id"
 
     input:
