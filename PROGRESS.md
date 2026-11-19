@@ -25,30 +25,29 @@ Read [CLAUDE.md](CLAUDE.md) first.
 **PanScript** (`adamd3/PanScript`, image `adamd3/panscript:2.0.0-dev`). `main` still has the old
 pre-2026 code; nothing released yet.
 
-**Done 2026-11-19, on branches, uncommitted, waiting for the user's OK to commit and merge into `dev`:**
-- `fix/panaroo-suffixes` (main checkout): Q12/R12 suffix stripping, baseline **v4**, docs, and all
+**Done 2026-11-19, merged into `dev` (not yet pushed):**
+- `fix/panaroo-suffixes`: Q12/R12 suffix stripping, baseline **v4**, docs, and all
   PROGRESS updates for the day.
-- `fix/reject-mixed-reads` (worktree `../PanScript-q4`): Q4/R5.
-- `feat/panaroo-helper-gz` (worktree `../PanScript-helper`): H4b, helper verified on a real Panaroo run.
-- `docs/nf-core-assessment` (worktree `../PanScript-docs`): H6 write-up.
+- `fix/reject-mixed-reads`: Q4/R5.
+- `feat/panaroo-helper-gz`: H4b, helper verified on a real Panaroo run.
+- `docs/nf-core-assessment`: H6 write-up.
 
 **Next steps, in order:**
-1. Commit and merge the four branches above (user OK), then remove the worktrees.
-2. **Q13:** which nf-core cheap wins to adopt (`docs/nf-core-assessment.md`).
-3. **Release v2.0.0** (needs user OK): build and push `adamd3/panscript:2.0.0` with
-   `scripts/build_and_push_image.sh 2.0.0` (add MultiQC first if Q13 says so); set it in
+1. nf-core cheap wins (Q13 approved): H14, H11, H10, H9 (no image change needed), then H13.
+2. **Release v2.0.0** (needs user OK): add MultiQC (H12) to `environment.yml`, build and push
+   `adamd3/panscript:2.0.0` with `scripts/build_and_push_image.sh 2.0.0`; set it in
    `nextflow.config`; manifest `version = '2.0.0'`; CHANGELOG; CITATION.cff; merge `dev` into
    `main`; tag `v2.0.0`; Zenodo DOI (H7 remaining).
-4. **Manuscript** M1 (outline), M2 (benchmark design, including PanXpress and microberna
+3. **Manuscript** M1 (outline), M2 (benchmark design, including PanXpress and microberna
    comparisons), M3 (showcase dataset), M4 (redraw the pipeline diagram).
-5. **Smaller open items:** R7 (document the recommended downstream DE workflow), H3 remainder (a
+4. **Smaller open items:** R7 (document the recommended downstream DE workflow), H3 remainder (a
    test option using local `test_data/` instead of GitHub URLs).
 
 ---
 
 ## Plan (overview)
 
-Status: Phase 0 ✓ · Phase 1 ✓ · Phase 1b ✓ · Phase 2 ✓ · Phase 3 mostly ✓ (H6 and parts of H7 left) ·
+Status: Phase 0 ✓ · Phase 1 ✓ · Phase 1b ✓ · Phase 2 ✓ · Phase 3 mostly ✓ (cheap wins H9–H14 and parts of H7 left) ·
 Phase 4: renamed ✓, release pending · Phase 5 not started.
 
 Phases run in order. Within a phase, tasks on separate branches can run in parallel.
@@ -120,7 +119,13 @@ results need the Phase 1–2 pipeline.
 | H4b | Test `scripts/prepare_inputs_from_panaroo.py` on a real Panaroo run. | DONE (2026-11-19, `feat/panaroo-helper-gz`) | **Result:** user's run (2,967 genomes; `gene_data.csv.gz` 10.7 GB, 19.8M genes of which 1.66M refound). For the 3 test isolates the helper's FASTAs are **identical** to `test_data/SRR87372{81,82,83}.fna` (IDs and sequences), and every locus in `gene_presence_absence.csv` has a sequence. Added gzip input support; gpa loci are now kept only for the selected isolates (peak memory 3.1 GB → 43 MB; 137 s). 2 new unit tests. `gene_data.csv` stays the source: it's the only standard Panaroo output with each isolate's own sequence for refound genes (`pan_genome_reference.fa` has one sequence per group; `combined_DNA_CDS.fasta` is, as far as we know, written before refinding and uses internal clustering IDs; not verified against Panaroo's source). Limitation: without `--isolates`, all sequences are held in memory before writing. The big files are excluded locally via `.git/info/exclude`, never commit them. |
 | H4 | Clean up unused code. | DONE (2026-11-18, `chore/cleanup`) | **Result:** removed `modules/make_clone_fasta.nf`, `bin/make_single_clone_fasta.py`, `bin/merge_metadata.py`, `bin/length_scale_counts.R` (its median-length scaling already lives in `DESeq2_normalise_counts.R`), `configs/container.config` and `requirements.txt` (user approved). **Replaced** the clone-FASTA helper with `scripts/prepare_inputs_from_panaroo.py`, which uses Panaroo's `gene_data.csv` (includes refound genes), strips Panaroo status suffixes and writes a metadata template. 4 unit tests on a synthetic Panaroo directory built from Panaroo's own writer code (not yet tested on a real Panaroo run, since no `gene_data.csv` is in test_data). See "Unused files" in CLAUDE.md. Confirm with the user before deleting (some may be useful as helper utilities). |
 | H5 | Update README. | TODO | Use the agreed definitions of the output matrices (CLAUDE.md, "Meaning of the output matrices"). Update parameters after P3/P4. Add a citation section. Do this after P1–P6 land. |
-| H6 | Assess nf-core compliance. | DONE (2026-11-19, `docs/nf-core-assessment`): write-up in `docs/nf-core-assessment.md`. Recommendation: no listing before submission; take the cheap wins (schema + nf-schema, software versions file, `--publish_dir_mode copy`, MultiQC at the next image rebuild, docs layout). **NEEDS USER:** which cheap wins to do (Q13). | The user is reluctant to do heavy lifting just for nf-core. First write up a cost/benefit: what nf-core listing needs (template, nf-schema, modules, MultiQC, nf-test) versus cheap wins worth taking anyway (`nextflow_schema.json`, `-profile test`, versioned containers, `versions.yml`). |
+| H6 | Assess nf-core compliance. | DONE (2026-11-19, `docs/nf-core-assessment`): write-up in `docs/nf-core-assessment.md`. Recommendation: no listing before submission; take the cheap wins (schema + nf-schema, software versions file, `--publish_dir_mode copy`, MultiQC at the next image rebuild, docs layout). Cheap wins approved (Q13) → H9–H14. | The user is reluctant to do heavy lifting just for nf-core. First write up a cost/benefit: what nf-core listing needs (template, nf-schema, modules, MultiQC, nf-test) versus cheap wins worth taking anyway (`nextflow_schema.json`, `-profile test`, versioned containers, `versions.yml`). |
+| H9 | `nextflow_schema.json` + nf-schema plugin: parameter validation and generated `--help`, replacing the hand-written checks in `validateParams()`. | TODO | Check the plugin's minimum Nextflow version against our 23.10 minimum (raise it if needed, with user OK). Samplesheet schema optional, later. No output change. |
+| H10 | Record tool versions in `pipeline_info/software_versions.yml`. | TODO | Approved (Q13). New output file. kallisto, fastp, Python, pandas, numpy, umap-learn, R, DESeq2. |
+| H11 | `--publish_dir_mode`, default `copy`. | TODO | Approved (Q13). Outputs become copies, not symlinks into `work/`. Update CLAUDE.md's `cp -L` note and the README. |
+| H12 | MultiQC report (fastp + kallisto). | TODO | Approved (Q13). Needs MultiQC in `environment.yml`, so do it with the v2.0.0 image build. New output. |
+| H13 | nf-core-style docs: `docs/usage.md`, `docs/output.md`, `CITATIONS.md`, `CHANGELOG.md`. | TODO | Partly part of the v2.0.0 release. No output change. |
+| H14 | Move the `cambridge` profile out of `nextflow.config` into its own config file. | TODO | No output change; keep `-profile cambridge` working. |
 | H7 | Clean up the repo. | MOSTLY DONE (2026-11-18, `chore/cleanup`) | **Result:** deleted the 3 empty `test_data/.!NNNNN!*.fq.gz` files; replaced the untracked `docker_build_and_push.sh` (pushed `:latest`) with `scripts/build_and_push_image.sh <version>` (reads the repo from nextflow.config, builds, smoke-tests, runs unit tests in the image, asks before pushing). **Remaining:** CITATION.cff and Zenodo DOI (at release). Stray zero-byte `test_data/.!NNNNN!*.fq.gz` files (failed-transfer leftovers, untracked). Decide whether to commit `docker_build_and_push.sh`. Add a CITATION.cff and a Zenodo DOI before submission. |
 | H8 | Fix minor code issues (R8). | TODO | No output change. |
 
@@ -218,7 +223,7 @@ data on a branch get tested, and runs need no network.
 - Q11: resolved 2026-11-18. `--strandedness auto` is the default; the test profile uses it.
 - Q12: resolved 2026-11-19. Yes: strip Panaroo status suffixes when matching locus IDs (done, R12).
 - Q5: resolved 2026-11-18. Name is **PanScript**.
-- **Q13 (H6):** Which nf-core cheap wins to adopt (see `docs/nf-core-assessment.md`)? Items 2–4 change outputs (new versions file, copies instead of symlinks, MultiQC report).
+- Q13: resolved 2026-11-19. Adopt all the cheap wins in `docs/nf-core-assessment.md` (H9–H14); the user approved the output changes they bring.
 - Q4: resolved 2026-11-19. Reject mixed single-end and paired-end input with a clear error (R5).
 - **Q5 (H1):** Name ideas: should the name stress pangenome, isolate-specific or reference-free?
 - Q6: resolved 2026-11-18 → P7. The FASTA files are per-isolate CDS from Bakta or Prokka, the same
