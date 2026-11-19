@@ -8,7 +8,7 @@ process FASTP {
     label 'process_medium'
     publishDir "${params.outdir}/fastp", mode: params.publish_dir_mode,
         saveAs: { filename ->
-                      if (filename.endsWith('.fastp.fq.gz')) params.save_trimmed ? "trimmed/$filename" : null
+                      if (filename.endsWith('.fastp.fq.gz')) params.save_trimmed.toString() == 'true' ? "trimmed/$filename" : null
                       else if (filename =~ /\.fastp\.(json|html|log)$/) filename
                       else null   // e.g. the isolate FASTA passed through to quantification
                 }

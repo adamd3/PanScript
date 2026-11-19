@@ -123,6 +123,11 @@ file in sync with any change to normalisation code.
   `scripts/build_and_push_image.sh <version>`, which builds, smoke-tests and runs the unit tests in
   the image, then asks before pushing; **ask the user** before confirming the push; then set that tag in `nextflow.config`
   (`process.container`) and re-capture the baseline.
+- **Command-line params are strings on Nextflow ≥ 25** (typed on 24.x), and `params` can't be
+  reassigned. Read booleans with `isTrue(params.x)` (or `.toString() == 'true'` in modules) and
+  numbers with `as long`/`as BigDecimal`; never rely on truthiness or `instanceof`. Parameters are
+  documented in `nextflow_schema.json`, which drives `validateParams()` and `--help` in `main.nf`:
+  add every new param there.
 - **Nextflow versions:** 24.10.0 and later (`manifest.nextflowVersion`, raised from 23.10 on 2026-11-19 for `resourceLimits` and nf-schema). Code must parse under
   Nextflow's strict syntax (default from 25.x): no statements outside workflows or functions; use
   `error()`, not `exit`; no helper functions in config files; no `$VAR` environment variables in

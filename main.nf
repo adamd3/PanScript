@@ -55,41 +55,88 @@ def create_fastq_channel(LinkedHashMap row) {
 
 
 
-// Check parameters before anything runs
+// Parameter values given on the command line are strings in Nextflow >= 25
+// (typed in 24.x), so read booleans and numbers through these helpers.
+def isTrue(value) {
+    return value != null && value.toString().trim().toLowerCase() == 'true'
+}
+
+// Convert a parameter value to the first matching JSON-schema type; null if none.
+def coerceParam(value, type) {
+    def types = type instanceof List ? type : [type]
+    def s = value.toString().trim()
+    def result = null
+    def matched = types.find { t ->
+        if (t == 'integer' && (value instanceof Integer || value instanceof Long || s ==~ /[-+]?\d+/)) {
+            result = s as Long
+        } else if (t == 'number' && (value instanceof Number || s ==~ /[-+]?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?/)) {
+            result = s as BigDecimal
+        } else if (t == 'boolean' && s.toLowerCase() in ['true', 'false']) {
+            result = s.toLowerCase() == 'true'
+        } else if (t == 'string') {
+            result = s
+        }
+        return result != null
+    }
+    return matched ? result : null
+}
+
+// Validate params against nextflow_schema.json: required, type, allowed values,
+// ranges, file existence and unknown (e.g. misspelt) parameters. Done here
+// rather than with the nf-schema plugin: the plugin version supporting our
+// minimum Nextflow (24.10) rejects command-line numbers on Nextflow >= 25.
 def validateParams() {
-    if (!params.meta_file) {
-        error('ERROR: --meta_file parameter is required. Please provide a path to the metadata file.')
+    def schema = new groovy.json.JsonSlurper().parseText(file("${projectDir}/nextflow_schema.json").text)
+    def errors = []
+    def known = []
+    schema['$defs'].each { key, group ->
+        def required = group['required'] ?: []
+        group['properties'].each { name, p ->
+            known << name
+            def raw = params.get(name)
+            if (raw == null || raw.toString().trim() == '') {
+                if (name in required) {
+                    errors << "--${name} is required"
+                }
+                return
+            }
+            def v = coerceParam(raw, p['type'])
+            if (v == null) {
+                errors << "--${name} (${raw}): must be ${p['type'] instanceof List ? p['type'].join(' or ') : p['type']}"
+                return
+            }
+            if (p['enum'] && !p['enum'].any { it.toString() == v.toString() }) {
+                errors << "--${name} (${raw}): must be one of ${p['enum'].join(', ')}"
+            }
+            if (p['minimum'] != null && v < p['minimum']) {
+                errors << "--${name} (${raw}): must be at least ${p['minimum']}"
+            }
+            if (p['maximum'] != null && v > p['maximum']) {
+                errors << "--${name} (${raw}): must be at most ${p['maximum']}"
+            }
+            if (p['exclusiveMinimum'] != null && v <= p['exclusiveMinimum']) {
+                errors << "--${name} (${raw}): must be greater than ${p['exclusiveMinimum']}"
+            }
+            if (p['minLength'] != null && v.toString().length() < p['minLength']) {
+                errors << "--${name} must not be empty"
+            }
+            if (p['exists'] && !file(v.toString()).exists()) {
+                errors << "--${name}: file not found: ${v}"
+            }
+        }
     }
-    if (!params.gpa_file) {
-        error('ERROR: --gpa_file parameter is required. Please provide a path to the gene presence/absence file.')
+    // Nextflow also stores --a-b style names as a-b and aB
+    def variants = known.collectMany { n -> [n, n.replace('_', '-'), n.replaceAll(/_([a-z])/) { all, c -> c.toUpperCase() }] }
+    def unknown = params.keySet().findAll { k -> !(k in variants) }
+    if (unknown) {
+        log.warn "Unrecognised parameter(s), ignored: ${unknown.collect { "--${it}" }.join(', ')} (see --help)"
     }
-    if (!params.group) {
-        error('ERROR: --group parameter is required. Please specify the metadata column for grouping strains.')
+    // checks across parameters
+    if (params.strandedness.toString() == 'auto' && coerceParam(params.strandedness_check_reads, 'integer') == 0) {
+        errors << '--strandedness auto needs the strandedness check; set --strandedness_check_reads > 0'
     }
-    if (!(params.seed instanceof Integer)) {
-        error('ERROR: --seed must be a whole number.')
-    }
-    if (params.strandedness !in [0, 1, 2, 'auto']) {
-        error('ERROR: --strandedness must be 0 (unstranded), 1 (forward-stranded), 2 (reverse-stranded) or auto (inferred per sample).')
-    }
-    if (!(params.strandedness_check_reads instanceof Integer) || params.strandedness_check_reads < 0) {
-        error('ERROR: --strandedness_check_reads must be a whole number >= 0 (0 skips the check).')
-    }
-    if (params.strandedness == 'auto' && params.strandedness_check_reads == 0) {
-        error('ERROR: --strandedness auto needs the strandedness check; set --strandedness_check_reads > 0.')
-    }
-    if (params.fragment_len <= 0) {
-        error('ERROR: --fragment_len must be greater than 0.')
-    }
-    if (params.fragment_sd <= 0) {
-        error('ERROR: --fragment_sd must be greater than 0.')
-    }
-    if (params.max_missing_loci < 0 || params.max_missing_loci > 1) {
-        error('ERROR: --max_missing_loci must be a fraction between 0 and 1.')
-    }
-    def publish_modes = ['copy', 'symlink', 'rellink', 'link', 'copyNoFollow', 'move']
-    if (!(params.publish_dir_mode in publish_modes)) {
-        error("ERROR: --publish_dir_mode must be one of: ${publish_modes.join(', ')}.")
+    if (errors) {
+        error("Invalid parameters:\n  * " + errors.join("\n  * "))
     }
 }
 
@@ -142,7 +189,7 @@ workflow MAIN {
     /*
      *  Check library strandedness on a subsample of reads (warns on mismatch)
      */
-    if (params.strandedness_check_reads > 0) {
+    if ((params.strandedness_check_reads as long) > 0) {
         CHECK_STRANDEDNESS (
             ch_raw_reads
         )
@@ -157,7 +204,7 @@ workflow MAIN {
     /*
      *  Trim + pseudo-align reads
      */
-    if (params.skip_trimming) {
+    if (isTrue(params.skip_trimming)) {
         ch_reads_for_quant = ch_raw_reads
     } else {
         FASTP (
@@ -168,7 +215,7 @@ workflow MAIN {
 
     // Strandedness for each sample's quantification: the --strandedness value,
     // or (--strandedness auto) the value inferred by CHECK_STRANDEDNESS
-    if (params.strandedness == 'auto') {
+    if (params.strandedness.toString() == 'auto') {
         ch_inferred_strandedness = CHECK_STRANDEDNESS.out.result
             .map { tsv ->
                 def row = tsv.splitCsv(header: true, sep: '\t')[0]
@@ -228,7 +275,7 @@ workflow MAIN {
 ================================================================================
 */
 workflow {
-    if (params.help) {
+    if (isTrue(params.help)) {
         helpMessage()
     } else {
         validateParams()
@@ -237,33 +284,33 @@ workflow {
 }
 
 
+// --help, generated from nextflow_schema.json (the single source of parameter
+// documentation).
 def helpMessage() {
-    log.info"""
-    Usage:
-    The typical command for running the pipeline is as follows:
-      nextflow run adamd3/PanScript --meta_file [file] --gpa_file [gene_presence_absence.csv] -profile docker
-
-    Mandatory arguments:
-      --meta_file [file]              Path to file containing sample metadata.
-      --gpa_file [file]               Path to file containing gene presence/absence per strain (from Panaroo output).
-      -profile [str]                  Configuration profile to use. Can use multiple (comma separated).
-                                      Available: docker, singularity, apptainer, conda, test.
-                                      Cluster settings: add -c <your_site.config> (see README).
-
-    Other options:
-      --group [str]                   Metadata column used to colour samples in the UMAP. Default = majority_ST.
-      --strandedness [str]            Strandedness of the reads. 0 = unstranded, 1 = forward-stranded, 2 = reverse-stranded, auto = inferred per sample from a subsample of reads. Default = auto.
-      --fragment_len [str]            Estimated average fragment length for kallisto transcript quantification (only required for single-end reads). Default = 150.
-      --fragment_sd [str]             Estimated standard deviation of fragment length for kallisto transcript quantification (only required for single-end reads). Default = 20.
-      --strandedness_check_reads [int] Reads per sample used to check that --strandedness matches the library (warns on mismatch; results in pipeline_info/strandedness_check.tsv). 0 = skip. Default = 200000.
-      --max_missing_loci [float]      Stop if more than this fraction of an isolate's Panaroo loci are missing from its FASTA. Missing loci are always reported in pipeline_info/missing_loci.tsv. Default = 0.5.
-      --skip_trimming [bool]          Do not trim reads (skip fastp).
-      --fastp_args [str]              Extra options passed to fastp, which otherwise runs with its default settings (e.g. '--cut_tail --cut_tail_mean_quality 20 --length_required 20').
-      --save_trimmed [bool]           Save the fastp-trimmed reads in <outdir>/fastp/trimmed.
-      --seed [int]                    Random seed for the UMAP, so plots are reproducible. Default = 42.
-      --outdir [file]                 The output directory where the results will be saved (default: './results').
-      --publish_dir_mode [str]        How results are saved in --outdir: copy, symlink, rellink, link, copyNoFollow or move. Default = copy.
-      -name [str]                     Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic.
-
-    """.stripIndent()
+    def schema = new groovy.json.JsonSlurper().parseText(file("${projectDir}/nextflow_schema.json").text)
+    def lines = [
+        '',
+        'Usage:',
+        '  nextflow run adamd3/PanScript -profile docker --meta_file metadata.tsv --gpa_file gene_presence_absence.csv --outdir results'
+    ]
+    schema['$defs'].each { key, group ->
+        def required = group['required'] ?: []
+        def shown = group['properties'].findAll { name, p -> !p['hidden'] }
+        if (shown) {
+            lines << ''
+            lines << "${group['title']}:"
+            shown.each { name, p ->
+                def extra = []
+                if (name in required) { extra << 'required' }
+                if (p['enum']) { extra << "one of: ${p['enum'].join(', ')}" }
+                if (p.containsKey('default') && p['default'] != '') { extra << "default: ${p['default']}" }
+                def suffix = extra ? " [${extra.join('; ')}]" : ''
+                lines << "  --${name.padRight(26)} ${p['description']}${suffix}"
+            }
+        }
+    }
+    lines << ''
+    lines << 'Software profiles: docker, singularity, apptainer, conda (plus test for the test dataset).'
+    lines << 'Cluster settings: add -c <your_site.config> (see README, "Running on a cluster").'
+    log.info lines.join('\n')
 }

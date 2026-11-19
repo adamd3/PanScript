@@ -1,0 +1,175 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://raw.githubusercontent.com/adamd3/PanScript/main/nextflow_schema.json",
+    "title": "adamd3/PanScript pipeline parameters",
+    "description": "Quantify gene expression in bacterial isolates by pseudo-alignment to isolate-specific gene sets, merged through pangenome orthologous groups",
+    "type": "object",
+    "$defs": {
+        "input_output_options": {
+            "title": "Input/output options",
+            "type": "object",
+            "required": [
+                "meta_file",
+                "gpa_file"
+            ],
+            "properties": {
+                "meta_file": {
+                    "type": "string",
+                    "description": "Sample metadata file (tab-separated; see README).",
+                    "format": "file-path",
+                    "exists": true,
+                    "fa_icon": "fas fa-file-csv"
+                },
+                "gpa_file": {
+                    "type": "string",
+                    "description": "Panaroo gene_presence_absence.csv (comma-separated; may be gzipped).",
+                    "format": "file-path",
+                    "exists": true,
+                    "fa_icon": "fas fa-table"
+                },
+                "outdir": {
+                    "type": "string",
+                    "description": "Output directory.",
+                    "format": "directory-path",
+                    "default": "./results",
+                    "fa_icon": "fas fa-folder-open"
+                },
+                "publish_dir_mode": {
+                    "type": "string",
+                    "description": "How results are saved in outdir. 'copy' makes independent files, so work/ can be deleted afterwards.",
+                    "default": "copy",
+                    "enum": [
+                        "copy",
+                        "symlink",
+                        "rellink",
+                        "link",
+                        "copyNoFollow",
+                        "move"
+                    ],
+                    "fa_icon": "fas fa-copy"
+                }
+            }
+        },
+        "trimming_options": {
+            "title": "Read trimming (fastp)",
+            "type": "object",
+            "properties": {
+                "skip_trimming": {
+                    "type": "boolean",
+                    "description": "Don't trim reads (skip fastp).",
+                    "default": false
+                },
+                "save_trimmed": {
+                    "type": "boolean",
+                    "description": "Save the fastp-trimmed reads in <outdir>/fastp/trimmed.",
+                    "default": false
+                },
+                "fastp_args": {
+                    "type": "string",
+                    "description": "Extra options passed to fastp, which otherwise runs with its default settings (e.g. '--cut_tail --cut_tail_mean_quality 20 --length_required 20').",
+                    "default": ""
+                }
+            }
+        },
+        "quantification_options": {
+            "title": "Quantification (kallisto)",
+            "type": "object",
+            "properties": {
+                "strandedness": {
+                    "type": [
+                        "integer",
+                        "string"
+                    ],
+                    "enum": [
+                        0,
+                        1,
+                        2,
+                        "auto"
+                    ],
+                    "default": "auto",
+                    "description": "Library strandedness: 0 = unstranded, 1 = forward-stranded, 2 = reverse-stranded, auto = inferred per sample from a subsample of reads."
+                },
+                "fragment_len": {
+                    "type": "number",
+                    "description": "Mean fragment length (single-end reads only).",
+                    "default": 150,
+                    "exclusiveMinimum": 0
+                },
+                "fragment_sd": {
+                    "type": "number",
+                    "description": "Standard deviation of fragment length (single-end reads only).",
+                    "default": 20,
+                    "exclusiveMinimum": 0
+                }
+            }
+        },
+        "input_check_options": {
+            "title": "Input checks",
+            "type": "object",
+            "properties": {
+                "max_missing_loci": {
+                    "type": "number",
+                    "description": "Stop if more than this fraction of an isolate's Panaroo loci are missing from its FASTA. Missing loci are always reported in pipeline_info/missing_loci.tsv.",
+                    "default": 0.5,
+                    "minimum": 0,
+                    "maximum": 1
+                },
+                "strandedness_check_reads": {
+                    "type": "integer",
+                    "description": "Reads per sample used to check (or, with --strandedness auto, infer) strandedness. 0 skips the check.",
+                    "default": 200000,
+                    "minimum": 0
+                }
+            }
+        },
+        "umap_options": {
+            "title": "Sample UMAP",
+            "type": "object",
+            "properties": {
+                "group": {
+                    "type": "string",
+                    "description": "Metadata column used to colour samples in the UMAP.",
+                    "default": "majority_ST",
+                    "minLength": 1
+                },
+                "seed": {
+                    "type": "integer",
+                    "description": "Random seed for the UMAP, so plots are reproducible.",
+                    "default": 42
+                }
+            }
+        },
+        "generic_options": {
+            "title": "Generic options",
+            "type": "object",
+            "properties": {
+                "help": {
+                    "type": "boolean",
+                    "description": "Show this help message.",
+                    "default": false,
+                    "hidden": true
+                }
+            }
+        }
+    },
+    "allOf": [
+        {
+            "$ref": "#/$defs/input_output_options"
+        },
+        {
+            "$ref": "#/$defs/trimming_options"
+        },
+        {
+            "$ref": "#/$defs/quantification_options"
+        },
+        {
+            "$ref": "#/$defs/input_check_options"
+        },
+        {
+            "$ref": "#/$defs/umap_options"
+        },
+        {
+            "$ref": "#/$defs/generic_options"
+        }
+    ]
+}

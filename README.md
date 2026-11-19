@@ -61,6 +61,8 @@ Your institution may already have a Nextflow config (for example in [nf-core/con
 
 The `-resume` parameter will re-start the pipeline if it has been previously run.
 
+Run `nextflow run adamd3/PanScript --help` for a summary of all parameters. Parameter values are checked before the run starts (types, allowed values and that input files exist), and misspelt parameter names are reported.
+
 Explanation of parameters:
 
 - `meta_file`: metadata file (see below).
