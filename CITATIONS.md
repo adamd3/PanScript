@@ -2,7 +2,9 @@
 
 ## Pipeline
 
-PanScript: see [CITATION.cff](CITATION.cff).
+> Dinan A. PanScript: isolate-specific bacterial RNA-seq quantification across a pangenome. Zenodo. doi: [10.5281/zenodo.24375403](https://doi.org/10.5281/zenodo.24375403)
+
+See also [CITATION.cff](CITATION.cff).
 
 ## Tools used by the pipeline
 
