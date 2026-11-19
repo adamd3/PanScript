@@ -46,10 +46,10 @@ are typically cited via the nf-core paper plus the pipeline DOI, alongside our o
 In rough order of value for effort. Items marked **(output)** change pipeline outputs, so they need
 the user's OK (CLAUDE.md rule 1).
 
-1. **`nextflow_schema.json` + nf-schema** for parameter validation and generated `--help`. This
-   replaces the hand-written checks in `validateParams()` and the help text. It also makes the
-   pipeline launchable from Seqera Platform. Check that the plugin version supports Nextflow
-   23.10 (our minimum), or raise the minimum. A samplesheet schema can come later.
+1. **`nextflow_schema.json`** for parameter validation and generated `--help`, and so the
+   pipeline is launchable from Seqera Platform. *Done 2026-11-19 (H9), validated by our own code in
+   `main.nf` rather than the nf-schema plugin, which misbehaves on Nextflow ≥ 25 at the version
+   that supports our 24.10 minimum.*
 2. **Record tool versions** in `pipeline_info/software_versions.yml` (kallisto, fastp, R, DESeq2,
    Python, pandas, umap-learn). This is useful for any methods section. **(output: new file)**
 3. **`--publish_dir_mode`, default `copy`.** Most outputs are currently symlinks into `work/`, so
