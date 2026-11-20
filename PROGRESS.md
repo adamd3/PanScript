@@ -36,16 +36,13 @@ CITATIONS.md (commit 078b454). `main` doesn't show the DOI yet (see Q15).
 **User's machine:** fixed on 2026-11-19. Plain `nextflow` is now Homebrew 26.10.6 (conda's
 Nextflow was removed and `JAVA_HOME` in `~/.bash_profile` was corrected).
 
-**Next steps, in order:**
-1. **Ask the user Q15** (merge the DOI docs commit into `main` now, or wait for the next release?).
-2. **Manuscript (Phase 5):** start with M1 (outline for a Genome Biology Software/Method
-   article: check current article types and requirements, and do a literature search on related
-   tools). Then M2 (benchmark design, including PanXpress and microberna comparisons; needs the
-   user's input), M3 (showcase dataset), M4 (redraw the pipeline diagram;
-   `docs/images/panscript_pipeline_lowres.png` predates fastp/MultiQC/input checks).
-3. **CITATION.cff co-authors** (the user will supply them later).
-4. **Smaller open items:** R7 (document the recommended downstream DE workflow), H3 remainder (a
-   test option using local `test_data/` instead of GitHub URLs).
+**Next steps, in order** (updated 2026-11-20): get the pipeline ready for the three showcase
+datasets (the manuscript is in `~/PanScript_manuscript`; the user does the data prep):
+1. Q15 (DOI on `main`).
+2. D1–D4 below ("Pipeline readiness for the showcase datasets").
+3. M4 (pipeline diagram, also manuscript Fig. 1), R7 (downstream DE docs), H3 remainder (local
+   test option), H8 (minor code issues).
+4. CITATION.cff co-authors (the user will supply them).
 
 For later releases: bump `manifest.version`, build/push a new image with
 `scripts/build_and_push_image.sh`, update `process.container`, CHANGELOG, merge `dev` → `main`,
@@ -142,10 +139,20 @@ results need the Phase 1–2 pipeline.
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| M1 | Draft an outline for a Genome Biology "Method" or "Software" article. | TODO | Check the current GB article types and requirements: availability, OSI licence (MIT ✓), archived version. |
-| M2 | Plan benchmarking and validation. | TODO | **Related tools to compare against or discuss:** PanXpress (PyPI `panxpress`: pan-transcriptomic gapped k-mer index, alignment-free, includes its own annotation-correction step); the Greene lab "2022-microberna" single-pangenome versus best-genome comparison (github.com/greenelab/2022-microberna); single-reference mapping. Run a full literature search during M1. For example, compare against single-reference mapping (such as PAO1) on multi-isolate datasets; use simulated reads with known expression for different isolate sets and accessory fractions; check robustness of core-gene size factors as core size shrinks. The design needs input from the user. |
-| M3 | Choose the showcase dataset(s). | TODO | Test data is *P. aeruginosa* (SRX5123741/2/4, the HZI AMR cohort). |
+| M1–M3 | Outline, benchmark design, showcase datasets. | MOVED (2026-11-20) | **The manuscript lives in a separate repo, `~/PanScript_manuscript`** (private GitHub `adamd3/PanScript_manuscript`, its own CLAUDE.md and PROGRESS.md; outline, literature notes and Background/Methods drafts already there). Showcase datasets: *S. pyogenes* emm28, *M. tuberculosis*, *P. aeruginosa* (414–535 samples each). **The user prepares the data (Panaroo, RNA-seq downloads) on a remote server in `~/PanScript_data_processing`. Agents working on the pipeline don't touch that repo or do the data prep.** |
 | M4 | Redraw the pipeline diagram (`docs/images/panscript_pipeline_lowres.png`). | TODO | The current image shows the old name and the old steps (Trim Galore/FastQC, RPKM). It should show input checks, fastp, per-isolate kallisto, ortholog merging, core-genome size factors, nTPM, UMAP. Useful as manuscript Figure 1. |
+
+### Pipeline readiness for the showcase datasets (2026-11-20)
+
+Goal: the pipeline runs cleanly on the user's server with 400–550 samples per species as soon as
+the data is ready.
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| D1 | Test the Singularity/Apptainer profiles (never run so far) and add an Apptainer job to CI. | TODO | The user's server will most likely use Singularity/Apptainer, not Docker. No output change. |
+| D2 | Build each isolate's kallisto index once and share it (strandedness check + quantification). | TODO | Today every sample builds the index twice (CHECK_STRANDEDNESS and KALLISTO_QUANT); *M. tuberculosis* has 2 samples per isolate. Same index, so outputs should be identical (check against baseline). Also manuscript Q6(c). |
+| D3 | Scale test with synthetic data: ~500 samples through merge, DESeq2, UMAP and MultiQC. | TODO | Measure time and memory per step; fix any bottleneck before the real runs. Also check CHECK_FASTA_LOCI, which reads the Panaroo table once per sample. |
+| D4 | Pipeline-side answers to manuscript Q6 (`~/PanScript_manuscript/PROGRESS.md`). | NEEDS USER (a) | (a) The median length M_g is taken over samples, not isolates, so isolates with replicates weigh more. Keep or change (output change)? (b) Size factors use genes with no NA and DESeq2 also drops genes with any zero: document in `docs/normalisation.md`. (c) = D2. |
 
 ### T0 procedure (baseline run)
 
