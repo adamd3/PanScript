@@ -114,7 +114,9 @@ file in sync with any change to normalisation code.
 
 - Test run: `nextflow run . -profile test,docker --outdir ./results`. Test inputs are fetched from
   GitHub `main` via raw URLs (`configs/test.config`, `test_data/meta_merged.txt`), so CI tests the
-  data on `main`, not the data on your branch. The GitHub repo is `adamd3/PanScript`
+  data on `main`, not the data on your branch. The paired-end test (`-profile test_pe`, simulated
+  reads in `test_data/pe/`, baseline `tests/baseline_pe`, truth check `tests/check_pe_truth.py`)
+  reads local files, so it does test your branch. The GitHub repo is `adamd3/PanScript`
   (renamed from `adamd3/StrainQuant`; the old names `StrainQuant`, `OrthoQuant` and `StrainSeq`
   redirect to it).
 - In a run, **`bin/` scripts come from your local checkout** (Nextflow puts `bin/` on PATH inside

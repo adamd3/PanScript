@@ -24,6 +24,9 @@ Check your setup with the small test dataset first:
 
     nextflow run adamd3/PanScript -profile test,docker --outdir test_results
 
+`-profile test` uses three real single-end samples. `-profile test_pe` uses four simulated
+paired-end samples (two from the same isolate) whose true expression is known.
+
 `nextflow run adamd3/PanScript --help` lists every parameter. Parameter values are checked before
 the run starts (types, allowed values and that input files exist), and misspelt parameter names are
 reported. Add `-resume` to restart a run from where it stopped, reusing finished steps.
@@ -84,6 +87,9 @@ suffixes are visible in `gene_presence_absence.csv` (`gene_presence_absence_roar
   - `fastq1`: path to fastq file for RNA-Seq data
   - `fastq2`: (optional) path to 2nd fastq file for paired-end RNA-Seq data - leave blank for single-end data. All samples in a run must be the same type: the pipeline stops if some samples have `fastq2` and others don't
   - `fasta`: path to fasta file containing gene sequences
+
+  Paths can be absolute, URLs, or relative. A relative path is looked up from the directory you
+  launch Nextflow in, and if it isn't there, from the metadata file's own directory.
   - Additional columns are optional
 
   One row per RNA-seq sample. Several samples can come from the same isolate (replicates,

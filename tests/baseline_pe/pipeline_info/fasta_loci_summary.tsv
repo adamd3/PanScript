@@ -1,0 +1,5 @@
+sample	dna_sample_id	gene_groups_listed	loci_listed	loci_missing_from_fasta	frac_loci_missing	gene_groups_affected	gene_groups_na_due_to_missing	loci_refound_stop	loci_refound_len	gene_groups_split_partial
+PE_A	SRR8737281	6655	6749	0	0.0	0	0	0	0	0
+PE_B	SRR8737282	7198	7304	0	0.0	0	0	0	0	0
+PE_C1	SRR8737283	6352	6434	0	0.0	0	0	0	0	0
+PE_C2	SRR8737283	6352	6434	0	0.0	0	0	0	0	0

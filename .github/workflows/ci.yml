@@ -32,13 +32,16 @@ jobs:
             python -m unittest discover -s tests/unit -v
 
   pipeline:
-    name: Test profile (Nextflow ${{ matrix.nxf }})
+    name: ${{ matrix.test }} (Nextflow ${{ matrix.nxf }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         # minimum supported version (manifest.nextflowVersion) and latest release
         nxf: ["24.10.0", "latest-stable"]
+        # test: single-end real reads (from GitHub main);
+        # test_pe: simulated paired-end reads with known truth (local files)
+        test: [test, test_pe]
     steps:
       - name: Check out pipeline code
         uses: actions/checkout@v5
@@ -59,22 +62,32 @@ jobs:
         run: echo "image=$(grep -oP "^process\.container\s*=\s*'\K[^']+" nextflow.config)" >> "$GITHUB_OUTPUT"
 
       - name: Run pipeline with test data
-        run: nextflow run ${GITHUB_WORKSPACE} -profile test,docker --outdir ./results
+        run: nextflow run ${GITHUB_WORKSPACE} -profile ${{ matrix.test }},docker --outdir ./results
 
       - name: Compare outputs with regression baseline
         # results/ contains symlinks into work/, so mount the workspace at the
         # same path inside the container
         run: |
+          baseline=tests/baseline
+          if [ "${{ matrix.test }}" = test_pe ]; then baseline=tests/baseline_pe; fi
           docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp \
             -v "$GITHUB_WORKSPACE":"$GITHUB_WORKSPACE" -w "$GITHUB_WORKSPACE" \
             "${{ steps.image.outputs.image }}" \
-            python tests/compare_to_baseline.py results
+            python tests/compare_to_baseline.py results --baseline "$baseline"
+
+      - name: Compare paired-end results with the simulation truth
+        if: matrix.test == 'test_pe'
+        run: |
+          docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp \
+            -v "$GITHUB_WORKSPACE":"$GITHUB_WORKSPACE" -w "$GITHUB_WORKSPACE" \
+            "${{ steps.image.outputs.image }}" \
+            python tests/check_pe_truth.py results
 
       - name: Upload logs on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: nextflow-logs-${{ matrix.nxf }}
+          name: nextflow-logs-${{ matrix.test }}-${{ matrix.nxf }}
           path: |
             .nextflow.log
             results/pipeline_info/
