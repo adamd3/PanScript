@@ -17,7 +17,7 @@
 */
 include {CHECK_META_FILE; CHECK_FASTA_LOCI} from './modules/metadata'
 include {FASTP} from './modules/trim_reads'
-include {KALLISTO_QUANT; MERGE_COUNTS_AND_LENS; CHECK_STRANDEDNESS} from './modules/kallisto'
+include {KALLISTO_INDEX; KALLISTO_QUANT; MERGE_COUNTS_AND_LENS; CHECK_STRANDEDNESS} from './modules/kallisto'
 include {DESEQ_NORMALISE_COUNTS} from './modules/normalisation'
 include {UMAP_SAMPLES} from './modules/plots'
 include {SOFTWARE_VERSIONS} from './modules/versions'
@@ -189,11 +189,25 @@ workflow MAIN {
         .subscribe { log.warn it.trim() }
 
     /*
+     *  One kallisto index per isolate FASTA, shared by all of that isolate's
+     *  samples (keyed by dna_sample_id; CHECK_META_FILE ensures one FASTA each)
+     */
+    KALLISTO_INDEX (
+        ch_raw_reads
+            .map { meta, reads, fasta -> [ meta.dna_sample_id, fasta ] }
+            .unique { it[0] }
+    )
+    ch_index = KALLISTO_INDEX.out.index
+
+    /*
      *  Check library strandedness on a subsample of reads (warns on mismatch)
      */
     if ((params.strandedness_check_reads as long) > 0) {
         CHECK_STRANDEDNESS (
             ch_raw_reads
+                .map { meta, reads, fasta -> [ meta.dna_sample_id, meta, reads ] }
+                .combine(ch_index, by: 0)
+                .map { key, meta, reads, index -> [ meta, reads, index ] }
         )
         ch_strandedness_tsv = CHECK_STRANDEDNESS.out.result
             .collectFile(name: 'strandedness_check.tsv', keepHeader: true, skip: 1, sort: true,
@@ -236,6 +250,9 @@ workflow MAIN {
 
     KALLISTO_QUANT (
         ch_quant_input
+            .map { meta, reads, fasta, strandedness -> [ meta.dna_sample_id, meta, reads, strandedness ] }
+            .combine(ch_index, by: 0)
+            .map { key, meta, reads, strandedness, index -> [ meta, reads, index, strandedness ] }
     )
     ch_kallisto_out_dirs = KALLISTO_QUANT.out.kallisto_out_dirs
     ch_multiqc_files = ch_multiqc_files.mix(KALLISTO_QUANT.out.log)

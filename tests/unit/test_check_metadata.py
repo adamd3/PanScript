@@ -20,14 +20,14 @@ class CheckMetadataTest(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.d, ignore_errors=True)
 
-    def run_script(self, fastq2):
+    def run_script(self, fastq2, dna=None, names=None, fasta=None):
         n = len(fastq2)
         pd.DataFrame({"rna_sample_id": [f"R{i}" for i in range(n)],
-                      "dna_sample_id": [f"D{i}" for i in range(n)],
-                      "sample_name": [f"S{i}" for i in range(n)],
+                      "dna_sample_id": dna or [f"D{i}" for i in range(n)],
+                      "sample_name": names or [f"S{i}" for i in range(n)],
                       "fastq1": [f"r{i}_1.fq.gz" for i in range(n)],
                       "fastq2": fastq2,
-                      "fasta": [f"d{i}.fna" for i in range(n)]}).to_csv(
+                      "fasta": fasta or [f"d{i}.fna" for i in range(n)]}).to_csv(
             self.d / "meta.tsv", sep="\t", index=False)
         return subprocess.run([sys.executable, str(SCRIPT), "meta.tsv", "out.tsv"],
                               cwd=self.d, capture_output=True, text=True)
@@ -50,6 +50,27 @@ class CheckMetadataTest(unittest.TestCase):
         self.assertNotEqual(r.returncode, 0)
         self.assertIn("mixes single-end samples (no fastq2: S1)", r.stderr)
         self.assertIn("paired-end samples (fastq2 given: S0, S2)", r.stderr)
+
+
+class IsolateConsistencyTest(CheckMetadataTest):
+    """Replicates share an isolate's index, so names and FASTAs must be consistent."""
+
+    def test_replicates_of_one_isolate_accepted(self):
+        r = self.run_script(["", "", ""], dna=["D0", "D0", "D1"],
+                            fasta=["d0.fna", "d0.fna", "d1.fna"])
+        self.assertEqual(r.returncode, 0, r.stderr)
+
+    def test_isolate_with_two_fastas_rejected(self):
+        r = self.run_script(["", "", ""], dna=["D0", "D0", "D1"],
+                            fasta=["d0.fna", "other.fna", "d1.fna"])
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("single fasta", r.stderr)
+        self.assertIn("D0", r.stderr)
+
+    def test_duplicate_sample_name_rejected(self):
+        r = self.run_script(["", "", ""], names=["S0", "S0", "S1"])
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("unique", r.stderr)
 
 
 if __name__ == "__main__":
