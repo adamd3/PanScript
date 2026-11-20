@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1390" viewBox="0 0 1000 1390">
+<rect width="1000" height="1390" fill="#fff"/>
+<rect x="40" y="395" width="920" height="820" rx="18" fill="#f5f6f8" stroke="#c9ccd3" stroke-width="1.5"/>
+<text x="64" y="429" font-family="Helvetica, Arial, sans-serif" font-size="22" font-weight="bold" fill="#3d405b" text-anchor="start">PanScript</text>
+<text x="64" y="451.0" font-family="Helvetica, Arial, sans-serif" font-size="12.5" font-weight="normal" fill="#8a8f98" text-anchor="start">Nextflow pipeline</text>
+<path d="M300,70 V585" fill="none" stroke="#1f7a8c" stroke-width="7" stroke-linecap="round"/>
+<path d="M700,70 V585" fill="none" stroke="#e4572e" stroke-width="7" stroke-linecap="round"/>
+<path d="M300,585 C300,660 500,630 500,705" fill="none" stroke="#1f7a8c" stroke-width="7" stroke-linecap="round"/>
+<path d="M700,585 C700,660 500,630 500,705" fill="none" stroke="#e4572e" stroke-width="7" stroke-linecap="round"/>
+<path d="M500,705 V1165" fill="none" stroke="#3d405b" stroke-width="7" stroke-linecap="round"/>
+<path d="M500,1165 V1300" fill="none" stroke="#8a8f98" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 10"/>
+<text x="300" y="22" font-family="Helvetica, Arial, sans-serif" font-size="14" font-weight="bold" fill="#1f7a8c" text-anchor="middle">Genomes (per isolate)</text>
+<text x="700" y="22" font-family="Helvetica, Arial, sans-serif" font-size="14" font-weight="bold" fill="#e4572e" text-anchor="middle">Transcriptomes (per sample)</text>
+<path d="M277.0,42.0 h33 l13,13 v43 h-46 z" fill="#fff" stroke="#1f7a8c" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M310.0,42.0 v13 h13" fill="none" stroke="#1f7a8c" stroke-width="2"/>
+<rect x="278.5" y="72.0" width="43" height="15" fill="#1f7a8c"/>
+<text x="300" y="83.5" font-family="Menlo, Consolas, monospace" font-size="10.5" fill="#fff" text-anchor="middle">gff</text>
+<text x="260" y="66" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#222" text-anchor="end">Annotated genomes</text>
+<text x="260" y="83.5" font-family="Helvetica, Arial, sans-serif" font-size="12.5" font-weight="normal" fill="#555" text-anchor="end">Bakta or Prokka</text>
+<path d="M277.0,162.0 h33 l13,13 v43 h-46 z" fill="#fff" stroke="#1f7a8c" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M310.0,162.0 v13 h13" fill="none" stroke="#1f7a8c" stroke-width="2"/>
+<rect x="278.5" y="192.0" width="43" height="15" fill="#1f7a8c"/>
+<text x="300" y="203.5" font-family="Menlo, Consolas, monospace" font-size="10.5" fill="#fff" text-anchor="middle">csv</text>
+<text x="260" y="178" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#222" text-anchor="end">Pangenome</text>
+<text x="260" y="195.5" font-family="Helvetica, Arial, sans-serif" font-size="12.5" font-weight="normal" fill="#555" text-anchor="end">Panaroo: gene groups</text>
+<text x="260" y="213.0" font-family="Helvetica, Arial, sans-serif" font-size="12.5" font-weight="normal" fill="#555" text-anchor="end">(gene_presence_absence.csv,</text>
+<text x="260" y="230.5" font-family="Helvetica, Arial, sans-serif" font-size="12.5" font-weight="normal" fill="#555" text-anchor="end">gene_data.csv)</text>
+<path d="M277.0,282.0 h33 l13,13 v43 h-46 z" fill="#fff" stroke="#1f7a8c" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M310.0,282.0 v13 h13" fill="none" stroke="#1f7a8c" stroke-width="2"/>
+<rect x="278.5" y="312.0" width="43" height="15" fill="#1f7a8c"/>
+<text x="300" y="323.5" font-family="Menlo, Consolas, monospace" font-size="10.5" fill="#fff" text-anchor="middle">fasta</text>
+<text x="260" y="298" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#222" text-anchor="end">Isolate gene sets</text>
+<text x="260" y="315.5" font-family="Helvetica, Arial, sans-serif" font-size="12.5" font-weight="normal" fill="#555" text-anchor="end">each isolate's own gene</text>
+<text x="260" y="333.0" font-family="Helvetica, Arial, sans-serif" font-size="12.5" font-weight="normal" fill="#555" text-anchor="end">sequences, from Panaroo</text>
+<text x="260" y="347.5" font-family="Helvetica, Arial, sans-serif" font-size="11.5" font-weight="normal" fill="#555" text-anchor="end">(prepare_inputs_from_panaroo.py)</text>
+<path d="M677.0,42.0 h33 l13,13 v43 h-46 z" fill="#fff" stroke="#e4572e" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M710.0,42.0 v13 h13" fill="none" stroke="#e4572e" stroke-width="2"/>
+<rect x="678.5" y="72.0" width="43" height="15" fill="#e4572e"/>
+<text x="700" y="83.5" font-family="Menlo, Consolas, monospace" font-size="10.5" fill="#fff" text-anchor="middle">fastq</text>
+<text x="740" y="66" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#222" text-anchor="start">RNA-seq reads</text>
+<text x="740" y="83.5" font-family="Helvetica, Arial, sans-serif" font-size="12.5" font-weight="normal" fill="#555" text-anchor="start">single- or paired-end; one or</text>
+<text x="740" y="101.0" font-family="Helvetica, Arial, sans-serif" font-size="12.5" font-weight="normal" fill="#555" text-anchor="start">more samples per isolate</text>
+<path d="M677.0,282.0 h33 l13,13 v43 h-46 z" fill="#fff" stroke="#e4572e" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M710.0,282.0 v13 h13" fill="none" stroke="#e4572e" stroke-width="2"/>
+<rect x="678.5" y="312.0" width="43" height="15" fill="#e4572e"/>
+<text x="700" y="323.5" font-family="Menlo, Consolas, monospace" font-size="10.5" fill="#fff" text-anchor="middle">tsv</text>
+<text x="740" y="306" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#222" text-anchor="start">Sample metadata</text>
+<text x="740" y="323.5" font-family="Helvetica, Arial, sans-serif" font-size="12.5" font-weight="normal" fill="#555" text-anchor="start">links each sample to its isolate</text>
+<rect x="274" y="455" width="452" height="40" rx="20" fill="#fff" stroke="#3d405b" stroke-width="4"/>
+<text x="500" y="480" font-family="Helvetica, Arial, sans-serif" font-size="14" font-weight="bold" fill="#3d405b" text-anchor="middle">Input checks</text>
+<text x="740" y="461" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#555" text-anchor="start">metadata (single/paired, names)</text>
+<text x="740" y="478" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#555" text-anchor="start">Panaroo loci present in each FASTA</text>
+<text x="740" y="495" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#555" text-anchor="start">strandedness from a read subsample</text>
+<circle cx="300" cy="585" r="11" fill="#fff" stroke="#1f7a8c" stroke-width="4"/>
+<text x="274" y="583" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#222" text-anchor="end">Index</text>
+<text x="274" y="600.5" font-family="Helvetica, Arial, sans-serif" font-size="12.5" font-weight="normal" fill="#555" text-anchor="end">kallisto, one per isolate</text>
+<circle cx="700" cy="585" r="11" fill="#fff" stroke="#e4572e" stroke-width="4"/>
+<text x="726" y="583" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#222" text-anchor="start">Trimming and read QC</text>
+<text x="726" y="600.5" font-family="Helvetica, Arial, sans-serif" font-size="12.5" font-weight="normal" fill="#555" text-anchor="start">fastp</text>
+<circle cx="500" cy="705" r="13" fill="#fff" stroke="#3d405b" stroke-width="4"/>
+<text x="534" y="703" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#222" text-anchor="start">Pseudo-alignment</text>
+<text x="534" y="720.5" font-family="Helvetica, Arial, sans-serif" font-size="12.5" font-weight="normal" fill="#555" text-anchor="start">kallisto: each sample against its own</text>
+<text x="534" y="738.0" font-family="Helvetica, Arial, sans-serif" font-size="12.5" font-weight="normal" fill="#555" text-anchor="start">isolate's genes (no single reference)</text>
+<circle cx="500" cy="815" r="11" fill="#fff" stroke="#3d405b" stroke-width="4"/>
+<text x="534" y="813" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#222" text-anchor="start">Merge into gene groups</text>
+<text x="534" y="830.5" font-family="Helvetica, Arial, sans-serif" font-size="12.5" font-weight="normal" fill="#555" text-anchor="start">loci → Panaroo groups; split genes summed;</text>
+<text x="534" y="848.0" font-family="Helvetica, Arial, sans-serif" font-size="12.5" font-weight="normal" fill="#555" text-anchor="start">gene absent from an isolate = NA, not 0</text>
+<rect x="274" y="802" width="190" height="26" rx="5" fill="#fff" stroke="#1f7a8c" stroke-width="1.5"/>
+<text x="369.0" y="819.5" font-family="Menlo, Consolas, monospace" font-size="12" font-weight="normal" fill="#1f7a8c" text-anchor="middle">gene_presence_absence</text>
+<path d="M464,815 H488" fill="none" stroke="#1f7a8c" stroke-width="2" stroke-linecap="round"/>
+<circle cx="500" cy="905" r="11" fill="#fff" stroke="#3d405b" stroke-width="4"/>
+<text x="534" y="903" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#222" text-anchor="start">Ortholog length scaling</text>
+<text x="534" y="920.5" font-family="Helvetica, Arial, sans-serif" font-size="12.5" font-weight="normal" fill="#555" text-anchor="start">to the gene group's median length</text>
+<rect x="304" y="892" width="160" height="26" rx="5" fill="#fff" stroke="#3d405b" stroke-width="1.5"/>
+<text x="384.0" y="909.5" font-family="Menlo, Consolas, monospace" font-size="12" font-weight="normal" fill="#3d405b" text-anchor="middle">raw_counts.tsv</text>
+<path d="M464,905 H488" fill="none" stroke="#3d405b" stroke-width="2" stroke-linecap="round"/>
+<circle cx="500" cy="995" r="11" fill="#fff" stroke="#3d405b" stroke-width="4"/>
+<text x="534" y="993" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#222" text-anchor="start">Library size: core-genome size factors</text>
+<text x="534" y="1010.5" font-family="Helvetica, Arial, sans-serif" font-size="12.5" font-weight="normal" fill="#555" text-anchor="start">DESeq2 median-of-ratios on core genes</text>
+<rect x="304" y="982" width="160" height="26" rx="5" fill="#fff" stroke="#3d405b" stroke-width="1.5"/>
+<text x="384.0" y="999.5" font-family="Menlo, Consolas, monospace" font-size="12" font-weight="normal" fill="#3d405b" text-anchor="middle">norm_counts.tsv</text>
+<path d="M464,995 H488" fill="none" stroke="#3d405b" stroke-width="2" stroke-linecap="round"/>
+<circle cx="500" cy="1085" r="11" fill="#fff" stroke="#3d405b" stroke-width="4"/>
+<text x="534" y="1083" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#222" text-anchor="start">nTPM</text>
+<text x="534" y="1100.5" font-family="Helvetica, Arial, sans-serif" font-size="12.5" font-weight="normal" fill="#555" text-anchor="start">per own gene length, core size factors;</text>
+<text x="534" y="1118.0" font-family="Helvetica, Arial, sans-serif" font-size="12.5" font-weight="normal" fill="#555" text-anchor="start">comparable between genes and samples</text>
+<rect x="304" y="1072" width="160" height="26" rx="5" fill="#fff" stroke="#3d405b" stroke-width="1.5"/>
+<text x="384.0" y="1089.5" font-family="Menlo, Consolas, monospace" font-size="12" font-weight="normal" fill="#3d405b" text-anchor="middle">ntpm.tsv</text>
+<path d="M464,1085 H488" fill="none" stroke="#3d405b" stroke-width="2" stroke-linecap="round"/>
+<circle cx="500" cy="1165" r="11" fill="#fff" stroke="#3d405b" stroke-width="4"/>
+<text x="534" y="1163" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#222" text-anchor="start">Reports</text>
+<text x="534" y="1180.5" font-family="Helvetica, Arial, sans-serif" font-size="12.5" font-weight="normal" fill="#555" text-anchor="start">sample UMAP · MultiQC · software versions</text>
+<circle cx="500" cy="1300" r="13" fill="#fff" stroke="#8a8f98" stroke-width="3" stroke-dasharray="4 4"/>
+<text x="534" y="1290" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#555" text-anchor="start">Downstream analysis</text>
+<text x="534" y="1307.5" font-family="Helvetica, Arial, sans-serif" font-size="12.5" font-weight="normal" fill="#8a8f98" text-anchor="start">differential expression, core and accessory</text>
+<text x="534" y="1325.0" font-family="Helvetica, Arial, sans-serif" font-size="12.5" font-weight="normal" fill="#8a8f98" text-anchor="start">gene expression, genotype–expression links</text>
+</svg>
