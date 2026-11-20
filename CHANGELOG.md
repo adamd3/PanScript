@@ -2,6 +2,28 @@
 
 All notable changes to PanScript. Versions follow [semantic versioning](https://semver.org/).
 
+## Unreleased (on `dev`)
+
+### Changes to outputs
+
+- **Median gene length over isolates, not samples:** when length-scaling counts, each isolate
+  counts once, however many RNA-seq samples it has (each isolate's median over its samples
+  first). Results are unchanged when every isolate has the same number of samples.
+- **Sample names kept as given** in `raw_counts.tsv`, `norm_counts.tsv` and `ntpm.tsv`
+  (previously R changed names such as `PA-01` to `PA.01` and `1234` to `X1234`).
+
+### Other changes
+
+- One kallisto index per isolate, shared by its samples and the strandedness check (previously
+  built twice per sample).
+- The metadata check stops the run if a `sample_name` is repeated or a `dna_sample_id` has more
+  than one `fasta`.
+- Relative paths in the metadata are also looked up relative to the metadata file's directory
+  when they don't exist relative to the launch directory.
+- New `-profile test_pe`: simulated paired-end reads with known truth.
+- CI also tests the Singularity, Apptainer and conda profiles, and the paired-end test.
+- New pipeline diagram.
+
 ## v2.0.0 (2026-11-19)
 
 The first release as **PanScript** (previously StrainQuant). Versions before 2026 count as 1.x.

@@ -19,33 +19,44 @@ Read [CLAUDE.md](CLAUDE.md) first.
 
 ---
 
-## ▶ Start here (status as of 2026-11-19, end of day)
+## ▶ Start here (status as of 2026-11-20, end of day)
 
-**To resume:** read CLAUDE.md, then this section. Work is on `dev` (clean, pushed, CI green).
-No task is claimed or in progress, and there are no unmerged branches.
+**To resume:** read CLAUDE.md, then this section. Work is on `dev` (clean, pushed, CI green on
+all 8 jobs). No task is claimed or in progress, and there are no unmerged branches.
 
-**v2.0.0 is released.** Tag `v2.0.0` on `main`; GitHub release
-https://github.com/adamd3/PanScript/releases/tag/v2.0.0; image `adamd3/panscript:2.0.0`
-(`sha256:7a1fbe6c…`); Zenodo concept DOI **10.5281/zenodo.24375403** (v2.0.0:
-10.5281/zenodo.24375404). Verified: `nextflow run adamd3/PanScript -r v2.0.0 -profile test,docker`
-from GitHub matches baseline v4. Phases 0–4 are done.
+**Released:** v2.0.0 (tag on `main`, image `adamd3/panscript:2.0.0` `sha256:7a1fbe6c…`, Zenodo
+concept DOI 10.5281/zenodo.24375403; v2.0.0: 10.5281/zenodo.24375404). `main` also has the DOI
+docs commit (915af91). Everything else since the release is on `dev` only and listed under
+"Unreleased" in CHANGELOG.md.
 
-**Since the release, on `dev` only:** the DOI badge and citation in README, CITATION.cff and
-CITATIONS.md (commit 078b454). `main` doesn't show the DOI yet (see Q15).
+**Related repos:** manuscript in `~/PanScript_manuscript`; the user is preparing the three
+showcase datasets (*S. pyogenes* emm28, *M. tuberculosis*, *P. aeruginosa*; 400–550 samples
+each) in `~/PanScript_data_processing` on a remote server. Don't do the data prep. RNA-seq quirks
+(e.g. *S. pyogenes* RNAtag-seq barcodes: `--fastp_args "--trim_front1 9"` if still in read 1;
+runs must be one strain each) are in `~/PanScript_data_processing/RNASEQ_NOTES.md`.
 
-**User's machine:** fixed on 2026-11-19. Plain `nextflow` is now Homebrew 26.10.6 (conda's
-Nextflow was removed and `JAVA_HOME` in `~/.bash_profile` was corrected).
+**Done 2026-11-20** (details in "Pipeline readiness" below and in the M4 row):
+- D1: Singularity, Apptainer and conda profiles tested in CI (identical to baseline). Pixi isn't
+  supported by released Nextflow yet.
+- D2: one kallisto index per isolate, shared by its samples and the strandedness check;
+  metadata check rejects repeated `sample_name` and a `dna_sample_id` with two FASTAs.
+- D3: scale test (550 samples; 450 × 25,000 genes): no bottleneck, ≤ 2.8 GB per step.
+- D4: median gene length over isolates, not samples (user decision); R no longer mangles sample
+  names. The manuscript's Q6 notes this (Methods must say "over isolates").
+- D5: paired-end test (`-profile test_pe`, simulated, known truth, local files); in CI.
+- M4: new pipeline diagram (`docs/images/make_pipeline_diagram.py` → SVG/PNG), larger text.
+- Q15: DOI on `main`.
 
-**Done 2026-11-20:** D1–D4 (see "Pipeline readiness" below): Singularity/Apptainer/conda tested
-in CI; shared per-isolate kallisto index; scale test (no bottleneck); median length over isolates.
-
-**Next steps, in order** (updated 2026-11-20): get the pipeline ready for the three showcase
-datasets (the manuscript is in `~/PanScript_manuscript`; the user does the data prep):
-1. Q15 done 2026-11-20: DOI files (README, CITATION.cff, CITATIONS.md) put on `main` (915af91), merged back into `dev`. **Waiting for the user to review the D1–D4 report before further work.**
-2. R7 (downstream DE docs), H3 remainder (local
-   test option), H8 (minor code issues).
-3. Next release (v2.1.0?) once the showcase runs work: D2/D4 change behaviour for replicate
-   designs, so the paper should cite a release that includes them.
+**Next steps, in order:**
+1. **When the user's showcase data is ready:** help run PanScript on it (likely on their server
+   with Singularity/Apptainer and a `-c` site config; see docs/usage.md "Running on a cluster").
+   Watch for: missing-loci report, strandedness table, pseudo-alignment rates, run time.
+2. **Release v2.1.0** once the showcase runs work (D2/D4 change results for replicate designs, so
+   the paper should cite a release that includes them). The image doesn't need rebuilding (no
+   environment change): bump `manifest.version`, CHANGELOG, merge `dev` → `main`, tag,
+   `gh release create`.
+3. Smaller items, any time: R7 (document a downstream DE workflow), H3 remainder (local
+   single-end test option; test_pe already reads local files), H8 (minor code issues).
 4. CITATION.cff co-authors (the user will supply them).
 
 For later releases: bump `manifest.version`, build/push a new image with
@@ -57,7 +68,7 @@ tag, and `gh release create` (Zenodo mints a new version DOI automatically).
 ## Plan (overview)
 
 Status: Phase 0 ✓ · Phase 1 ✓ · Phase 1b ✓ · Phase 2 ✓ · Phase 3 ✓ (except the H3 local-test option) ·
-Phase 4 ✓ (v2.0.0 released 2026-11-19) · Phase 5 (manuscript) not started.
+Phase 4 ✓ (v2.0.0 released 2026-11-19) · Phase 5: manuscript in `~/PanScript_manuscript`; pipeline readiness D1–D5 ✓ (2026-11-20).
 
 Phases run in order. Within a phase, tasks on separate branches can run in parallel.
 
