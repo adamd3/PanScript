@@ -36,12 +36,16 @@ CITATIONS.md (commit 078b454). `main` doesn't show the DOI yet (see Q15).
 **User's machine:** fixed on 2026-11-19. Plain `nextflow` is now Homebrew 26.10.6 (conda's
 Nextflow was removed and `JAVA_HOME` in `~/.bash_profile` was corrected).
 
+**Done 2026-11-20:** D1–D4 (see "Pipeline readiness" below): Singularity/Apptainer/conda tested
+in CI; shared per-isolate kallisto index; scale test (no bottleneck); median length over isolates.
+
 **Next steps, in order** (updated 2026-11-20): get the pipeline ready for the three showcase
 datasets (the manuscript is in `~/PanScript_manuscript`; the user does the data prep):
-1. Q15 (DOI on `main`).
-2. D1–D4 below ("Pipeline readiness for the showcase datasets").
-3. M4 (pipeline diagram, also manuscript Fig. 1), R7 (downstream DE docs), H3 remainder (local
+1. Q15 (DOI on `main`): Claude recommended merging the docs-only DOI commit now; waiting on the user.
+2. M4 (pipeline diagram, also manuscript Fig. 1), R7 (downstream DE docs), H3 remainder (local
    test option), H8 (minor code issues).
+3. Next release (v2.1.0?) once the showcase runs work: D2/D4 change behaviour for replicate
+   designs, so the paper should cite a release that includes them.
 4. CITATION.cff co-authors (the user will supply them).
 
 For later releases: bump `manifest.version`, build/push a new image with
@@ -149,10 +153,10 @@ the data is ready.
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| D1 | Test the Singularity/Apptainer profiles (never run so far) and add an Apptainer job to CI. | TODO | The user's server will most likely use Singularity/Apptainer, not Docker. No output change. |
-| D2 | Build each isolate's kallisto index once and share it (strandedness check + quantification). | TODO | Today every sample builds the index twice (CHECK_STRANDEDNESS and KALLISTO_QUANT); *M. tuberculosis* has 2 samples per isolate. Same index, so outputs should be identical (check against baseline). Also manuscript Q6(c). |
-| D3 | Scale test with synthetic data: ~500 samples through merge, DESeq2, UMAP and MultiQC. | TODO | Measure time and memory per step; fix any bottleneck before the real runs. Also check CHECK_FASTA_LOCI, which reads the Panaroo table once per sample. |
-| D4 | Pipeline-side answers to manuscript Q6 (`~/PanScript_manuscript/PROGRESS.md`). | NEEDS USER (a) | (a) The median length M_g is taken over samples, not isolates, so isolates with replicates weigh more. Keep or change (output change)? (b) Size factors use genes with no NA and DESeq2 also drops genes with any zero: document in `docs/normalisation.md`. (c) = D2. |
+| D1 | Test the Singularity/Apptainer profiles (never run so far) and add an Apptainer job to CI. | DONE (2026-11-20, `ci/apptainer-conda`) | New CI job `engines` runs the test profile with `singularity`, `apptainer` and `conda` and checks against the baseline: **all three identical to baseline v4**. Apptainer is installed with `eWaterCycle/setup-apptainer` (it also provides `singularity`). The job runs on `ubuntu-24.04` because the Apptainer .deb needs libfuse3-3, missing from newer images. Singularity can't run natively on macOS, so CI is where it's tested. **Pixi:** not supported by released Nextflow (only draft PRs #6157/#6342 for a `package` directive with a pixi provider, 2026-11); revisit when it ships. |
+| D2 | Build each isolate's kallisto index once and share it (strandedness check + quantification). | DONE (2026-11-20, `feat/shared-kallisto-index`) | New `KALLISTO_INDEX` process, one task per `dna_sample_id`; `CHECK_STRANDEDNESS` and `KALLISTO_QUANT` take the index instead of the FASTA (keyed by `dna_sample_id`, because fastp re-emits the FASTA from its work dir, so paths differ). `check_metadata.py` now stops on repeated `sample_name` or a `dna_sample_id` with more than one `fasta`. Outputs identical to baseline v4 (CI). Before: 2 index builds per sample; now 1 per isolate. |
+| D3 | Scale test with synthetic data: ~500 samples through merge, DESeq2, UMAP and MultiQC. | DONE (2026-11-20) | Synthetic data (scratch, not kept). 550 samples (275 isolates × 2), 6,000 genes: merge counts 10 s / 0.5 GB, merge lens 11 s / 0.5 GB, normalisation 12 s / 1.5 GB. 450 samples × 25,000 genes (a large *P. aeruginosa*-sized pangenome): merges 47–51 s / 1.6 GB each, normalisation 26 s / 2.8 GB; outputs 44–200 MB per matrix. `CHECK_FASTA_LOCI` 0.6–0.9 s per sample. **No bottleneck**: all within `process_single` (8 GB). Not measured: UMAP and MultiQC (Docker wasn't running; both are light at this size). The real cost is per-sample fastp/kallisto, which runs in parallel. |
+| D4 | Pipeline-side answers to manuscript Q6 (`~/PanScript_manuscript/PROGRESS.md`). | DONE (2026-11-20, `fix/median-per-isolate`) | (a) **User decision 2026-11-20: M_g is now a median over isolates** (each isolate's median over its samples first), so replicates don't weigh an isolate more. `DESeq2_normalise_counts.R` takes `--metadata`. Also fixed: R mangled sample names such as `PA-01` → `PA.01` or `1234` → `X1234` in the output matrices (`check.names = FALSE`). Test data has one sample per isolate, so outputs are identical to baseline v4; new unit test with a replicate isolate. (b) Documented in `docs/normalisation.md` (step 3 already says no-NA genes; DESeq2's zero-drop noted there). (c) = D2. **Tell the manuscript repo:** Methods should say the median is over isolates. |
 
 ### T0 procedure (baseline run)
 

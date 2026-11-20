@@ -78,6 +78,13 @@ DESeq2 median-of-ratios size factors *sf<sub>s</sub>* are estimated from the mat
 *r<sub>gs</sub>*, restricted to genes with **no NA in any sample** (the core genome). The size
 factors are then applied to every non-NA value in that sample, accessory genes included.
 
+Two consequences of "no NA in any sample":
+- A core gene is also left out if it's NA in just one sample because its locus is missing from
+  that isolate's FASTA (listed in `pipeline_info/missing_loci.tsv`).
+- As in any median-of-ratios estimate, DESeq2 also ignores genes with a zero count in any
+  sample (their geometric mean is 0). So the size factors come from core genes expressed in
+  every sample.
+
 The reasoning: median-of-ratios needs the same genes in every sample. The core genome usually has
 thousands of genes, which is plenty for a robust estimate. And median-of-ratios isn't thrown off
 by a few highly expressed or strongly changing genes.

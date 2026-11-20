@@ -121,7 +121,8 @@ file in sync with any change to normalisation code.
   `work/`, so use `cp -L` when saving them.
 - CI (`.github/workflows/ci.yml`, on pushes to `main`/`dev` and on PRs) runs the unit tests inside
   the pinned image, then the test profile on Nextflow 24.10.0 and latest-stable, and checks the
-  outputs against `tests/baseline` with `tests/compare_to_baseline.py`. **CI never pushes
+  outputs against `tests/baseline` with `tests/compare_to_baseline.py`. It also runs the test profile
+  with `singularity`, `apptainer` and `conda` (job `engines`, on ubuntu-24.04). **CI never pushes
   images.** `container.yml` only checks that the image still builds when `environment.yml` or the
   `Dockerfile` changes. A PR that changes outputs on purpose must re-capture the baseline in the
   same PR.
