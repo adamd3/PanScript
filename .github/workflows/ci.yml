@@ -83,7 +83,8 @@ jobs:
   # Singularity/Apptainer, not Docker). Same test data, same baseline check.
   engines:
     name: Test profile (${{ matrix.profile }})
-    runs-on: ubuntu-latest
+    # 24.04: the Apptainer .deb needs libfuse3-3, which newer images don't have
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
