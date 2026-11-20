@@ -41,7 +41,7 @@ in CI; shared per-isolate kallisto index; scale test (no bottleneck); median len
 
 **Next steps, in order** (updated 2026-11-20): get the pipeline ready for the three showcase
 datasets (the manuscript is in `~/PanScript_manuscript`; the user does the data prep):
-1. Q15 (DOI on `main`): Claude recommended merging the docs-only DOI commit now; waiting on the user.
+1. Q15 done 2026-11-20: DOI files (README, CITATION.cff, CITATIONS.md) put on `main` (915af91), merged back into `dev`. **Waiting for the user to review the D1–D4 report before further work.**
 2. M4 (pipeline diagram, also manuscript Fig. 1), R7 (downstream DE docs), H3 remainder (local
    test option), H8 (minor code issues).
 3. Next release (v2.1.0?) once the showcase runs work: D2/D4 change behaviour for replicate
@@ -236,7 +236,7 @@ data on a branch get tested, and runs need no network.
 
 ## Open questions for the user
 
-- **Q15 (open, 2026-11-19):** merge the DOI docs commit (078b454, docs only) from `dev` into
+- Q15: resolved 2026-11-20 (merged; 915af91 on `main`). Was: merge the DOI docs commit (078b454, docs only) from `dev` into
   `main` now, so the GitHub front page shows the DOI, or leave it for the next release?
 - Q1–Q3: resolved 2026-11-18 (see Decision log).
 - Q1b: resolved 2026-11-18. Keep `ntpm.tsv`; the "n" (normalised) is explained in the README and docs.
