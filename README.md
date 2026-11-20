@@ -13,7 +13,7 @@
 
 **PanScript** is a Nextflow pipeline for bacterial RNA-Seq analysis across genomically diverse isolates, without a single reference genome. Reads from each isolate are pseudo-aligned to that isolate's own gene set, and expression is merged across isolates through the orthologous gene groups of a [Panaroo](https://gthlab.au/panaroo/) pangenome.
 
-![PanScript](docs/images/panscript_pipeline_lowres.png)
+![PanScript pipeline](docs/images/panscript_pipeline.png)
 
 ## Pipeline summary
 
