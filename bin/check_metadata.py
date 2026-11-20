@@ -32,6 +32,18 @@ def check_meta(sample_file, outf):
             + ", ".join(single) + ") and paired-end samples (fastq2 given: "
             + ", ".join(paired) + "). All samples in a run must be either single-end or "
             "paired-end. Run them as separate pipeline runs.")
+    # sample names label every output (kallisto directories, matrix columns)
+    dup = sample_dat["sample_name"][sample_dat["sample_name"].duplicated()].astype(str).unique()
+    if len(dup):
+        sys.exit("ERROR: sample_name must be unique; repeated: " + ", ".join(dup))
+    # samples from the same isolate (dna_sample_id) share one kallisto index,
+    # so they must use the same FASTA
+    n_fasta = sample_dat.groupby("dna_sample_id")["fasta"].nunique()
+    if (n_fasta > 1).any():
+        bad = n_fasta[n_fasta > 1].index.astype(str).tolist()
+        sys.exit("ERROR: each dna_sample_id must have a single fasta, but these have "
+                 "more than one: " + ", ".join(bad) + ". Samples from the same isolate "
+                 "must point to the same FASTA file.")
     sample_dat['paired'] = "1" if has_fq2.all() else "0"
     sample_dat.to_csv(outf, index=False, sep='\t')
 

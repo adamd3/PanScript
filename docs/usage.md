@@ -86,6 +86,13 @@ suffixes are visible in `gene_presence_absence.csv` (`gene_presence_absence_roar
   - `fasta`: path to fasta file containing gene sequences
   - Additional columns are optional
 
+  One row per RNA-seq sample. Several samples can come from the same isolate (replicates,
+  conditions or time points): give them the same `dna_sample_id` and the same `fasta`. The
+  pipeline builds one kallisto index per isolate and shares it between that isolate's samples,
+  and each isolate counts once in the median gene length used for length scaling (see
+  [normalisation.md](normalisation.md)). The run stops if a `sample_name` is repeated or if one
+  `dna_sample_id` is given more than one `fasta`.
+
   Example:
 
   ```console

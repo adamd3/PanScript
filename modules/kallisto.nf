@@ -1,10 +1,32 @@
+/*
+ * Build one kallisto index per isolate (dna_sample_id) from its FASTA. Samples from the same isolate
+ * (replicates, conditions) share it, and so do CHECK_STRANDEDNESS and
+ * KALLISTO_QUANT.
+ */
+process KALLISTO_INDEX {
+    tag "$fasta.name"
+    label 'process_low'
+
+    input:
+    tuple val(key), path(fasta)
+
+    output:
+    tuple val(key), path("${fasta.baseName}.kidx"), emit: index
+
+    script:
+    """
+    kallisto index -i ${fasta.baseName}.kidx $fasta
+    """
+}
+
+
 process KALLISTO_QUANT {
     tag "$meta.sample_id"
     label 'process_high'
     publishDir "${params.outdir}/kallisto_quant", mode: params.publish_dir_mode
 
     input:
-    tuple val(meta), path(reads), path(fasta), val(strandedness)
+    tuple val(meta), path(reads), path(index), val(strandedness)
 
     output:
     path "kallisto_${meta.sample_id}", emit: kallisto_out_dirs
@@ -17,8 +39,7 @@ process KALLISTO_QUANT {
     // given for single-end reads
     def single_arg = meta.paired_end ? '' : "--single -l ${params.fragment_len} -s ${params.fragment_sd}"
     """
-    kallisto index -i ${name}.kidx $fasta
-    kallisto quant -t $task.cpus -i ${name}.kidx \\
+    kallisto quant -t $task.cpus -i $index \\
         $strand_arg $single_arg \\
         -o kallisto_${name} $reads \
         2> ${name}.kallisto.log || { cat ${name}.kallisto.log >&2; exit 1; }
@@ -67,7 +88,7 @@ process CHECK_STRANDEDNESS {
     label 'process_low'
 
     input:
-    tuple val(meta), path(reads), path(fasta)
+    tuple val(meta), path(reads), path(index)
 
     output:
     path "${meta.sample_id}.strandedness.tsv", emit: result
@@ -78,9 +99,8 @@ process CHECK_STRANDEDNESS {
     def single = meta.paired_end ? "" : "--single -l ${params.fragment_len} -s ${params.fragment_sd}"
     """
     strandedness_check.py subsample --n ${params.strandedness_check_reads} --out sub $reads
-    kallisto index -i ${name}.kidx $fasta > kallisto_index.log 2>&1
     for mode in fr rf; do
-        kallisto quant -t $task.cpus -i ${name}.kidx --\${mode}-stranded $single \\
+        kallisto quant -t $task.cpus -i $index --\${mode}-stranded $single \\
             -o q_\${mode} sub_*.fq.gz > kallisto_\${mode}.log 2>&1
     done
     strandedness_check.py infer \\
