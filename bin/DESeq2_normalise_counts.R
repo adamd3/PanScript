@@ -21,6 +21,12 @@ option_list <- list(
         type = "character", default = NULL,
         help = "table of effective lengths per gene", metavar = "character"
     ),
+    make_option(c("-m", "--metadata"),
+        type = "character", default = NULL,
+        help = "sample metadata (sample_name, dna_sample_id); used to take the
+                median gene length over isolates, not samples",
+        metavar = "character"
+    ),
     make_option(c("-o", "--outdir"),
         type = "character", default = NULL,
         help = "output directory for results", metavar = "character"
@@ -32,7 +38,11 @@ opt <- parse_args(opt_parser)
 
 counts_f <- opt$counts
 lengths_f <- opt$lengths
+metadata_f <- opt$metadata
 outdir <- opt$outdir
+if (is.null(counts_f) || is.null(lengths_f) || is.null(metadata_f) || is.null(outdir)) {
+    stop("--counts, --lengths, --metadata and --outdir are all required")
+}
 
 
 ## Read data
@@ -42,12 +52,36 @@ lengths_tab <- suppressMessages(read_tsv(lengths_f))
 lengths_tab <- lengths_tab[match(counts_tab$Gene, lengths_tab$Gene), ]
 
 gene_ids <- counts_tab$Gene
-counts_tab <- data.frame(counts_tab[, 2:ncol(counts_tab)])
-lengths_tab <- data.frame(lengths_tab[, 2:ncol(lengths_tab)])
+## check.names = FALSE keeps sample names as given (e.g. "PA-01" or "1234"
+## would otherwise become "PA.01" and "X1234")
+counts_tab <- data.frame(counts_tab[, 2:ncol(counts_tab)], check.names = FALSE)
+lengths_tab <- data.frame(lengths_tab[, 2:ncol(lengths_tab)], check.names = FALSE)
 rownames(counts_tab) <- rownames(lengths_tab) <- gene_ids
 
-## scale counts to reads per median gene length
-median_lens <- rowMedians(as.matrix(lengths_tab), na.rm = TRUE)
+## isolate (dna_sample_id) of each sample
+metadata <- suppressMessages(read_tsv(metadata_f, col_types = cols(.default = "c")))
+isolate <- metadata$dna_sample_id[match(colnames(lengths_tab), metadata$sample_name)]
+if (any(is.na(isolate))) {
+    stop(paste(
+        "samples missing from the metadata:",
+        paste(colnames(lengths_tab)[is.na(isolate)], collapse = ", ")
+    ))
+}
+
+## scale counts to reads per median gene length. The median is over isolates,
+## so isolates with several RNA-seq samples don't count more than others:
+## first each isolate's length (median over its samples' effective lengths,
+## which differ slightly with each sample's fragment length distribution),
+## then the median of those over isolates. NA (absent) is ignored throughout.
+len_mat <- as.matrix(lengths_tab)
+isolate_lens <- matrix(
+    vapply(split(seq_len(ncol(len_mat)), isolate),
+        function(j) rowMedians(len_mat[, j, drop = FALSE], na.rm = TRUE),
+        FUN.VALUE = numeric(nrow(len_mat))
+    ),
+    nrow = nrow(len_mat)
+)
+median_lens <- rowMedians(isolate_lens, na.rm = TRUE)
 names(median_lens) <- gene_ids
 
 counts_tab_scaled <- (counts_tab / lengths_tab)

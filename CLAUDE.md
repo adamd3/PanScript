@@ -66,7 +66,8 @@ User-run helper scripts (not part of the workflow) live in `scripts/`:
 
 - **Ortholog length scaling.** An orthologous group can differ in length between isolates. Counts
   are divided by each isolate's kallisto effective length and multiplied by the median length of
-  that gene across isolates. This gives "reads per median gene length".
+  that gene across isolates (each isolate counted once, whatever its number of samples; since
+  2026-11-20). This gives "reads per median gene length".
 - **Core-gene size factors.** Accessory genes are NA in the merged matrix. Size factors (DESeq2
   median-of-ratios) are estimated only on genes with no NAs, which are the core genes
   present in every sample. They're then applied to all non-NA values in each sample. This assumes
