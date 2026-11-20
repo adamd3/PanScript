@@ -5,6 +5,7 @@ process DESEQ_NORMALISE_COUNTS {
 
     input:
     tuple path(merged_counts), path(merged_lens)
+    path meta_merged
 
     output:
     path 'norm_counts.tsv', emit: norm_counts
@@ -16,6 +17,7 @@ process DESEQ_NORMALISE_COUNTS {
     DESeq2_normalise_counts.R \
         -c $merged_counts \
         -l $merged_lens \
+        -m $meta_merged \
         -o ./
     """
 }

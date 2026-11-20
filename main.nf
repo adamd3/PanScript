@@ -265,7 +265,8 @@ workflow MAIN {
      *  Get size-factor-scaled counts
      */
     DESEQ_NORMALISE_COUNTS (
-        ch_kallisto_merged_out
+        ch_kallisto_merged_out,
+        ch_metadata
     )
     ch_norm_counts = DESEQ_NORMALISE_COUNTS.out.norm_counts
     ch_scaled_counts = DESEQ_NORMALISE_COUNTS.out.scaled_counts

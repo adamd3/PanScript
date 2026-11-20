@@ -17,6 +17,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import unittest.mock
 from pathlib import Path
 
 import numpy as np
@@ -161,7 +162,9 @@ def ref_size_factors(raw):
 def ref_outputs(genes):
     counts = ref_merged(genes, 1)
     lens = ref_merged(genes, 2)
-    med = lens.median(axis=1, skipna=True)
+    # median length over isolates: each isolate's median over its samples
+    # first, so isolates with replicate samples don't count more
+    med = lens.T.groupby(lambda s: DNA[s]).median().T.median(axis=1, skipna=True)
     raw = counts.div(lens).mul(med, axis=0)
     sf = ref_size_factors(raw)
     norm = raw.div(sf, axis=1)
@@ -198,7 +201,7 @@ def run_scripts(genes):
              "--metadata_merged=meta.tsv", f"--outf={out}"])
     (tmp / "out").mkdir()
     run(["Rscript", str(BIN / "DESeq2_normalise_counts.R"), "-c", "counts.tsv",
-         "-l", "lens.tsv", "-o", "out"])
+         "-l", "lens.tsv", "-m", "meta.tsv", "-o", "out"])
     return tmp
 
 
@@ -286,7 +289,7 @@ class NormalisationTest(unittest.TestCase):
             self.assertLess(r.std() / r.mean(), 1e-9, s)
         # median length cancels: nTPM == norm_counts / median length * const
         norm = read_matrix(self.tmp / "out" / "norm_counts.tsv")
-        med = lens.median(axis=1, skipna=True)
+        med = lens.T.groupby(lambda s: DNA[s]).median().T.median(axis=1, skipna=True)
         r = (ntpm / norm.div(med, axis=0)).stack()
         self.assertLess(r.std() / r.mean(), 1e-9)
         # across samples, a core gene's nTPM ratio is its rate ratio divided by
@@ -349,6 +352,63 @@ class AccessoryGeneRobustnessTest(unittest.TestCase):
             return (rate / rate.sum(axis=0) * 1e6).loc[[f"core{i}" for i in range(1, N_CORE + 1)]]
         shift = (tpm("big")["sB"] / tpm("base")["sB"]).median()
         self.assertLess(shift, 0.8)
+
+
+class ReplicateSamplesTest(unittest.TestCase):
+    """Isolates with several RNA-seq samples (PROGRESS.md D4).
+
+    Isolate A has two samples (sA, sA2) with slightly different effective
+    lengths; B and C have one each. The median length M_g is taken over
+    isolates (each isolate's own median first), not over samples, so A
+    doesn't count twice. Sample names that R would mangle ("s-A2") are kept.
+    """
+
+    REP = "s-A2"
+
+    @classmethod
+    def setUpClass(cls):
+        genes = build_dataset()  # sA, sB, sC; the replicate is added below
+        cls.patch = unittest.mock.patch.multiple(
+            sys.modules[__name__],
+            SAMPLES=SAMPLES + [cls.REP],
+            DNA=dict(DNA, **{cls.REP: "dA"}))
+        cls.patch.start()
+        rng = np.random.default_rng(7)
+        for per in genes.values():
+            per[cls.REP] = None if per["sA"] is None else [
+                (l[0], None if l[1] is None else float(round(l[1] * rng.uniform(0.8, 1.2))),
+                 None if l[2] is None else l[2] + float(rng.integers(5, 40)), *l[3:])
+                for l in per["sA"]]
+        cls.genes = genes
+        cls.expected = ref_outputs(genes)
+        cls.tmp = run_scripts(genes)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.patch.stop()
+        shutil.rmtree(cls.tmp, ignore_errors=True)
+
+    def test_sample_names_kept(self):
+        got = read_matrix(self.tmp / "out" / "raw_counts.tsv")
+        self.assertEqual(list(got.columns), SAMPLES)
+
+    def test_median_over_isolates_not_samples(self):
+        lens = self.expected["lens"]
+        by_sample = lens.median(axis=1, skipna=True)
+        got = read_matrix(self.tmp / "out" / "raw_counts.tsv")
+        exp = self.expected["raw"]
+        np.testing.assert_allclose(got.loc[exp.index, exp.columns].to_numpy(),
+                                   exp.to_numpy(), rtol=1e-9)
+        # the test only means something if the two medians differ
+        by_isolate = exp.div(self.expected["counts"].div(lens)).iloc[:, 0]
+        self.assertTrue((~np.isclose(by_isolate.dropna(), by_sample[by_isolate.dropna().index])).any())
+
+    def test_norm_counts_and_ntpm(self):
+        for name, key in [("norm_counts.tsv", "norm"), ("ntpm.tsv", "ntpm")]:
+            got = read_matrix(self.tmp / "out" / name)
+            exp = self.expected[key]
+            np.testing.assert_allclose(got.loc[exp.index, exp.columns].to_numpy(),
+                                       exp.to_numpy(), rtol=1e-9, equal_nan=True)
 
 
 if __name__ == "__main__":

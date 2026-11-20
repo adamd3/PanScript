@@ -27,7 +27,9 @@ For gene group *g* in sample *s* (from isolate *i(s)*):
 
 - *c<sub>gs</sub>*: kallisto `est_counts` for that isolate's locus or loci in group *g*
 - *L<sub>gs</sub>*: kallisto `eff_length` for that locus or loci
-- *M<sub>g</sub>* = median over samples of *L<sub>gs</sub>* (ignoring NA): median length
+- *M<sub>g</sub>* = median length of group *g* **over isolates** (ignoring NA): first each
+  isolate's length *L<sub>gi</sub>* = median of *L<sub>gs</sub>* over that isolate's samples, then
+  the median of *L<sub>gi</sub>* over isolates
 - *sf<sub>s</sub>*: DESeq2 size factor for sample *s*
 
 ## Steps
@@ -64,6 +66,12 @@ true length.)
 This is the number of reads the gene would have received if it had the group's median length in
 every isolate. It removes length differences **between isolates for the same gene**. It is **not**
 normalised for library size, and **not** comparable between different genes.
+
+*M<sub>g</sub>* is a median over isolates, not samples, so an isolate with several RNA-seq samples
+(replicates, conditions) counts once, like every other isolate. Effective lengths of one isolate's
+samples differ slightly (kallisto adjusts them for each sample's fragment length distribution),
+hence the median within each isolate first. (Before 2026-11-20 the median was over samples. That
+gives the same result when every isolate has the same number of samples, as in the test data.)
 
 ### 3. Size factors from the core genome
 DESeq2 median-of-ratios size factors *sf<sub>s</sub>* are estimated from the matrix of rounded
