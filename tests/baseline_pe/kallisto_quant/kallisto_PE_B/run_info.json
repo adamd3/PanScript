@@ -1,0 +1,14 @@
+{
+	"n_targets": 7326,
+	"n_bootstraps": 0,
+	"n_processed": 60000,
+	"n_pseudoaligned": 59991,
+	"n_unique": 59476,
+	"p_pseudoaligned": 100.0,
+	"p_unique": 99.1,
+	"kallisto_version": "0.51.1",
+	"index_version": 13,
+	"k-mer length": 31,
+	"start_time": "Fri Nov 20 14:00:00 2026",
+	"call": "kallisto quant -t 2 -i SRR8737282.kidx --rf-stranded -o kallisto_PE_B PE_B_1.fastp.fq.gz PE_B_2.fastp.fq.gz"
+}

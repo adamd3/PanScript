@@ -40,18 +40,34 @@ def create_fastq_channel(LinkedHashMap row) {
 
     // add path(s) of the fastq file(s) to the metadata
     def seq_meta = []
-    if (!file(row.fastq1).exists()) {
+    def fastq1 = resolve_input(row.fastq1)
+    def fasta  = resolve_input(row.fasta)
+    if (!fastq1.exists()) {
         error("ERROR: Please check input samplesheet -> Read 1 FastQ file does not exist!\n${row.fastq1}")
     }
     if (meta.paired_end) {
-        if (!file(row.fastq2).exists()) {
+        def fastq2 = resolve_input(row.fastq2)
+        if (!fastq2.exists()) {
             error("ERROR: Please check input samplesheet -> Read 2 FastQ file does not exist!\n${row.fastq2}")
         }
-        seq_meta = [ meta, [ file(row.fastq1), file(row.fastq2) ], file(row.fasta) ]
+        seq_meta = [ meta, [ fastq1, fastq2 ], fasta ]
     } else {
-        seq_meta = [ meta, file(row.fastq1), file(row.fasta) ]
+        seq_meta = [ meta, fastq1, fasta ]
     }
     return seq_meta
+}
+
+// A path in the metadata file: absolute, a URL, or relative to the launch
+// directory. A relative path that doesn't exist there is looked up relative to
+// the metadata file's own directory instead (used by the test_pe profile, whose
+// metadata sits next to its reads inside the pipeline).
+def resolve_input(String p) {
+    def f = file(p)
+    if (f.exists() || p.startsWith('/') || p ==~ /^[A-Za-z][A-Za-z0-9+.-]*:.*/) {
+        return f
+    }
+    def alt = file(params.meta_file.toString()).parent.resolve(p).normalize()
+    return alt.exists() ? alt : f
 }
 
 

@@ -1,0 +1,5 @@
+rna_sample_id	dna_sample_id	sample_name	isolate	fastq1	fastq2	fasta
+sim_PE_A	SRR8737281	PE_A	SRR8737281	PE_A_R1.fq.gz	PE_A_R2.fq.gz	../SRR8737281.fna
+sim_PE_B	SRR8737282	PE_B	SRR8737282	PE_B_R1.fq.gz	PE_B_R2.fq.gz	../SRR8737282.fna
+sim_PE_C1	SRR8737283	PE_C1	SRR8737283	PE_C1_R1.fq.gz	PE_C1_R2.fq.gz	../SRR8737283.fna
+sim_PE_C2	SRR8737283	PE_C2	SRR8737283	PE_C2_R1.fq.gz	PE_C2_R2.fq.gz	../SRR8737283.fna

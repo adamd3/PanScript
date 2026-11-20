@@ -22,6 +22,12 @@ change.**
 pipeline behaviour before the 2026 publication changes (PROGRESS.md task T0). `baseline/PROVENANCE.md`
 records exactly how they were produced: commit, Nextflow version and container digest.
 
+`baseline_pe/` is the same for `-profile test_pe`: paired-end reads simulated by
+`simulate_pe_reads.py` (deterministic; re-running it reproduces `test_data/pe/` exactly) with a
+known truth. Besides the baseline comparison (`--baseline tests/baseline_pe`),
+`check_pe_truth.py <results>` checks the inferred strandedness and that counts track the
+simulated truth. CI runs both test profiles.
+
 ## Checking a change against the baseline
 
 ```bash

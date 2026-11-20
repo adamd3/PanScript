@@ -1,0 +1,5 @@
+sample	reads_tested	pseudoaligned_fr	pseudoaligned_rf	fraction_fr	inferred	inferred_strandedness	specified_strandedness	agrees	used_strandedness
+PE_C1	30000	39	29995	0.0013	reverse	2	auto	n/a (auto)	2
+PE_A	40000	14	39996	0.0003	reverse	2	auto	n/a (auto)	2
+PE_C2	45000	49	44993	0.0011	reverse	2	auto	n/a (auto)	2
+PE_B	60000	162	59990	0.0027	reverse	2	auto	n/a (auto)	2
