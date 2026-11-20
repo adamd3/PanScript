@@ -7,6 +7,14 @@ authors:
     given-names: Adam
 version: 2.0.0
 date-released: "2026-11-19"
+doi: 10.5281/zenodo.24375403
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.24375403
+    description: "Concept DOI: all versions of PanScript"
+  - type: doi
+    value: 10.5281/zenodo.24375404
+    description: "PanScript v2.0.0"
 license: MIT
 repository-code: "https://github.com/adamd3/PanScript"
 abstract: >

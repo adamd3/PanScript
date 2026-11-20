@@ -1,6 +1,7 @@
 # PanScript
 
 [![CI](https://github.com/adamd3/PanScript/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/adamd3/PanScript/actions/workflows/ci.yml)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24375403.svg)](https://doi.org/10.5281/zenodo.24375403)
 
 [![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A524.10.0-23aa62.svg?labelColor=000000)](https://www.nextflow.io/)
 [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
@@ -67,5 +68,8 @@ every sample. See [output](docs/output.md) for everything else.
 
 ## Citation
 
-If you use PanScript, please cite it (see [CITATION.cff](CITATION.cff); a Zenodo DOI will be added
-at release) and the tools it uses, listed in [CITATIONS.md](CITATIONS.md).
+If you use PanScript, please cite it, using the Zenodo DOI
+[10.5281/zenodo.24375403](https://doi.org/10.5281/zenodo.24375403) (all versions; each release
+also has its own DOI on Zenodo) and the version you ran, and cite the tools it uses, listed in
+[CITATIONS.md](CITATIONS.md). [CITATION.cff](CITATION.cff) has the details in a machine-readable
+form (GitHub's "Cite this repository" button).
