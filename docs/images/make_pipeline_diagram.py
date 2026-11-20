@@ -7,9 +7,10 @@ Run from the repo root:
 """
 from pathlib import Path
 
-W, H = 1000, 1390
+W, H = 1180, 1390
+FS = 1.3                             # font scale
 GEN, RNA, MRG, GREY = "#1f7a8c", "#e4572e", "#3d405b", "#8a8f98"
-XL, XR, XM = 300, 700, 500           # genome track, RNA track, merged track
+XL, XR, XM = 380, 760, 570           # genome track, RNA track, merged track
 FONT = "Helvetica, Arial, sans-serif"
 out = []
 
@@ -19,11 +20,12 @@ def add(s):
 
 
 def text(x, y, lines, anchor="start", size=13, weight="normal", colour="#222", mono=False):
+    size = size * FS
     fam = "Menlo, Consolas, monospace" if mono else FONT
     for i, (t, *style) in enumerate(lines):
         w = style[0] if style else weight
         c = style[1] if len(style) > 1 else colour
-        s = style[2] if len(style) > 2 else size
+        s = style[2] * FS if len(style) > 2 else size
         add(f'<text x="{x}" y="{y + i * (s + 5)}" font-family="{fam}" font-size="{s}" '
             f'font-weight="{w}" fill="{c}" text-anchor="{anchor}">{t}</text>')
 
@@ -36,7 +38,7 @@ def file_icon(x, y, label, colour):
         f'stroke="{colour}" stroke-width="2.5" stroke-linejoin="round"/>')
     add(f'<path d="M{x0 + w - f},{y0} v{f} h{f}" fill="none" stroke="{colour}" stroke-width="2"/>')
     add(f'<rect x="{x0 + 1.5}" y="{y0 + 30}" width="{w - 3}" height="15" fill="{colour}"/>')
-    add(f'<text x="{x}" y="{y0 + 41.5}" font-family="Menlo, Consolas, monospace" font-size="10.5" '
+    add(f'<text x="{x}" y="{y0 + 41.5}" font-family="Menlo, Consolas, monospace" font-size="12" '
         f'fill="#fff" text-anchor="middle">{label}</text>')
 
 
@@ -114,7 +116,7 @@ station(XR, Y_IDX, RNA)
 text(XR + 26, Y_IDX - 2, [("Trimming and read QC", "bold"),
                          ("fastp", "normal", "#555", 12.5)])
 
-def output(y, name, colour=MRG, w=160):
+def output(y, name, colour=MRG, w=205):
     """File chip left of a station: an output (dark) or an extra input (teal)."""
     add(f'<rect x="{XM - 36 - w}" y="{y - 13}" width="{w}" height="26" rx="5" fill="#fff" '
         f'stroke="{colour}" stroke-width="1.5"/>')
@@ -132,7 +134,7 @@ station(XM, Y_MRG, MRG)
 text(STEP_X, Y_MRG - 2, [("Merge into gene groups", "bold"),
                          ("loci → Panaroo groups; split genes summed;", "normal", "#555", 12.5),
                          ("gene absent from an isolate = NA, not 0", "normal", "#555", 12.5)])
-output(Y_MRG, "gene_presence_absence", GEN, 190)
+output(Y_MRG, "gene_presence_absence", GEN, 250)
 
 
 station(XM, Y_LEN, MRG)
