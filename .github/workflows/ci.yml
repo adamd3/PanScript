@@ -78,3 +78,71 @@ jobs:
           path: |
             .nextflow.log
             results/pipeline_info/
+
+  # The other ways of providing the software (HPC clusters usually have
+  # Singularity/Apptainer, not Docker). Same test data, same baseline check.
+  engines:
+    name: Test profile (${{ matrix.profile }})
+    # 24.04: the Apptainer .deb needs libfuse3-3, which newer images don't have
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [singularity, apptainer, conda]
+    steps:
+      - name: Check out pipeline code
+        uses: actions/checkout@v5
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install Nextflow
+        uses: nf-core/setup-nextflow@v2
+        with:
+          version: latest-stable
+
+      # Apptainer also provides the `singularity` command, so it serves both
+      # the singularity and apptainer profiles
+      - name: Install Apptainer
+        if: matrix.profile != 'conda'
+        uses: eWaterCycle/setup-apptainer@v2
+        with:
+          apptainer-version: 1.4.5
+
+      - name: Install conda
+        if: matrix.profile == 'conda'
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-version: latest
+          auto-activate-base: true
+          conda-remove-defaults: true
+
+      - name: Get container image from nextflow.config
+        id: image
+        run: echo "image=$(grep -oP "^process\.container\s*=\s*'\K[^']+" nextflow.config)" >> "$GITHUB_OUTPUT"
+
+      - name: Run pipeline with test data
+        shell: bash -el {0}
+        run: |
+          mkdir -p "$RUNNER_TEMP/sif"
+          export NXF_SINGULARITY_CACHEDIR="$RUNNER_TEMP/sif" NXF_APPTAINER_CACHEDIR="$RUNNER_TEMP/sif"
+          nextflow run ${GITHUB_WORKSPACE} -profile test,${{ matrix.profile }} --outdir ./results
+
+      - name: Compare outputs with regression baseline
+        run: |
+          docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp \
+            -v "$GITHUB_WORKSPACE":"$GITHUB_WORKSPACE" -w "$GITHUB_WORKSPACE" \
+            "${{ steps.image.outputs.image }}" \
+            python tests/compare_to_baseline.py results
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nextflow-logs-${{ matrix.profile }}
+          path: |
+            .nextflow.log
+            results/pipeline_info/

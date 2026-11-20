@@ -98,6 +98,11 @@ file in sync with any change to normalisation code.
 
 ## Repo practicalities
 
+- **Related repos:** the Genome Biology manuscript is in `~/PanScript_manuscript` (its own
+  CLAUDE.md and PROGRESS.md). The user prepares the showcase datasets in
+  `~/PanScript_data_processing` on a remote server. Don't work on the data prep. Fix pipeline
+  issues the manuscript raises here, in this repo.
+
 - Notes for one particular machine (Java and Docker quirks) go in `CLAUDE.local.md`, which is
   gitignored, not here.
 
